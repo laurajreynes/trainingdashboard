@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples } from "@/lib/data";
+import { ExampleGallery } from "@/components/ExampleGallery";
 import { StoreNotes } from "@/components/StoreNotes";
 import {
   getStores, getStoreBySlug, storeFamily, getInitiatives, getAllRoster, getVisits, getTodos,
@@ -29,6 +30,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id);
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
+  const peopleIdSet = new Set(people.map((p) => p.id));
+  const exAll = await getExamples({ limit: 400 });
+  const exHere = exAll.filter((e) => (e.store_id && ids.includes(e.store_id)) || e.person_ids.some((pid) => peopleIdSet.has(pid))).slice(0, 8);
+  const examples = await signExamples(exHere);
   const storeInits = initiatives.filter((i) => i.store_ids.some((id) => ids.includes(id)) && i.status !== "done");
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
@@ -99,6 +104,14 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </div>
             ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
           </section>
+
+          {(examples.length > 0 || editor) && (
+            <section className="card">
+              <div className="cardhead"><h2>Recent examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>{editor ? "Library and upload" : "All examples"}</Link></div>
+              <ExampleGallery items={examples} people={people.map((p) => ({ id: p.id, name: p.name }))} initiatives={initiatives.map((i) => ({ id: i.id, name: i.name }))}
+                stores={stores.map((s) => ({ id: s.id, name: s.short_name }))} editor={editor} emptyText="No screenshots from this store yet. Add them in the Examples library." />
+            </section>
+          )}
 
           <section className="card">
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>

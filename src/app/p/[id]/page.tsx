@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
-import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, getWins } from "@/lib/data";
+import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, getWins, getExamples, getExampleThemes, signExamples, getPeople } from "@/lib/data";
+import { ExampleGallery } from "@/components/ExampleGallery";
+import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROLES, ROSTER_LABEL, type RosterStatus } from "@/lib/types";
 import { fmtDate } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
@@ -16,6 +18,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const store = stores.find((s) => s.id === person.store_id)!;
   const [visitsAll, todos, wins] = await Promise.all([getVisits({ limit: 300 }), getTodos({ personId: id, includeDone: true }), getWins({ personId: id })]);
   const visits = visitsAll.filter((v) => v.people_ids.includes(id));
+  const [exRows, themes, allPeople] = await Promise.all([getExamples({ personId: id, limit: 120 }), getExampleThemes(), getPeople()]);
+  const examples = await signExamples(exRows);
+  const exOpts = {
+    people: allPeople.map((p) => ({ id: p.id, name: p.name, sub: stores.find((s) => s.id === p.store_id)?.short_name })),
+    initiatives: initiatives.filter((i) => i.status !== "done").map((i) => ({ id: i.id, name: i.name })),
+    stores: stores.map((s) => ({ id: s.id, name: s.short_name })),
+  };
   const rosterRows = initiatives.filter((i) => roster.some((r) => r.initiative_id === i.id));
 
   return (
@@ -68,6 +77,23 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 </tbody>
               </table>
             ) : <p className="empty">Not on any initiative roster yet. Add them from an initiative page.</p>}
+          </section>
+
+          <section className="card">
+            <div className="cardhead">
+              <h2>Examples · {examples.length}</h2>
+              {examples.length > 0 && <Link className="more" href={`/examples?person=${id}`}>Open in library</Link>}
+            </div>
+            <ExampleGallery items={examples} people={exOpts.people} initiatives={exOpts.initiatives} stores={exOpts.stores} themes={themes} editor={editor}
+              emptyText="No screenshots for this person yet" />
+            {editor && (
+              <details className="adder" style={{ marginTop: 12 }}>
+                <summary>Add screenshots of {person.name.split(" ")[0]}</summary>
+                <div className="body">
+                  <ExampleUploader compact people={exOpts.people} initiatives={exOpts.initiatives} stores={exOpts.stores} themes={themes} defaults={{ personIds: [id], storeId: person.store_id }} />
+                </div>
+              </details>
+            )}
           </section>
 
           <section className="card">

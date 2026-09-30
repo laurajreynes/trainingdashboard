@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "./supabase";
 import type {
   Store, Person, Initiative, InitiativePerson, Visit, Todo, Bookmark,
-  Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost,
+  Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost, Example, ExampleView,
 } from "./types";
 
 function rows<T>(r: { data: unknown; error: { message: string } | null }): T[] {
@@ -140,6 +140,35 @@ export async function getStorePosts(opts: { storeIds?: string[]; openOnly?: bool
   if (opts.openOnly) q = q.eq("status", "open");
   if (opts.limit) q = q.limit(opts.limit);
   return rows<StorePost>(await q);
+}
+
+export async function getExamples(opts: {
+  personId?: string; initiativeId?: string; theme?: string; kind?: string; storeIds?: string[]; limit?: number;
+} = {}): Promise<Example[]> {
+  let q = db().from("examples").select("*").order("taken_on", { ascending: false }).order("created_at", { ascending: false });
+  if (opts.personId) q = q.contains("person_ids", [opts.personId]);
+  if (opts.initiativeId) q = q.eq("initiative_id", opts.initiativeId);
+  if (opts.theme) q = q.ilike("theme", opts.theme);
+  if (opts.kind) q = q.eq("kind", opts.kind);
+  if (opts.storeIds) q = q.in("store_id", opts.storeIds);
+  if (opts.limit) q = q.limit(opts.limit);
+  return rows<Example>(await q);
+}
+
+export async function getExampleThemes(): Promise<string[]> {
+  const r = rows<{ theme: string | null }>(await db().from("examples").select("theme").not("theme", "is", null));
+  const seen = new Map<string, string>();
+  for (const x of r) if (x.theme) { const k = x.theme.trim().toLowerCase(); if (k && !seen.has(k)) seen.set(k, x.theme.trim()); }
+  return [...seen.values()].sort((a, b) => a.localeCompare(b));
+}
+
+/** Attach short-lived signed URLs so the private bucket can be shown. */
+export async function signExamples(list: Example[], seconds = 60 * 60 * 6): Promise<ExampleView[]> {
+  if (!list.length) return [];
+  const r = await db().storage.from("examples").createSignedUrls(list.map((e) => e.path), seconds);
+  if (r.error) throw new Error(r.error.message);
+  const byPath = new Map((r.data || []).map((x) => [x.path, x.signedUrl]));
+  return list.map((e) => ({ ...e, url: byPath.get(e.path) || "" })).filter((e) => e.url);
 }
 
 export async function getChat(limit = 60): Promise<ChatMessage[]> {

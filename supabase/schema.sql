@@ -190,6 +190,30 @@ create table if not exists store_posts (
 );
 create index if not exists store_posts_store_idx on store_posts(store_id, created_at desc);
 
+-- Examples: screenshots and photos tied to people and training themes
+create table if not exists examples (
+  id uuid primary key default gen_random_uuid(),
+  store_id uuid references stores(id) on delete set null,
+  initiative_id uuid references initiatives(id) on delete set null,
+  theme text,                                 -- free-text training theme, e.g. "Appointment offer"
+  kind text not null default 'good',          -- good, opportunity, pattern
+  caption text,
+  person_ids uuid[] not null default '{}',
+  path text not null,                         -- object path in the examples bucket
+  content_type text,
+  width int,
+  height int,
+  taken_on date not null default current_date,
+  created_at timestamptz not null default now()
+);
+create index if not exists examples_created_idx on examples(created_at desc);
+create index if not exists examples_people_idx on examples using gin(person_ids);
+
+-- Private storage bucket for the images. The app signs short-lived links to show them.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('examples', 'examples', false, 15728640, array['image/jpeg','image/png','image/webp','image/gif','image/heic'])
+on conflict (id) do nothing;
+
 -- Chat history so Laura can scroll back
 create table if not exists chat_messages (
   id uuid primary key default gen_random_uuid(),
@@ -217,6 +241,7 @@ alter table month_plans enable row level security;
 alter table playbook_items enable row level security;
 alter table playbook_checks enable row level security;
 alter table store_posts enable row level security;
+alter table examples enable row level security;
 
 -- Seed stores
 insert into stores (slug, name, short_name, accent, sort_order, is_bdc, shows_under, locations) values

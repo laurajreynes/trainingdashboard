@@ -1,5 +1,5 @@
 import "server-only";
-import { getHubSnapshot, getMonthPlans, getStorePosts } from "./data";
+import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples } from "./data";
 import { ROSTER_LABEL, INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "./types";
 import { today, addDays } from "./fmt";
 import { monthPhase, paceGoal } from "./month";
@@ -94,6 +94,11 @@ export async function buildHubContext(): Promise<string> {
   const posts = await getStorePosts({ limit: 60 });
   out.push("\n# NOTES, QUESTIONS, AND IDEAS POSTED BY STORE MANAGERS");
   out.push(posts.length ? posts.map((p) => `- ${p.created_at.slice(0, 10)} [${storeName(p.store_id)}] ${p.kind} from ${p.author} (${p.status}): ${p.body}${p.reply ? ` | Laura replied: ${p.reply}` : ""}`).join("\n") : "none");
+
+  const examples = await getExamples({ limit: 300 });
+  out.push("\n# SCREENSHOT EXAMPLES LIBRARY (captions only; images not included)");
+  out.push("kind: good = a good example worth showing; opportunity = something to coach; pattern = a recurring thing to address");
+  out.push(examples.length ? examples.map((e) => `- ${e.taken_on} [${e.kind}]${e.theme ? ` theme: ${e.theme}` : ""}${e.initiative_id ? ` initiative: ${initName(e.initiative_id)}` : ""}${e.store_id ? ` store: ${storeName(e.store_id)}` : ""}${e.person_ids.length ? ` people: ${e.person_ids.map(personName).filter(Boolean).join(", ")}` : ""}${e.caption ? ` | ${e.caption}` : ""}`).join("\n") : "none");
 
   out.push("\n# WINS");
   out.push(snap.wins.length ? snap.wins.map((w) => `- ${w.date} [${storeName(w.store_id)}]${w.person_id ? " " + personName(w.person_id) + ":" : ""} ${w.text}`).join("\n") : "none");

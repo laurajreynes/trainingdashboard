@@ -201,3 +201,28 @@ export const POST_KIND_LABEL: Record<StorePost["kind"], string> = {
   question: "Question",
   idea: "Idea",
 };
+
+export type Example = {
+  id: string;
+  store_id: string | null;
+  initiative_id: string | null;
+  theme: string | null;
+  kind: "good" | "opportunity" | "pattern";
+  caption: string | null;
+  person_ids: string[];
+  path: string;
+  content_type: string | null;
+  width: number | null;
+  height: number | null;
+  taken_on: string;
+  created_at: string;
+};
+
+export const EXAMPLE_KIND_LABEL: Record<Example["kind"], string> = {
+  good: "Good example",
+  opportunity: "Opportunity",
+  pattern: "Pattern",
+};
+
+/** What the gallery gets: an example plus a signed image URL. */
+export type ExampleView = Example & { url: string };

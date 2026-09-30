@@ -23,6 +23,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           <Link href="/initiatives">Initiatives</Link>
           <Link href="/people">People</Link>
           <Link href="/todos">To-dos</Link>
+          <Link href="/examples">Examples</Link>
           <Link href="/chat">Ask</Link>
           <Link href="/recap">Recap</Link>
           {editor ? (

@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import {
   getInitiative, getStores, getPeople, getRoster, getResources, getGoals, getGoalEntries, getVisits, getTodos, getWins, getBookmarks,
+  getExamples, getExampleThemes, signExamples,
 } from "@/lib/data";
+import { ExampleGallery } from "@/components/ExampleGallery";
+import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROSTER_LABEL, type RosterStatus } from "@/lib/types";
 import { fmtDate, today } from "@/lib/fmt";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
@@ -25,6 +28,14 @@ export default async function InitiativePage({ params, searchParams }: { params:
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const visits = visitsAll.filter((v) => v.initiative_ids.includes(id)).slice(0, 8);
   const bookmarks = bookmarksAll.filter((b) => b.initiative_id === id);
+  const [exRows, themes] = await Promise.all([getExamples({ initiativeId: id, limit: 120 }), getExampleThemes()]);
+  const examples = await signExamples(exRows);
+  const exOpts = {
+    people: people.filter((p) => p.active).map((p) => ({ id: p.id, name: p.name, sub: stores.find((s) => s.id === p.store_id)?.short_name })),
+    allPeople: people.map((p) => ({ id: p.id, name: p.name })),
+    initiatives: [{ id: init.id, name: init.name }],
+    stores: stores.map((s) => ({ id: s.id, name: s.short_name })),
+  };
 
   const initStores = stores.filter((s) => init.store_ids.includes(s.id));
   const filterStore = stores.find((s) => s.slug === sp.store);
@@ -152,6 +163,23 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   <div className="frow wide"><textarea name="body" placeholder="Paste the word track or notes here (optional)" /></div>
                   <button className="btn sm">Add</button>
                 </form>
+              </details>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="cardhead">
+              <h2>Examples · {examples.length}</h2>
+              {examples.length > 0 && <Link className="more" href={`/examples?initiative=${id}`}>Open in library</Link>}
+            </div>
+            <ExampleGallery items={examples} people={exOpts.allPeople} initiatives={exOpts.initiatives} stores={exOpts.stores} themes={themes} editor={editor}
+              emptyText="No screenshots tied to this initiative yet" />
+            {editor && (
+              <details className="adder" style={{ marginTop: 12 }}>
+                <summary>Add screenshots</summary>
+                <div className="body">
+                  <ExampleUploader compact people={exOpts.people} initiatives={exOpts.initiatives} stores={exOpts.stores} themes={themes} defaults={{ initiativeId: id, theme: init.name }} />
+                </div>
               </details>
             )}
           </section>

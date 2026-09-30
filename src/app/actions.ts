@@ -437,6 +437,68 @@ export async function storePostToTodo(fd: FormData) {
   refresh();
 }
 
+// ---------- examples (screenshots) ----------
+const IMAGE_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/heic": "heic" };
+
+/** Called from the browser before an upload. Returns a one-time signed link straight into the private bucket. */
+export async function createExampleUpload(contentType: string): Promise<{ path: string; signedUrl: string }> {
+  await requireEditor();
+  const ext = IMAGE_EXT[contentType];
+  if (!ext) throw new Error("Only images can be uploaded");
+  const d = new Date();
+  const path = `${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}.${ext}`;
+  const r = await db().storage.from("examples").createSignedUploadUrl(path);
+  if (r.error) throw new Error(r.error.message);
+  return { path, signedUrl: r.data.signedUrl };
+}
+
+export async function addExample(input: {
+  path: string; contentType: string; width: number | null; height: number | null;
+  caption: string | null; kind: string; theme: string | null; initiativeId: string | null; storeId: string | null; personIds: string[]; takenOn: string | null;
+}) {
+  await requireEditor();
+  const kind = input.kind === "opportunity" || input.kind === "pattern" ? input.kind : "good";
+  ok(await db().from("examples").insert({
+    path: input.path,
+    content_type: input.contentType,
+    width: input.width, height: input.height,
+    caption: input.caption?.trim() || null,
+    kind,
+    theme: input.theme?.trim() || null,
+    initiative_id: input.initiativeId || null,
+    store_id: input.storeId || null,
+    person_ids: input.personIds.filter(Boolean),
+    taken_on: input.takenOn || new Date().toISOString().slice(0, 10),
+  }));
+  refresh();
+}
+
+export async function updateExample(fd: FormData) {
+  await requireEditor();
+  const kind = s(fd, "kind");
+  ok(await db().from("examples").update({
+    caption: s(fd, "caption"),
+    kind: kind === "opportunity" || kind === "pattern" ? kind : "good",
+    theme: s(fd, "theme"),
+    initiative_id: s(fd, "initiative_id"),
+    store_id: s(fd, "store_id"),
+    person_ids: list(fd, "person_ids"),
+    taken_on: s(fd, "taken_on") || new Date().toISOString().slice(0, 10),
+  }).eq("id", must(fd, "id")));
+  refresh();
+}
+
+export async function deleteExample(fd: FormData) {
+  await requireEditor();
+  const id = must(fd, "id");
+  const r = await db().from("examples").select("path").eq("id", id).maybeSingle();
+  ok(r);
+  const path = (r.data as { path: string } | null)?.path;
+  ok(await db().from("examples").delete().eq("id", id));
+  if (path) await db().storage.from("examples").remove([path]);
+  refresh();
+}
+
 // ---------- chat ----------
 export async function clearChat() {
   await requireEditor();
