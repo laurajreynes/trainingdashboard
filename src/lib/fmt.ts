@@ -86,3 +86,34 @@ export function navOrder<T extends { slug: string; is_bdc: boolean; shows_under:
   for (const b of bdcs) if (!out.includes(b)) out.push(b);
   return out;
 }
+
+/** The Nth weekday of a month, as YYYY-MM-DD. weekday: 0 = Sunday … 4 = Thursday. */
+export function nthWeekday(ym: string, n: number, weekday: number): string {
+  const [y, m] = ym.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+  const day = 1 + ((weekday - first + 7) % 7) + (n - 1) * 7;
+  return `${ym}-${String(day).padStart(2, "0")}`;
+}
+
+/** Next second-Thursday GM meeting on or after today. */
+export function nextGmMeeting(): string {
+  const t = today();
+  const thisMonth = nthWeekday(t.slice(0, 7), 2, 4);
+  if (thisMonth >= t) return thisMonth;
+  const [y, m] = t.split("-").map(Number);
+  const next = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7);
+  return nthWeekday(next, 2, 4);
+}
+
+/** Days in a YYYY-MM month. */
+export function daysInMonth(ym: string): number {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+/** Project a month-to-date count to month end from the as-of date. */
+export function projectToMonthEnd(value: number, asOf: string): number {
+  const day = Number(asOf.slice(8, 10));
+  const dim = daysInMonth(asOf.slice(0, 7));
+  return day ? Math.round((value / day) * dim) : value;
+}

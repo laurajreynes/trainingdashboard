@@ -22,6 +22,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
         <Link href="/" className="brand"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16" /><path d="M7 15V9" /><path d="M12 15V5" /><path d="M17 15v-4" /></svg></i>Ressler <span>Training</span></Link>
         <StoreNav stores={primary} />
         <nav className="utilnav">
+          <Link href="/group">Group</Link>
           <Link href="/initiatives">Initiatives</Link>
           <Link href="/people">People</Link>
           <Link href="/todos">To-dos</Link>

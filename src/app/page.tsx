@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
-import { getHubSnapshot, getStorePosts } from "@/lib/data";
+import { getHubSnapshot, getStorePosts, getMetrics, getGroupNotes, getMeetings } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, relDay, today } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
@@ -8,13 +8,15 @@ import { monthName } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { HBars, Columns, Stacked } from "@/components/charts";
-import { storeAccent, addDays, navOrder, monthsBack } from "@/lib/fmt";
+import { storeAccent, addDays, navOrder, monthsBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ phase?: string }> }) {
   const sp = await searchParams;
-  const [editor, snap, posts] = await Promise.all([isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 })]);
+  const [editor, snap, posts, metricsAll, groupNotes, meetings] = await Promise.all([
+    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(2) }), getGroupNotes(), getMeetings(3),
+  ]);
   const { stores, initiatives, roster, visits, todos, wins, people } = snap;
   const primary = stores.filter((s) => !s.is_bdc);
   const active = initiatives.filter((i) => i.status === "active" || i.status === "planning");
@@ -47,6 +49,24 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const kpiTrained = rosterActive.length ? Math.round((rosterActive.filter((r) => r.status === "trained" || r.status === "solid").length / rosterActive.length) * 100) : 0;
   const openPosts = posts.filter((p) => p.status === "open").length;
 
+  // Sold this month (from the PR import), rolled up per store, with pace to month end
+  const curMonth = today().slice(0, 7);
+  const [prevMonth] = monthsBack(2);
+  const soldFor = (sid: string, period: string) => metricsAll.filter((m) => m.store_id === sid && m.period === period);
+  const soldRows = navStores.filter((s) => !s.is_bdc || soldFor(s.id, curMonth).length).map((s) => {
+    const rows = soldFor(s.id, curMonth);
+    const sold = rows.reduce((a, m) => a + m.sold, 0);
+    const asOf = rows.map((m) => m.as_of).sort().pop();
+    const proj = asOf && asOf < `${curMonth}-${String(new Date(Date.UTC(Number(curMonth.slice(0, 4)), Number(curMonth.slice(5, 7)), 0)).getUTCDate()).padStart(2, "0")}` ? projectToMonthEnd(sold, asOf) : null;
+    const prev = soldFor(s.id, prevMonth).reduce((a, m) => a + m.sold, 0);
+    return { label: s.short_name, value: sold, color: storeAccent(s), sub: proj ? `pacing ${proj}` : prev ? `${prev} last mo` : undefined, href: `/s/${s.slug}` };
+  });
+  const soldTotal = soldRows.reduce((a, r) => a + r.value, 0);
+  const soldAsOf = metricsAll.filter((m) => m.period === curMonth).map((m) => m.as_of).sort().pop();
+  const gmNext = nextGmMeeting();
+  const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
+  const mission = groupNotes.find((n) => n.key === "mission")?.body;
+
   const upcoming = primary.map((s) => {
     const next = visits.filter((x) => x.store_id === s.id && x.next_visit_date && x.next_visit_date >= today())
       .sort((a, b) => a.next_visit_date!.localeCompare(b.next_visit_date!))[0];
@@ -70,6 +90,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <div className="kpi"><div><div className="v">{visits.filter((v) => v.date >= since30).length}</div><div className="l">visits, last 30 days</div></div></div>
         <div className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{openPosts}</div><div className="l">store notes waiting</div></div></div>
+        {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
       </div>
 
       <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
@@ -80,8 +101,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           <HBars rows={coverage} unit="%" max={100} />
         </section>
         <section className="card">
-          <div className="cardhead"><h2>Visits, last 30 days</h2></div>
-          <HBars rows={visits30} />
+          <div className="cardhead"><h2>Sold in {monthName(curMonth)}</h2>{editor && <Link className="more" href="/import">Import</Link>}</div>
+          {soldTotal > 0
+            ? <HBars rows={soldRows} />
+            : <p className="empty">No results loaded for this month yet.{editor ? " Paste the PR Inputs tab on the import page." : ""}</p>}
+          <div style={{ marginTop: 14 }}>
+            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Visits, last 30 days</h2></div>
+            <HBars rows={visits30} />
+          </div>
         </section>
         <section className="card">
           <div className="cardhead"><h2>Visits by month</h2></div>
@@ -132,6 +159,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         </div>
 
         <div className="stack">
+          <section className="card groupcard">
+            <div className="cardhead"><h2>Group focus</h2><Link className="more" href="/group">Open</Link></div>
+            {mission ? <p className="pre small" style={{ marginBottom: 10 }}>{mission}</p> : <p className="faint small" style={{ marginBottom: 10 }}>Mission, vision, and values live here.</p>}
+            <div className="small"><span className="eyebrow">Next GM meeting</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
+            {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
+          </section>
           <OpenPosts posts={posts} stores={stores} editor={editor} />
           <section className="card">
             <div className="cardhead"><h2>Open to-dos</h2><Link className="more" href="/todos">All</Link></div>

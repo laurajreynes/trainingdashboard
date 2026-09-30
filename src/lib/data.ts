@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "./supabase";
 import type {
   Store, Person, Initiative, InitiativePerson, Visit, Todo, Bookmark,
-  Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost, Example, ExampleView,
+  Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost, Example, ExampleView, GroupNote, Meeting, StoreMetric,
 } from "./types";
 
 function rows<T>(r: { data: unknown; error: { message: string } | null }): T[] {
@@ -169,6 +169,21 @@ export async function signExamples(list: Example[], seconds = 60 * 60 * 6): Prom
   if (r.error) throw new Error(r.error.message);
   const byPath = new Map((r.data || []).map((x) => [x.path, x.signedUrl]));
   return list.map((e) => ({ ...e, url: byPath.get(e.path) || "" })).filter((e) => e.url);
+}
+
+export async function getGroupNotes(): Promise<GroupNote[]> {
+  return rows<GroupNote>(await db().from("group_notes").select("*"));
+}
+
+export async function getMeetings(limit = 24): Promise<Meeting[]> {
+  return rows<Meeting>(await db().from("meetings").select("*").order("date", { ascending: false }).limit(limit));
+}
+
+export async function getMetrics(opts: { periods?: string[]; storeIds?: string[] } = {}): Promise<StoreMetric[]> {
+  let q = db().from("store_metrics").select("*").order("period", { ascending: false });
+  if (opts.periods) q = q.in("period", opts.periods);
+  if (opts.storeIds) q = q.in("store_id", opts.storeIds);
+  return rows<StoreMetric>(await q);
 }
 
 export async function getChat(limit = 60): Promise<ChatMessage[]> {

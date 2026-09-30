@@ -214,6 +214,40 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('examples', 'examples', false, 15728640, array['image/jpeg','image/png','image/webp','image/gif','image/heic'])
 on conflict (id) do nothing;
 
+-- Group focus: mission, vision, values, group notes (one row per section)
+create table if not exists group_notes (
+  key text primary key,                        -- mission, vision, values, notes
+  body text,
+  updated_at timestamptz not null default now()
+);
+
+-- GM meetings (second Thursday of each month) with agenda and notes
+create table if not exists meetings (
+  id uuid primary key default gen_random_uuid(),
+  date date not null,
+  title text not null default 'GM meeting',
+  agenda text,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+-- Monthly store results, pasted in from the Performance Report (DriveCentric)
+create table if not exists store_metrics (
+  id uuid primary key default gen_random_uuid(),
+  store_id uuid not null references stores(id) on delete cascade,
+  location text,                               -- null = main store; Danhof / Belgrade roll up under Chevrolet
+  period text not null,                        -- YYYY-MM
+  as_of date not null,                         -- last day the numbers cover
+  sold int not null default 0,                 -- Total Sold F&I
+  new_sold int, used_sold int,
+  appts_due int, appts_confirmed int, appts_shown int, appts_sold int,
+  lot_ups int, phone_ups int, web_ups int, campaign_ups int, be_backs int, write_ups int,
+  outbound_calls int, live_calls int,
+  source text,
+  created_at timestamptz not null default now(),
+  unique nulls not distinct (store_id, location, period)
+);
+
 -- Chat history so Laura can scroll back
 create table if not exists chat_messages (
   id uuid primary key default gen_random_uuid(),
@@ -242,6 +276,9 @@ alter table playbook_items enable row level security;
 alter table playbook_checks enable row level security;
 alter table store_posts enable row level security;
 alter table examples enable row level security;
+alter table group_notes enable row level security;
+alter table meetings enable row level security;
+alter table store_metrics enable row level security;
 
 -- Seed stores
 insert into stores (slug, name, short_name, accent, sort_order, is_bdc, shows_under, locations) values

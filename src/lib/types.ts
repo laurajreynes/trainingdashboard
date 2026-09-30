@@ -226,3 +226,29 @@ export const EXAMPLE_KIND_LABEL: Record<Example["kind"], string> = {
 
 /** What the gallery gets: an example plus a signed image URL. */
 export type ExampleView = Example & { url: string };
+
+export type GroupNote = { key: string; body: string | null; updated_at: string };
+
+export type Meeting = {
+  id: string;
+  date: string;
+  title: string;
+  agenda: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type StoreMetric = {
+  id: string;
+  store_id: string;
+  location: string | null;
+  period: string;
+  as_of: string;
+  sold: number;
+  new_sold: number | null; used_sold: number | null;
+  appts_due: number | null; appts_confirmed: number | null; appts_shown: number | null; appts_sold: number | null;
+  lot_ups: number | null; phone_ups: number | null; web_ups: number | null; campaign_ups: number | null; be_backs: number | null; write_ups: number | null;
+  outbound_calls: number | null; live_calls: number | null;
+  source: string | null;
+  created_at: string;
+};

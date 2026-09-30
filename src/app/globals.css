@@ -421,6 +421,13 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
   .lightbox { padding: 8px; }
 }
 
+/* ---------- group ---------- */
+.values { margin: 0; padding-left: 18px; }
+.values li { margin: 2px 0; }
+.nextmeeting { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; padding: 12px 14px; background: var(--panel-2); border-radius: var(--radius); border-left: 4px solid var(--forest); }
+.bigdate { font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--forest); letter-spacing: -0.01em; }
+.groupcard { border-top: 3px solid var(--forest); }
+
 /* ---------- login ---------- */
 .login { max-width: 360px; margin: 12vh auto; }
 

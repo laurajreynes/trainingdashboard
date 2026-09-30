@@ -499,6 +499,118 @@ export async function deleteExample(fd: FormData) {
   refresh();
 }
 
+// ---------- group focus ----------
+export async function saveGroupNote(fd: FormData) {
+  await requireEditor();
+  const key = must(fd, "key");
+  if (!["mission", "vision", "values", "notes"].includes(key)) throw new Error("Unknown section");
+  ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
+export async function addMeeting(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("meetings").insert({
+    date: must(fd, "date"),
+    title: s(fd, "title") || "GM meeting",
+    agenda: s(fd, "agenda"),
+    notes: s(fd, "notes"),
+  }));
+  refresh();
+}
+export async function updateMeeting(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("meetings").update({
+    date: must(fd, "date"),
+    title: s(fd, "title") || "GM meeting",
+    agenda: s(fd, "agenda"),
+    notes: s(fd, "notes"),
+  }).eq("id", must(fd, "id")));
+  refresh();
+}
+export async function deleteMeeting(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("meetings").delete().eq("id", must(fd, "id")));
+  refresh();
+}
+
+// ---------- store results (Performance Report import) ----------
+const METRIC_COLS: Record<string, string> = {
+  "total sold f&i": "sold", "total sold": "sold", "sold": "sold",
+  "new lot sold": "new_sold", "used lot sold": "used_sold",
+  "appts due": "appts_due", "appts confirmed": "appts_confirmed", "appts shown": "appts_shown", "appts sold": "appts_sold",
+  "showroom / lot ups": "lot_ups", "lot ups": "lot_ups", "walk in / lot ups": "lot_ups",
+  "phone ups in": "phone_ups", "phone ups": "phone_ups",
+  "web ups in": "web_ups", "web ups": "web_ups",
+  "campaign ups": "campaign_ups", "be backs": "be_backs", "write ups": "write_ups",
+  "outbound calls made": "outbound_calls", "live calls connected": "live_calls",
+};
+const STORE_ALIASES: Record<string, { slug: string; location: string | null }> = {
+  "chevrolet": { slug: "chevrolet", location: null }, "ressler chevrolet": { slug: "chevrolet", location: null }, "chevy": { slug: "chevrolet", location: null },
+  "toyota": { slug: "toyota", location: null }, "toyota of bozeman": { slug: "toyota", location: null },
+  "subaru": { slug: "subaru", location: null }, "gallatin subaru": { slug: "subaru", location: null },
+  "livingston": { slug: "livingston", location: null }, "livingston motor company": { slug: "livingston", location: null },
+  "danhof": { slug: "chevrolet", location: "Danhof" }, "danhoff": { slug: "chevrolet", location: "Danhof" },
+  "belgrade": { slug: "chevrolet", location: "Belgrade" }, "ressler belgrade": { slug: "chevrolet", location: "Belgrade" },
+  "bdc (shared)": { slug: "sales-bdc", location: null }, "bdc": { slug: "sales-bdc", location: null }, "sales bdc": { slug: "sales-bdc", location: null },
+};
+
+/** Paste the Inputs tab (header row plus store rows) from the PR spreadsheet. Tabs or commas both work. */
+export async function importMetrics(fd: FormData): Promise<void> {
+  await requireEditor();
+  const period = must(fd, "period");            // YYYY-MM
+  const as_of = must(fd, "as_of");              // YYYY-MM-DD
+  const source = s(fd, "source") || "Performance Report";
+  const raw = must(fd, "data");
+  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const split = (l: string) => (l.includes("\t") ? l.split("\t") : l.split(",")).map((c) => c.trim());
+  const headerIdx = lines.findIndex((l) => /^store\b/i.test(l));
+  if (headerIdx < 0) throw new Error("Couldn't find the header row that starts with \"Store\"");
+  const header = split(lines[headerIdx]).map((h) => h.toLowerCase());
+  const colMap: Record<number, string> = {};
+  header.forEach((h, i) => { if (i > 0 && METRIC_COLS[h] && !Object.values(colMap).includes(METRIC_COLS[h])) colMap[i] = METRIC_COLS[h]; });
+  if (!Object.values(colMap).includes("sold")) throw new Error("Couldn't find a Total Sold column");
+  const stores = await db().from("stores").select("id,slug");
+  ok(stores);
+  const bySlug = new Map((stores.data as { id: string; slug: string }[]).map((x) => [x.slug, x.id]));
+  const rowsOut: Record<string, unknown>[] = [];
+  const skipped: string[] = [];
+  for (const line of lines.slice(headerIdx + 1)) {
+    const cells = split(line);
+    const name = (cells[0] || "").toLowerCase();
+    if (!name || /^store\b/i.test(name)) break;         // a second header means the example block
+    const target = STORE_ALIASES[name];
+    if (!target) { if (!/helper|house|how to|example|green|everything|report|bdc \(shared\): goals|phone and|walk in/i.test(name)) skipped.push(cells[0]); continue; }
+    const rec: Record<string, unknown> = { store_id: bySlug.get(target.slug), location: target.location, period, as_of, source };
+    for (const [i, key] of Object.entries(colMap)) {
+      const v = Number(String(cells[Number(i)] ?? "").replace(/[^0-9.\-]/g, ""));
+      rec[key] = Number.isFinite(v) ? Math.round(v) : null;
+    }
+    if (rec.sold === null) rec.sold = 0;
+    rowsOut.push(rec);
+  }
+  if (!rowsOut.length) throw new Error("No store rows recognized" + (skipped.length ? ` (unrecognized: ${skipped.join(", ")})` : ""));
+  ok(await db().from("store_metrics").upsert(rowsOut, { onConflict: "store_id,location,period" }));
+  refresh();
+  redirect(`/import?ok=${rowsOut.length}${skipped.length ? `&skipped=${encodeURIComponent(skipped.join(", "))}` : ""}`);
+}
+
+/** Quick manual entry for one store and month. */
+export async function setStoreSold(fd: FormData) {
+  await requireEditor();
+  const sold = num(fd, "sold");
+  if (sold === null) throw new Error("Sold must be a number");
+  ok(await db().from("store_metrics").upsert({
+    store_id: must(fd, "store_id"), location: s(fd, "location"), period: must(fd, "period"), as_of: must(fd, "as_of"),
+    sold: Math.round(sold), appts_due: num(fd, "appts_due"), appts_shown: num(fd, "appts_shown"), appts_sold: num(fd, "appts_sold"), source: "manual",
+  }, { onConflict: "store_id,location,period" }));
+  refresh();
+}
+export async function deleteMetric(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("store_metrics").delete().eq("id", must(fd, "id")));
+  refresh();
+}
+
 // ---------- chat ----------
 export async function clearChat() {
   await requireEditor();

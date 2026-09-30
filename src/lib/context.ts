@@ -1,7 +1,7 @@
 import "server-only";
-import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples } from "./data";
+import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples, getMetrics, getGroupNotes, getMeetings } from "./data";
 import { ROSTER_LABEL, INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "./types";
-import { today, addDays } from "./fmt";
+import { today, addDays, monthsBack, nextGmMeeting, projectToMonthEnd } from "./fmt";
 import { monthPhase, paceGoal } from "./month";
 
 /** Plain-text picture of the whole hub, for the assistant and the recap. */
@@ -26,6 +26,17 @@ export async function buildHubContext(): Promise<string> {
       out.push(`- ${p.goal.name} (${p.goal.initiative_id ? initName(p.goal.initiative_id) : storeName(p.goal.store_id)}, ${p.goal.kind}): ${p.current}${p.goal.unit} as of ${p.asOf}${p.projected !== null ? `, projecting ${p.projected}` : ""}${p.goal.target !== null ? `, target ${p.goal.target}` : ""}, status ${p.status}${p.perDay ? `, needs ${p.perDay}/day` : ""}`);
     }
   }
+
+  const [gnotes, meetings, metrics] = await Promise.all([getGroupNotes(), getMeetings(6), getMetrics({ periods: monthsBack(3) })]);
+  out.push("\n# GROUP FOCUS");
+  for (const k of ["mission", "vision", "values", "notes"]) { const b = gnotes.find((n) => n.key === k)?.body; if (b) out.push(`${k}: ${b}`); }
+  out.push(`Next GM meeting (second Thursday): ${nextGmMeeting()}`);
+  for (const m of meetings) out.push(`- Meeting ${m.date} ${m.title}${m.agenda ? ` | agenda: ${m.agenda}` : ""}${m.notes ? ` | notes: ${m.notes}` : ""}`);
+
+  out.push("\n# STORE RESULTS (from the DriveCentric Performance Report; month-to-date through as_of)");
+  if (metrics.length) for (const m of metrics) {
+    out.push(`- ${m.period} ${storeName(m.store_id)}${m.location ? "/" + m.location : ""} thru ${m.as_of}: sold ${m.sold} (pacing ${projectToMonthEnd(m.sold, m.as_of)})${m.new_sold != null ? `, new ${m.new_sold}` : ""}${m.used_sold != null ? `, used ${m.used_sold}` : ""}${m.appts_due != null ? `, appts due ${m.appts_due} shown ${m.appts_shown ?? "?"} sold ${m.appts_sold ?? "?"}` : ""}${m.phone_ups != null ? `, phone ups ${m.phone_ups}` : ""}${m.web_ups != null ? `, web ups ${m.web_ups}` : ""}${m.lot_ups != null ? `, lot ups ${m.lot_ups}` : ""}${m.write_ups != null ? `, write ups ${m.write_ups}` : ""}${m.outbound_calls != null ? `, outbound calls ${m.outbound_calls}` : ""}`);
+  } else out.push("none imported yet");
 
   out.push("\n# STORES");
   for (const s of snap.stores) {

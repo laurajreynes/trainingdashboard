@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Columns, Ring, Stacked } from "@/components/charts";
-import { addDays, monthName, monthsBack } from "@/lib/fmt";
+import { addDays, monthName, monthsBack, projectToMonthEnd } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
 import {
@@ -77,6 +77,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   });
   const servesStores = store.is_bdc ? stores.filter((s) => store.shows_under.includes(s.slug)) : [];
 
+  // Store results from the PR import
+  const curMonth = today().slice(0, 7);
+  const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(6) });
+  const thisMonthRows = metricRows.filter((m) => m.period === curMonth);
+  const soldMtd = thisMonthRows.reduce((a, m) => a + m.sold, 0);
+  const soldAsOf = thisMonthRows.map((m) => m.as_of).sort().pop();
+  const soldProj = soldAsOf ? projectToMonthEnd(soldMtd, soldAsOf) : null;
+  const soldByMonth = monthsBack(6).map((m) => ({ label: monthName(m).slice(0, 3), value: metricRows.filter((x) => x.period === m).reduce((a, x) => a + x.sold, 0), hint: monthName(m) }));
+  const apptRow = thisMonthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
+  const upsRow = thisMonthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
+
   return (
     <div style={{ ["--accent" as string]: storeAccent(store) }}>
       <div className="pagehead">
@@ -103,6 +114,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits, last 30 days</div></div></div>
         <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
+        {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
 
       <div className="grid cols-3" style={{ marginBottom: 20 }}>
@@ -120,6 +132,38 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <Columns points={visitsByMonth} color={storeAccent(store)} />
         </section>
       </div>
+
+      {(soldMtd > 0 || soldByMonth.some((m) => m.value > 0)) && (
+        <div className="grid cols-3" style={{ marginBottom: 20 }}>
+          <section className="card">
+            <div className="cardhead"><h2>Sold by month</h2><span className="faint small">from the PR</span></div>
+            <Columns points={soldByMonth} color={storeAccent(store)} />
+            {thisMonthRows.some((m) => m.location) && (
+              <p className="faint small" style={{ marginTop: 8 }}>{monthName(curMonth)}: {thisMonthRows.map((m) => `${m.location || "Main"} ${m.sold}`).join(" · ")}</p>
+            )}
+          </section>
+          <section className="card">
+            <div className="cardhead"><h2>Appointments, {monthName(curMonth)}</h2></div>
+            {apptRow.due > 0 ? (
+              <HBars rows={[
+                { label: "Due", value: apptRow.due, color: "var(--line-strong)" },
+                { label: "Shown", value: apptRow.shown, color: storeAccent(store), sub: `${Math.round((apptRow.shown / apptRow.due) * 100)}%` },
+                { label: "Sold", value: apptRow.sold, color: "var(--good)", sub: apptRow.shown ? `${Math.round((apptRow.sold / apptRow.shown) * 100)}% of shown` : undefined },
+              ]} max={apptRow.due} />
+            ) : <p className="empty">No appointment numbers this month</p>}
+          </section>
+          <section className="card">
+            <div className="cardhead"><h2>Where ups came from</h2></div>
+            {upsRow.lot + upsRow.phone + upsRow.web > 0 ? (
+              <HBars rows={[
+                { label: "Lot", value: upsRow.lot, color: storeAccent(store) },
+                { label: "Phone", value: upsRow.phone, color: storeAccent(store) },
+                { label: "Web", value: upsRow.web, color: storeAccent(store) },
+              ]} />
+            ) : <p className="empty">No traffic numbers this month</p>}
+          </section>
+        </div>
+      )}
 
       <section style={{ marginBottom: 20 }}>
         <div className="bookmarks">
