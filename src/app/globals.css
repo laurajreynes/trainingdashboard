@@ -265,6 +265,22 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 .bigcount span { font-size: 16px; font-weight: 600; color: var(--ink-dim); margin-left: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
 
 /* ---------- store notes ---------- */
+.noteshead { display: flex; align-items: center; gap: 8px; }
+.notesicons { display: inline-flex; gap: 2px; color: var(--gold); }
+.kindtag { display: inline-flex; align-items: center; gap: 4px; }
+.notesform { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 0 12px; margin-bottom: 4px; }
+.notesform > summary { cursor: pointer; padding: 10px 0; font-weight: 600; font-size: 14px; list-style: none; color: var(--ink); }
+.notesform > summary::before { content: "+ "; color: var(--gold); }
+.notesform[open] > summary::before { content: ""; }
+.notesform > form { padding-bottom: 12px; }
+.kindpick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.kindopt { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-dim); transition: border-color .12s, background .12s; }
+.kindopt input { position: absolute; opacity: 0; pointer-events: none; }
+.kindopt:hover { border-color: var(--line-strong); color: var(--ink); }
+.kindopt.k-question:has(input:checked) { border-color: var(--info); background: var(--info-soft); color: var(--info); }
+.kindopt.k-idea:has(input:checked) { border-color: var(--gold); background: var(--gold-soft); color: var(--gold); }
+.kindopt.k-note:has(input:checked) { border-color: var(--ink-dim); background: var(--panel-2); color: var(--ink); }
+.kindopt:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
 .reply { margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--gold); background: var(--panel-2); border-radius: 0 6px 6px 0; }
 .reply .eyebrow { font-size: 10.5px; }
 
