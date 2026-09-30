@@ -55,3 +55,34 @@ export function monthName(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString("en-US", { timeZone: "UTC", month: "long" });
 }
+
+/** The last n calendar months as YYYY-MM, oldest first, ending with the current month. */
+export function monthsBack(n: number): string[] {
+  const [y, m] = today().split("-").map(Number);
+  return Array.from({ length: n }, (_, k) => {
+    const d = new Date(Date.UTC(y, m - 1 - (n - 1 - k), 1));
+    return d.toISOString().slice(0, 7);
+  });
+}
+
+/** Store color: a validated CSS token by slug, with the database value as a fallback. */
+export function storeAccent(store: { slug: string; accent: string } | null | undefined): string {
+  if (!store) return "var(--brand)";
+  return `var(--store-${store.slug}, ${store.accent})`;
+}
+
+/** Top-nav order: each shared BDC sits right after the last store it serves. */
+export function navOrder<T extends { slug: string; is_bdc: boolean; shows_under: string[]; sort_order: number }>(stores: T[]): T[] {
+  const primary = stores.filter((s) => !s.is_bdc).sort((a, b) => a.sort_order - b.sort_order);
+  const bdcs = stores.filter((s) => s.is_bdc);
+  const out: T[] = [];
+  for (const s of primary) {
+    out.push(s);
+    for (const b of bdcs) {
+      const last = b.shows_under[b.shows_under.length - 1];
+      if (last === s.slug && !out.includes(b)) out.push(b);
+    }
+  }
+  for (const b of bdcs) if (!out.includes(b)) out.push(b);
+  return out;
+}

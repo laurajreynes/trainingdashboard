@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
+import { HBars, Columns, Ring, Stacked } from "@/components/charts";
+import { addDays, monthName, monthsBack } from "@/lib/fmt";
+import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
 import {
   getStores, getStoreBySlug, storeFamily, getInitiatives, getAllRoster, getVisits, getTodos,
   getWins, getPeople, getBookmarks, getCommitments, getGoals, getGoalEntries,
 } from "@/lib/data";
-import { fmtDate, relDay, today } from "@/lib/fmt";
+import { fmtDate, relDay, today, storeAccent } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
@@ -24,7 +27,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const ids = family.map((s) => s.id);
 
   const [initiatives, roster, visits, todos, wins, people, bookmarksAll, commitments, goals] = await Promise.all([
-    getInitiatives(), getAllRoster(), getVisits({ storeIds: ids, limit: 6 }), getTodos({ storeIds: ids }),
+    getInitiatives(), getAllRoster(), getVisits({ storeIds: ids, limit: 200 }), getTodos({ storeIds: ids }),
     getWins({ storeIds: ids, limit: 6 }), getPeople(ids), getBookmarks(ids), getCommitments(ids), getGoals({ storeIds: ids }),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
@@ -44,15 +47,46 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   const roleCounts = peopleHere.reduce<Record<string, number>>((m, p) => { m[p.role] = (m[p.role] || 0) + 1; return m; }, {});
 
+  // ---- charts ----
+  const activeInits = storeInits.filter((i) => i.status === "active" || i.status === "sustaining");
+  const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
+  const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
+  const since30 = addDays(today(), -29);
+  const visits30 = visits.filter((v) => v.date >= since30).length;
+  const months = monthsBack(6);
+  const visitsByMonth = months.map((m) => ({ label: monthName(m).slice(0, 3), value: visits.filter((v) => v.date.startsWith(m)).length, hint: monthName(m) }));
+  const initBars = activeInits.map((i) => {
+    const ros = roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id));
+    const done = ros.filter((r) => r.status === "trained" || r.status === "solid").length;
+    return { label: i.name, value: ros.length ? Math.round((done / ros.length) * 100) : 0, sub: ros.length ? `${done}/${ros.length}` : "no roster", href: `/i/${i.id}?store=${store.slug}`, max: 100 };
+  });
+  const rosterParts = [
+    { label: "Solid", value: rosterHere.filter((r) => r.status === "solid").length, color: "var(--good)" },
+    { label: "Trained", value: rosterHere.filter((r) => r.status === "trained").length, color: "var(--brand)" },
+    { label: "Follow up", value: rosterHere.filter((r) => r.status === "needs_followup").length, color: "var(--warn)" },
+    { label: "Not yet", value: rosterHere.filter((r) => r.status === "not_started").length, color: "var(--line-strong)" },
+  ];
+  // Shared BDC card for the stores it serves
+  const sharedBdcs = family.filter((s) => s.id !== store.id && s.is_bdc);
+  const bdcCards = sharedBdcs.map((b) => {
+    const folks = people.filter((p) => p.active && p.store_id === b.id);
+    const fids = new Set(folks.map((p) => p.id));
+    const ros = roster.filter((r) => fids.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
+    const lastVisit = visits.find((v) => v.store_id === b.id);
+    return { b, folks, ros, lastVisit };
+  });
+  const servesStores = store.is_bdc ? stores.filter((s) => store.shows_under.includes(s.slug)) : [];
+
   return (
-    <div style={{ ["--accent" as string]: store.accent }}>
+    <div style={{ ["--accent" as string]: storeAccent(store) }}>
       <div className="pagehead">
         <div>
           <div className="accentbar" />
           <h1>{store.name}</h1>
           <div className="sub small">
             {store.locations.length > 0 && <span>Includes {store.locations.join(" and ")} · </span>}
-            {family.filter((s) => s.id !== store.id).map((s) => <span key={s.id}>Shares {s.name} · </span>)}
+            {servesStores.length > 0 && <span>Serves {servesStores.map((x, i) => <span key={x.id}>{i ? " and " : ""}<Link href={`/s/${x.slug}`}>{x.short_name}</Link></span>)} · </span>}
+            {sharedBdcs.map((b) => <span key={b.id}>Shares the <Link href={`/s/${b.slug}`}>{b.short_name}</Link> · </span>)}
             {peopleHere.length} people
             {Object.entries(roleCounts).map(([r, n]) => ` · ${n} ${n === 1 ? r : r === "Salesperson" ? "Salespeople" : r + "s"}`).join("")}
             {" · "}<Link href={`/people?store=${store.slug}`}>roster</Link>
@@ -62,6 +96,30 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
+
+      <div className="kpis">
+        <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>
+        <div className="kpi"><div><div className="v">{peopleHere.length}</div><div className="l">active people</div></div></div>
+        <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits, last 30 days</div></div></div>
+        <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>
+        <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
+      </div>
+
+      <div className="grid cols-3" style={{ marginBottom: 20 }}>
+        <section className="card">
+          <div className="cardhead"><h2>Coverage by initiative</h2></div>
+          <HBars rows={initBars} unit="%" max={100} />
+        </section>
+        <section className="card">
+          <div className="cardhead"><h2>Roster status</h2></div>
+          <Stacked parts={rosterParts} />
+          <p className="faint small" style={{ marginTop: 10 }}>Across {peopleHere.length} people and {activeInits.length} active initiative{activeInits.length === 1 ? "" : "s"}</p>
+        </section>
+        <section className="card">
+          <div className="cardhead"><h2>Visits by month</h2></div>
+          <Columns points={visitsByMonth} color={storeAccent(store)} />
+        </section>
+      </div>
 
       <section style={{ marginBottom: 20 }}>
         <div className="bookmarks">
@@ -115,7 +173,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
           <section className="card">
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
-            <VisitList visits={visits} stores={stores} showStore={family.length > 1} />
+            <VisitList visits={visits.slice(0, 6)} stores={stores} showStore={family.length > 1} />
           </section>
 
           {(goals.length > 0 || editor) && (
@@ -181,6 +239,15 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="stack">
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
+          {bdcCards.map(({ b, folks, ros, lastVisit }) => (
+            <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
+              <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>
+              <p className="small muted">Shared with {b.shows_under.filter((x) => x !== store.slug).map((x) => stores.find((y) => y.slug === x)?.short_name).join(", ")} · {folks.length} agent{folks.length === 1 ? "" : "s"}</p>
+              <RosterBar roster={ros} />
+              {lastVisit && <p className="faint small" style={{ marginTop: 8 }}>Last BDC visit <Link href={`/v/${lastVisit.id}`}>{fmtDate(lastVisit.date)}</Link></p>}
+            </section>
+          ))}
+
           <section className="card">
             <div className="cardhead"><h2>Next visit</h2></div>
             {next ? (

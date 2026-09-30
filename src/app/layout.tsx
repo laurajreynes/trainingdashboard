@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 
-const body = Barlow({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-body" });
-const display = Barlow_Condensed({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-display" });
+const body = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
 
 export const metadata: Metadata = {
   title: "Ressler Training Hub",
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${body.variable} ${display.variable}`}>
+    <html lang="en" className={body.variable} style={{ ["--font-display" as string]: "var(--font-body)" }}>
       <body>
         <Shell>{children}</Shell>
       </body>

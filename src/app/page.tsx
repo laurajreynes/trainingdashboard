@@ -7,6 +7,8 @@ import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
+import { HBars, Columns, Stacked } from "@/components/charts";
+import { storeAccent, addDays, navOrder, monthsBack } from "@/lib/fmt";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,31 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const open = todos.filter((t) => !t.done);
 
   const phase = monthPhase(sp.phase);
+
+  // ---- chart data ----
+  const navStores = navOrder(stores);
+  const activeIds = new Set(initiatives.filter((i) => i.status === "active" || i.status === "sustaining").map((i) => i.id));
+  const activePeople = people.filter((p) => p.active);
+  const coverage = navStores.map((s) => {
+    const folks = activePeople.filter((p) => p.store_id === s.id);
+    const inits = initiatives.filter((i) => activeIds.has(i.id) && i.store_ids.includes(s.id));
+    const slots = folks.length * inits.length;
+    const done = roster.filter((r) => activeIds.has(r.initiative_id) && (r.status === "trained" || r.status === "solid") && folks.some((p) => p.id === r.person_id) && inits.some((i) => i.id === r.initiative_id)).length;
+    return { label: s.short_name, value: slots ? Math.round((done / slots) * 100) : 0, color: storeAccent(s), sub: slots ? `${done}/${slots}` : "no roster", href: `/s/${s.slug}`, max: 100 };
+  });
+  const since30 = addDays(today(), -29);
+  const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= since30).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
+  const months = monthsBack(6);
+  const visitsByMonth = months.map((m) => ({ label: monthName(m).slice(0, 3), value: visits.filter((v) => v.date.startsWith(m)).length, hint: monthName(m) }));
+  const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
+  const rosterParts = [
+    { label: "Solid", value: rosterActive.filter((r) => r.status === "solid").length, color: "var(--good)" },
+    { label: "Trained", value: rosterActive.filter((r) => r.status === "trained").length, color: "var(--brand)" },
+    { label: "Follow up", value: rosterActive.filter((r) => r.status === "needs_followup").length, color: "var(--warn)" },
+    { label: "Not yet", value: rosterActive.filter((r) => r.status === "not_started").length, color: "var(--line-strong)" },
+  ];
+  const kpiTrained = rosterActive.length ? Math.round((rosterActive.filter((r) => r.status === "trained" || r.status === "solid").length / rosterActive.length) * 100) : 0;
+  const openPosts = posts.filter((p) => p.status === "open").length;
 
   const upcoming = primary.map((s) => {
     const next = visits.filter((x) => x.store_id === s.id && x.next_visit_date && x.next_visit_date >= today())
@@ -37,8 +64,34 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
+      <div className="kpis">
+        <div className="kpi"><div><div className="v">{activePeople.length}</div><div className="l">people on rosters</div></div></div>
+        <div className="kpi"><div><div className="v">{kpiTrained}%</div><div className="l">trained on active initiatives</div></div></div>
+        <div className="kpi"><div><div className="v">{visits.filter((v) => v.date >= since30).length}</div><div className="l">visits, last 30 days</div></div></div>
+        <div className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></div>
+        <div className="kpi"><div><div className="v">{openPosts}</div><div className="l">store notes waiting</div></div></div>
+      </div>
+
       <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
 
+      <div className="grid cols-3" style={{ marginTop: 18 }}>
+        <section className="card">
+          <div className="cardhead"><h2>Training coverage</h2><span className="faint small">% trained, active initiatives</span></div>
+          <HBars rows={coverage} unit="%" max={100} />
+        </section>
+        <section className="card">
+          <div className="cardhead"><h2>Visits, last 30 days</h2></div>
+          <HBars rows={visits30} />
+        </section>
+        <section className="card">
+          <div className="cardhead"><h2>Visits by month</h2></div>
+          <Columns points={visitsByMonth} />
+          <div style={{ marginTop: 14 }}>
+            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Roster status</h2></div>
+            <Stacked parts={rosterParts} />
+          </div>
+        </section>
+      </div>
 
       <div className="grid main-side" style={{ marginTop: 18 }}>
         <div className="stack">

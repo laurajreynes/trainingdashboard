@@ -2,6 +2,7 @@ import { isEditor } from "@/lib/auth";
 import { getStores, getTodos, getPeople, getInitiatives } from "@/lib/data";
 import { TodoList } from "@/components/ui";
 import { addTodo } from "@/app/actions";
+import { storeAccent } from "@/lib/fmt";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,8 @@ export default async function Todos({ searchParams }: { searchParams: Promise<{ 
             const rows = open.filter((t) => t.store_id === s.id);
             if (!rows.length) return null;
             return (
-              <section key={s.id} className="card" style={{ ["--accent" as string]: s.accent }}>
-                <div className="cardhead"><h2 style={{ color: s.accent }}>{s.short_name}</h2><span className="faint small">{rows.length}</span></div>
+              <section key={s.id} className="card" style={{ ["--accent" as string]: storeAccent(s) }}>
+                <div className="cardhead"><h2 style={{ color: storeAccent(s) }}>{s.short_name}</h2><span className="faint small">{rows.length}</span></div>
                 <TodoList todos={rows} editor={editor} people={people} />
               </section>
             );

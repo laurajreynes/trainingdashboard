@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Initiative, InitiativePerson, Person, Store, Todo, Visit, Win, Commitment, GoalEntry, Goal } from "@/lib/types";
 import { INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "@/lib/types";
-import { fmtDate, relDay, pct } from "@/lib/fmt";
+import { fmtDate, relDay, pct, storeAccent } from "@/lib/fmt";
 import { toggleTodo, deleteTodo, deleteWin, setCommitmentStatus, deleteCommitment } from "@/app/actions";
 
 export function StatusTag({ status }: { status: Initiative["status"] }) {
@@ -110,7 +110,7 @@ export function VisitList({ visits, stores, showStore = false }: { visits: Visit
         const st = stores?.find((s) => s.id === v.store_id);
         return (
           <li key={v.id}>
-            <span className="dot" style={{ ["--accent" as string]: st?.accent }} />
+            <span className="dot" style={{ ["--accent" as string]: storeAccent(st) }} />
             <div className="grow">
               <Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong>{showStore && st ? ` · ${st.short_name}` : ""}{v.focus ? ` · ${v.focus}` : ""}</Link>
               {v.summary && <div className="muted small" style={{ marginTop: 2 }}>{v.summary.length > 180 ? v.summary.slice(0, 180) + "…" : v.summary}</div>}

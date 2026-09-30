@@ -5,7 +5,7 @@ import {
   getMonthPlans, getPlaybook, getPlaybookChecks, getInitiatives, getTodos, getBookmarks,
 } from "@/lib/data";
 import { monthPhase, paceGoal, PHASE_LABEL, PHASE_BLURB, type Phase, type GoalPace } from "@/lib/month";
-import { fmtDate, monthName, daysFromToday } from "@/lib/fmt";
+import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
 
 type Props = {
@@ -296,7 +296,7 @@ function StoreFocusList({ rows }: { rows: { s: Store; p?: { focus: string | null
   if (!set.length) return null;
   return (
     <ul className="list" style={{ marginTop: 10 }}>
-      {set.map(({ s, p }) => <li key={s.id} className="small"><strong style={{ color: s.accent, minWidth: 74 }}>{s.short_name}</strong><div className="grow muted">{p!.focus}</div></li>)}
+      {set.map(({ s, p }) => <li key={s.id} className="small"><strong style={{ color: storeAccent(s), minWidth: 74 }}>{s.short_name}</strong><div className="grow muted">{p!.focus}</div></li>)}
     </ul>
   );
 }
@@ -308,7 +308,7 @@ function InitFocus({ rows, showStore }: { rows: { s: Store; inits: { i: { id: st
       <div className="eyebrow" style={{ marginBottom: 4 }}>Active initiatives</div>
       {rows.map(({ s, inits }) => (
         <div key={s.id} style={{ marginBottom: 6 }} className="small">
-          {showStore && <strong style={{ color: s.accent }}>{s.short_name} </strong>}
+          {showStore && <strong style={{ color: storeAccent(s) }}>{s.short_name} </strong>}
           {inits.map(({ i, total, untrained }, n) => (
             <span key={i.id}>{n ? " · " : ""}<Link href={`/i/${i.id}?store=${s.slug}`}>{i.name}</Link><span className="faint">{untrained ? ` (${untrained} to train)` : total ? " (all trained)" : " (no roster)"}</span></span>
           ))}

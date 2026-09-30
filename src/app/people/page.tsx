@@ -3,6 +3,7 @@ import { isEditor } from "@/lib/auth";
 import { getStores, getPeople, getAllRoster, getInitiatives } from "@/lib/data";
 import { ROLES } from "@/lib/types";
 import { addPerson, importPeople } from "@/app/actions";
+import { storeAccent } from "@/lib/fmt";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +33,8 @@ export default async function People({ searchParams }: { searchParams: Promise<{
           const rows = people.filter((p) => p.store_id === s.id && (sp.all || p.active));
           if (!rows.length && !editor) return null;
           return (
-            <section key={s.id} className="card" style={{ ["--accent" as string]: s.accent }}>
-              <div className="cardhead"><h2 style={{ color: s.accent }}>{s.name}</h2><span className="faint small">{rows.length}</span></div>
+            <section key={s.id} className="card" style={{ ["--accent" as string]: storeAccent(s) }}>
+              <div className="cardhead"><h2 style={{ color: storeAccent(s) }}>{s.name}</h2><span className="faint small">{rows.length}</span></div>
               {rows.length ? (
                 <table className="tbl">
                   <thead><tr><th>Name</th><th>Role</th>{s.locations.length > 0 && <th>Location</th>}{liveInits.map((i) => <th key={i.id} title={i.name}>{i.name.length > 22 ? i.name.slice(0, 22) + "…" : i.name}</th>)}</tr></thead>

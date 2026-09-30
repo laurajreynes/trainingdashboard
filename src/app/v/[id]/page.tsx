@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import { getVisit, getStores, getInitiatives, getPeople, getTodos } from "@/lib/data";
-import { fmtDate, relDay } from "@/lib/fmt";
+import { fmtDate, relDay, storeAccent } from "@/lib/fmt";
 import { updateVisit, deleteVisit, addTodo } from "@/app/actions";
 import { VisitFields } from "@/components/VisitForm";
 import { TodoList } from "@/components/ui";
@@ -19,7 +19,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
   const todos = await getTodos({ visitId: id, includeDone: true });
 
   return (
-    <div style={{ ["--accent" as string]: store.accent }}>
+    <div style={{ ["--accent" as string]: storeAccent(store) }}>
       <div className="pagehead">
         <div>
           <div className="eyebrow"><Link href={`/s/${store.slug}`}>{store.name}</Link> · <Link href={`/s/${store.slug}/visits`}>visits</Link></div>

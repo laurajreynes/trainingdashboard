@@ -3,7 +3,9 @@ import { configured } from "@/lib/supabase";
 import { isEditor } from "@/lib/auth";
 import { getStores } from "@/lib/data";
 import { logout } from "@/app/actions";
+import { navOrder } from "@/lib/fmt";
 import { StoreNav } from "./StoreNav";
+import { MobileNav } from "./MobileNav";
 
 export async function Shell({ children }: { children: React.ReactNode }) {
   const ready = configured();
@@ -12,12 +14,12 @@ export async function Shell({ children }: { children: React.ReactNode }) {
   if (ready) {
     try { stores = await getStores(); } catch { stores = []; }
   }
-  const primary = stores.filter((s) => !s.is_bdc);
+  const primary = navOrder(stores);
 
   return (
     <>
       <header className="topbar">
-        <Link href="/" className="brand">Ressler <span>Training</span></Link>
+        <Link href="/" className="brand"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16" /><path d="M7 15V9" /><path d="M12 15V5" /><path d="M17 15v-4" /></svg></i>Ressler <span>Training</span></Link>
         <StoreNav stores={primary} />
         <nav className="utilnav">
           <Link href="/initiatives">Initiatives</Link>
@@ -40,6 +42,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           </div>
         ) : children}
       </main>
+      {ready && <MobileNav />}
     </>
   );
 }

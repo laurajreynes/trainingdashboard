@@ -5,7 +5,7 @@ import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, g
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROLES, ROSTER_LABEL, type RosterStatus } from "@/lib/types";
-import { fmtDate } from "@/lib/fmt";
+import { fmtDate, storeAccent } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
 import { updatePerson, deletePerson, setRosterStatus, addTodo, addWin } from "@/app/actions";
 
@@ -28,7 +28,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const rosterRows = initiatives.filter((i) => roster.some((r) => r.initiative_id === i.id));
 
   return (
-    <div style={{ ["--accent" as string]: store.accent }}>
+    <div style={{ ["--accent" as string]: storeAccent(store) }}>
       <div className="pagehead">
         <div>
           <div className="eyebrow"><Link href={`/s/${store.slug}`}>{store.name}</Link>{person.location ? ` · ${person.location}` : ""}</div>

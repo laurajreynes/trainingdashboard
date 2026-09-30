@@ -6,9 +6,10 @@ import {
   getExamples, getExampleThemes, signExamples,
 } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
+import { HBars } from "@/components/charts";
 import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROSTER_LABEL, type RosterStatus } from "@/lib/types";
-import { fmtDate, today } from "@/lib/fmt";
+import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
@@ -43,6 +44,11 @@ export default async function InitiativePage({ params, searchParams }: { params:
   const onRoster = people.filter((p) => rosterByPerson.has(p.id));
   const candidates = people.filter((p) => p.active && !rosterByPerson.has(p.id) && (init.store_ids.length === 0 || init.store_ids.includes(p.store_id)));
 
+  const storeBars = stores.filter((s) => init.store_ids.includes(s.id)).map((s) => {
+    const ros = roster.filter((r) => people.find((p) => p.id === r.person_id)?.store_id === s.id);
+    const done = ros.filter((r) => r.status === "trained" || r.status === "solid").length;
+    return { label: s.short_name, value: ros.length ? Math.round((done / ros.length) * 100) : 0, color: storeAccent(s), sub: ros.length ? `${done}/${ros.length}` : "no roster", href: `/i/${id}?store=${s.slug}`, max: 100 };
+  });
   const groups = (filterStore ? [filterStore] : stores).map((s) => ({
     store: s,
     rows: onRoster.filter((p) => p.store_id === s.id).sort((a, b) => a.name.localeCompare(b.name)),
@@ -62,6 +68,13 @@ export default async function InitiativePage({ params, searchParams }: { params:
         <div className="stack">
           {init.description && <section className="card"><p className="pre">{init.description}</p></section>}
 
+          {storeBars.length > 1 && (
+            <section className="card">
+              <div className="cardhead"><h2>Trained by store</h2><span className="faint small">% of roster</span></div>
+              <HBars rows={storeBars} unit="%" max={100} />
+            </section>
+          )}
+
           <section className="card">
             <div className="cardhead">
               <h2>Who&apos;s been trained</h2>
@@ -73,7 +86,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
             <RosterBar roster={filterStore ? roster.filter((r) => onRoster.find((p) => p.id === r.person_id)?.store_id === filterStore.id) : roster} showLegend />
             {groups.map(({ store, rows }) => (
               <div key={store.id} style={{ marginTop: 16 }}>
-                <div className="eyebrow" style={{ color: store.accent, marginBottom: 4 }}>{store.name}</div>
+                <div className="eyebrow" style={{ color: storeAccent(store), marginBottom: 4 }}>{store.name}</div>
                 <table className="tbl">
                   <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Trained</th><th>Note</th>{editor && <th />}</tr></thead>
                   <tbody>

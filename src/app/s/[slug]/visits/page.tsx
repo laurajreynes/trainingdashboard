@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { storeAccent } from "@/lib/fmt";
 import { isEditor } from "@/lib/auth";
 import { getStores, getStoreBySlug, storeFamily, getVisits } from "@/lib/data";
 import { VisitList } from "@/components/ui";
@@ -13,7 +14,7 @@ export default async function StoreVisits({ params }: { params: Promise<{ slug: 
   const family = storeFamily(store, stores);
   const visits = await getVisits({ storeIds: family.map((s) => s.id) });
   return (
-    <div style={{ ["--accent" as string]: store.accent }}>
+    <div style={{ ["--accent" as string]: storeAccent(store) }}>
       <div className="pagehead">
         <div>
           <div className="eyebrow"><Link href={`/s/${store.slug}`}>{store.name}</Link></div>
