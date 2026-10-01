@@ -29,7 +29,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
     getWins(scoped ? { storeIds: ids, limit: 300 } : { limit: 300 }),
     getCommitments(scoped ? ids : undefined),
     getPeople(scoped ? ids : undefined),
-    getMonthPlans([mi.month, mi.prevMonth]),
+    getMonthPlans([mi.month, mi.prevMonth, mi.nextMonth]),
     getPlaybook(),
     getPlaybookChecks(mi.month),
     getInitiatives(),
@@ -56,6 +56,8 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
 
   const planFor = (month: string) => plans.find((p) => p.month === month && (scoped ? p.store_id === store!.id : p.store_id === null));
   const plan = planFor(mi.month);
+  const nextPlan = planFor(mi.nextMonth);
+  const nextName = monthName(mi.nextMonth);
   const groupPlan = plans.find((p) => p.month === mi.month && p.store_id === null);
   const storeFocuses = !scoped ? allStores.filter((s) => !s.is_bdc).map((s) => ({ s, p: plans.find((p) => p.month === mi.month && p.store_id === s.id) })) : [];
 
@@ -203,6 +205,24 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
             {slipping.length > 0 && <p className="small" style={{ marginTop: 10 }}><span className="tag warn">{slipping.length}</span> manager commitment{slipping.length === 1 ? "" : "s"} slipping</p>}
           </div>
         </div>
+      )}
+
+      {mi.phase === "close" && (editor || nextPlan?.focus || nextPlan?.lessons) && (
+        <details className="quiet" open={Boolean(nextPlan?.focus || nextPlan?.lessons)} style={{ marginTop: 14 }}>
+          <summary>Set up {nextName}{nextPlan?.focus ? " · focus written" : ""}</summary>
+          <div className="grid cols-2" style={{ marginTop: 10 }}>
+            <PlanBox
+              title={`What ${mName} taught us`} field="lessons" value={nextPlan?.lessons || null}
+              month={mi.nextMonth} storeId={store?.id || null} editor={editor}
+              placeholder={"What worked, what didn't, what surprised us"}
+            />
+            <PlanBox
+              title={`${nextName} focus`} field="focus" value={nextPlan?.focus || null}
+              month={mi.nextMonth} storeId={store?.id || null} editor={editor}
+              placeholder={"One or two behaviors we're driving next month"}
+            />
+          </div>
+        </details>
       )}
 
       <Playbook

@@ -13,11 +13,11 @@ export async function buildHubContext(): Promise<string> {
   const out: string[] = [];
 
   const mi = monthPhase();
-  const plans = await getMonthPlans([mi.month, mi.prevMonth]);
+  const plans = await getMonthPlans([mi.month, mi.prevMonth, mi.nextMonth]);
   out.push("# WHERE WE ARE IN THE MONTH");
   out.push(`Today ${mi.today}, day ${mi.day} of ${mi.daysInMonth}, ${mi.daysLeft} days left including today. Phase: ${mi.phase} (reflect = days 1-3, looking back and setting focus; track = days 4-20, pacing against goals; close = day 21 to month end, pushing to finish).`);
   for (const p of plans) {
-    out.push(`- ${p.month} ${p.store_id ? storeName(p.store_id) : "Group-wide"}${p.lessons ? ` | lessons from prior month: ${p.lessons}` : ""}${p.focus ? ` | focus: ${p.focus}` : ""}`);
+    out.push(`- ${p.month}${p.month === mi.nextMonth ? " (next month, being set up)" : ""} ${p.store_id ? storeName(p.store_id) : "Group-wide"}${p.lessons ? ` | lessons from prior month: ${p.lessons}` : ""}${p.focus ? ` | focus: ${p.focus}` : ""}`);
   }
   const paces = snap.goals.map((g) => paceGoal(g, snap.entries, mi)).filter((p) => p.current !== null);
   if (paces.length) {

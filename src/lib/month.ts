@@ -22,7 +22,8 @@ export const PHASE_BLURB: Record<Phase, string> = {
 export type MonthInfo = {
   today: string;
   month: string;        // YYYY-MM
-  prevMonth: string;    // YYYY-MM
+  prevMonth: string;
+  nextMonth: string;     // YYYY-MM    // YYYY-MM
   day: number;          // day of month
   daysInMonth: number;
   daysLeft: number;     // including today
@@ -42,9 +43,10 @@ export function monthPhase(override?: string | null, date = today()): MonthInfo 
   const prevEnd = addDays(monthStart, -1);
   const prevMonth = prevEnd.slice(0, 7);
   const prevStart = `${prevMonth}-01`;
+  const nextMonth = addDays(monthEnd, 1).slice(0, 7);
   let phase: Phase = d < TRACK_STARTS ? "reflect" : d < CLOSE_STARTS ? "track" : "close";
   if (override === "reflect" || override === "track" || override === "close") phase = override;
-  return { today: date, month, prevMonth, day: d, daysInMonth, daysLeft: daysInMonth - d + 1, phase, monthStart, monthEnd, prevStart, prevEnd };
+  return { today: date, month, prevMonth, nextMonth, day: d, daysInMonth, daysLeft: daysInMonth - d + 1, phase, monthStart, monthEnd, prevStart, prevEnd };
 }
 
 export type GoalPace = {
