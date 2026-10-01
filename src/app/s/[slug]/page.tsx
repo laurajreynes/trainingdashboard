@@ -55,7 +55,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
-  const visits30 = loggedHere.filter((v) => v.date >= since30).length;
+  const visits30 = loggedHere.filter((v) => v.date >= weeksBack(1)[0]).length;
   const weeks = weeksBack(8);
   const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: loggedHere.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const initBars = activeInits.map((i) => {
@@ -113,7 +113,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       <div className="kpis">
         {!(reflecting && trainedPct === 0) && <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>}
         <div className="kpi"><div><div className="v">{peopleHere.length}</div><div className="l">active people</div></div></div>
-        <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits, last 30 days</div></div></div>
+        <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits this week</div></div></div>
         <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
         {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}

@@ -45,7 +45,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     return { label: s.short_name, value: slots ? Math.round((done / slots) * 100) : 0, color: storeAccent(s), sub: slots ? `${done}/${slots}` : "no roster", href: `/s/${s.slug}`, max: 100 };
   });
   const since30 = addDays(today(), -29);
-  const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= since30).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
+  const weekStart = weeksBack(1)[0];
+  const visitsWeek = visits.filter((v) => v.date >= weekStart).length;
+  const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= weekStart).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
   const weeks = weeksBack(8);
   const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
@@ -102,7 +104,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       <div className="kpis">
         <div className="kpi"><div><div className="v">{activePeople.length}</div><div className="l">people on rosters</div></div></div>
         {!(reflecting && kpiTrained === 0) && <div className="kpi"><div><div className="v">{kpiTrained}%</div><div className="l">trained on active initiatives</div></div></div>}
-        <div className="kpi"><div><div className="v">{visits.filter((v) => v.date >= since30).length}</div><div className="l">visits, last 30 days</div></div></div>
+        <div className="kpi"><div><div className="v">{visitsWeek}</div><div className="l">visits this week</div></div></div>
         <div className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{openPosts}</div><div className="l">store notes waiting</div></div></div>
         {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
@@ -145,7 +147,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             ? <HBars rows={soldRows} />
             : <p className="empty">No results loaded for this month yet.{editor ? " Paste the PR Inputs tab on the import page." : ""}</p>}
           <div style={{ marginTop: 14 }}>
-            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Visits, last 30 days</h2></div>
+            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Visits this week</h2></div>
             <HBars rows={visits30} />
           </div>
         </section>

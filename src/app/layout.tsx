@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Nunito, Fraunces } from "next/font/google";
+import { Nunito, Outfit } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 
 const body = Nunito({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
-const display = Fraunces({ subsets: ["latin"], weight: "variable", variable: "--font-display", axes: ["SOFT", "WONK", "opsz"] });
+const display = Outfit({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: "Ressler Training Hub",
