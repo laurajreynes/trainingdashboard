@@ -14,8 +14,7 @@ import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
-  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, addTodo, addBookmark, deleteBookmark,
-} from "@/app/actions";
+  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, addTodo, addBookmark, deleteBookmark,, deleteGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -268,6 +267,16 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   {editor && <form action={deleteGoal}><input type="hidden" name="id" value={g.id} /><button className="iconbtn">×</button></form>}
                 </div>
                 <Sparkline goal={g} entries={entries} />
+                {editor && entries.some((e) => e.goal_id === g.id) && (
+                  <details className="quiet" style={{ borderTop: 0, marginTop: 4, paddingTop: 0 }}>
+                    <summary>Entries</summary>
+                    <ul className="list small" style={{ marginTop: 4 }}>
+                      {entries.filter((e) => e.goal_id === g.id).map((e) => (
+                        <li key={e.id} style={{ padding: "4px 0" }}><div className="grow">{fmtDate(e.date)} · {e.value}{g.unit}{e.note ? <span className="faint"> · {e.note}</span> : null}</div><form action={deleteGoalEntry}><input type="hidden" name="id" value={e.id} /><button className="iconbtn" title="Remove">×</button></form></li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
                 {editor && (
                   <form action={addGoalEntry} className="inline" style={{ marginTop: 6 }}>
                     <input type="hidden" name="goal_id" value={g.id} />
