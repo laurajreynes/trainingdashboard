@@ -97,7 +97,7 @@ p:last-child { margin-bottom: 0; }
 .brand { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "WONK" 1; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; }
 .brand span { color: var(--forest); font-weight: 600; }
 .brand i { width: 26px; height: 26px; border-radius: 7px; background: var(--forest); display: inline-flex; align-items: center; justify-content: center; }
-.brand i svg { width: 16px; height: 16px; }
+.brand i svg { width: 22px; height: 22px; }
 .storenav { display: flex; gap: 2px; overflow-x: auto; flex: 1; scrollbar-width: none; }
 .storenav a {
   padding: 8px 12px; border-radius: 8px; white-space: nowrap;
