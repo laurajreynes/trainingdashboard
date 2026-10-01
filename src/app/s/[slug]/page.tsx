@@ -56,7 +56,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
   const visits30 = loggedHere.filter((v) => v.date >= weeksBack(1)[0]).length;
-  const weeks = weeksBack(8);
+  const firstVisit = loggedHere.length ? loggedHere.map((v) => v.date).sort()[0] : today();
+  const weeks = weeksBack(8).filter((w, i, all) => i >= all.length - 4 || all[i + 1] === undefined || all[i + 1] > firstVisit);
   const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: loggedHere.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const initBars = activeInits.map((i) => {
     const ros = roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id));

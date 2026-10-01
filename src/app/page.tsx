@@ -48,7 +48,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const weekStart = weeksBack(1)[0];
   const visitsWeek = visits.filter((v) => v.date >= weekStart).length;
   const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= weekStart).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
-  const weeks = weeksBack(8);
+  const firstVisit = visits.length ? visits.map((v) => v.date).sort()[0] : today();
+  const weeks = weeksBack(8).filter((w, i, all) => i >= all.length - 4 || all[i + 1] === undefined || all[i + 1] > firstVisit);
   const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
   const rosterParts = [
