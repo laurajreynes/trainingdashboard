@@ -21,7 +21,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
         <div>
           <div className="eyebrow">Store results</div>
           <h1>Import from the Performance Report</h1>
-          <div className="sub small">Paste the Inputs tab from the Bozeman PR spreadsheet. Sold, appointments, phone ups, and web ups land on every dashboard.</div>
+          <div className="sub small">Paste the Inputs tab from the PR spreadsheet.</div>
         </div>
       </div>
 

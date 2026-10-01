@@ -4,7 +4,7 @@ import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Columns, Ring, Stacked } from "@/components/charts";
-import { addDays, monthName, monthsBack, projectToMonthEnd } from "@/lib/fmt";
+import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
 import {
@@ -46,7 +46,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
     .sort((a, b) => a.next_visit_date!.localeCompare(b.next_visit_date!))[0];
   const last = visits[0];
 
-  const roleCounts = peopleHere.reduce<Record<string, number>>((m, p) => { m[p.role] = (m[p.role] || 0) + 1; return m; }, {});
 
   // ---- charts ----
   const activeInits = storeInits.filter((i) => i.status === "active" || i.status === "sustaining");
@@ -54,8 +53,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
   const visits30 = visits.filter((v) => v.date >= since30).length;
-  const months = monthsBack(6);
-  const visitsByMonth = months.map((m) => ({ label: monthName(m).slice(0, 3), value: visits.filter((v) => v.date.startsWith(m)).length, hint: monthName(m) }));
+  const weeks = weeksBack(8);
+  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const initBars = activeInits.map((i) => {
     const ros = roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id));
     const done = ros.filter((r) => r.status === "trained" || r.status === "solid").length;
@@ -96,12 +95,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <div className="accentbar" />
           <h1>{store.name}</h1>
           <div className="sub small">
-            {store.locations.length > 0 && <span>Includes {store.locations.join(" and ")} · </span>}
-            {servesStores.length > 0 && <span>Serves {servesStores.map((x, i) => <span key={x.id}>{i ? " and " : ""}<Link href={`/s/${x.slug}`}>{x.short_name}</Link></span>)} · </span>}
-            {sharedBdcs.map((b) => <span key={b.id}>Shares the <Link href={`/s/${b.slug}`}>{b.short_name}</Link> · </span>)}
-            {peopleHere.length} people
-            {Object.entries(roleCounts).map(([r, n]) => ` · ${n} ${n === 1 ? r : r === "Salesperson" ? "Salespeople" : r + "s"}`).join("")}
-            {" · "}<Link href={`/people?store=${store.slug}`}>roster</Link>
+            {store.locations.length > 0 && <span>{store.locations.join(" and ")} · </span>}
+            {servesStores.length > 0 && <span>{servesStores.map((x, i) => <span key={x.id}>{i ? " and " : ""}<Link href={`/s/${x.slug}`}>{x.short_name}</Link></span>)} · </span>}
+            <Link href={`/people?store=${store.slug}`}>{peopleHere.length} people</Link>
           </div>
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
@@ -118,6 +114,36 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
 
+      <section style={{ marginBottom: 20 }}>
+        <div className="bookmarks">
+          {bookmarks.map((b) => (
+            <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
+              <a className="bookmark" href={b.url} target="_blank" rel="noreferrer">
+                <span className="k">{b.kind}</span>{b.title}{b.store_id === null && <span className="faint small">all</span>}
+              </a>
+              {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
+            </span>
+          ))}
+          {editor && (
+            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
+              <summary style={{ padding: "6px 0" }}>Add a report or link</summary>
+              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <div className="frow">
+                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
+                  <input type="url" name="url" placeholder="https://" required />
+                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
+                  <button className="btn sm">Add</button>
+                </div>
+              </form>
+              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
+              <FileUploader storeId={store.id} />
+            </details>
+          )}
+          
+        </div>
+      </section>
+
       <div className="grid cols-3" style={{ marginBottom: 20 }}>
         <section className="card">
           <div className="cardhead"><h2>Coverage by initiative</h2></div>
@@ -126,18 +152,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <section className="card">
           <div className="cardhead"><h2>Roster status</h2></div>
           <Stacked parts={rosterParts} />
-          <p className="faint small" style={{ marginTop: 10 }}>Across {peopleHere.length} people and {activeInits.length} active initiative{activeInits.length === 1 ? "" : "s"}</p>
         </section>
         <section className="card">
-          <div className="cardhead"><h2>Visits by month</h2></div>
-          <Columns points={visitsByMonth} color={storeAccent(store)} />
+          <div className="cardhead"><h2>Visits by week</h2></div>
+          <Columns points={visitsByWeek} color={storeAccent(store)} />
         </section>
       </div>
 
       {(soldMtd > 0 || soldByMonth.some((m) => m.value > 0)) && (
         <div className="grid cols-3" style={{ marginBottom: 20 }}>
           <section className="card">
-            <div className="cardhead"><h2>Sold by month</h2><span className="faint small">from the PR</span></div>
+            <div className="cardhead"><h2>Sold by month</h2></div>
             <Columns points={soldByMonth} color={storeAccent(store)} />
             {thisMonthRows.some((m) => m.location) && (
               <p className="faint small" style={{ marginTop: 8 }}>{monthName(curMonth)}: {thisMonthRows.map((m) => `${m.location || "Main"} ${m.sold}`).join(" · ")}</p>
@@ -165,36 +190,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </section>
         </div>
       )}
-
-      <section style={{ marginBottom: 20 }}>
-        <div className="bookmarks">
-          {bookmarks.map((b) => (
-            <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
-              <a className="bookmark" href={b.url} target="_blank" rel="noreferrer">
-                <span className="k">{b.kind}</span>{b.title}{b.store_id === null && <span className="faint small">all</span>}
-              </a>
-              {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
-            </span>
-          ))}
-          {editor && (
-            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
-              <summary style={{ padding: "6px 0" }}>Bookmark</summary>
-              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <div className="frow">
-                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
-                  <input type="url" name="url" placeholder="https://" required />
-                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
-                  <button className="btn sm">Add</button>
-                </div>
-              </form>
-              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
-              <FileUploader storeId={store.id} />
-            </details>
-          )}
-          {!bookmarks.length && !editor && <span className="faint small">No links yet</span>}
-        </div>
-      </section>
 
       <div className="grid main-side">
         <div className="stack">

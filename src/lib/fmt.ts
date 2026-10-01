@@ -57,6 +57,15 @@ export function monthName(ym: string): string {
 }
 
 /** The last n calendar months as YYYY-MM, oldest first, ending with the current month. */
+/** Start dates (Monday) of the last n weeks, oldest first, ending with the current week. */
+export function weeksBack(n: number): string[] {
+  const t = today();
+  const [y, m, d] = t.split("-").map(Number);
+  const dow = (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7; // Monday = 0
+  const monday = addDays(t, -dow);
+  return Array.from({ length: n }, (_, k) => addDays(monday, -7 * (n - 1 - k)));
+}
+
 export function monthsBack(n: number): string[] {
   const [y, m] = today().split("-").map(Number);
   return Array.from({ length: n }, (_, k) => {

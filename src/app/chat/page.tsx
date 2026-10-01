@@ -17,7 +17,6 @@ export default async function Chat() {
         <div>
           <div className="eyebrow">Ask the hub</div>
           <h1>Where has training been, and where should it go?</h1>
-          <div className="sub small">Answers come from the visits, rosters, goals, to-dos, and wins logged here. Thin data gets a thin answer.</div>
         </div>
         {editor && history.length > 0 && <form action={clearChat}><button className="btn ghost sm">Clear history</button></form>}
       </div>

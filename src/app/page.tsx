@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
-import { getHubSnapshot, getStorePosts, getMetrics, getGroupNotes, getMeetings } from "@/lib/data";
+import { getHubSnapshot, getStorePosts, getMetrics, getMeetings } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, relDay, today } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
@@ -8,15 +8,18 @@ import { monthName } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { HBars, Columns, Stacked } from "@/components/charts";
-import { storeAccent, addDays, navOrder, monthsBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
+import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
+import { getBookmarks } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ phase?: string }> }) {
   const sp = await searchParams;
-  const [editor, snap, posts, metricsAll, groupNotes, meetings] = await Promise.all([
-    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(2) }), getGroupNotes(), getMeetings(3),
+  const [editor, snap, posts, metricsAll, meetings] = await Promise.all([
+    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(2) }), getMeetings(3),
   ]);
+  const bookmarksAll = await getBookmarks();
+  const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits, todos, wins, people } = snap;
   const primary = stores.filter((s) => !s.is_bdc);
   const active = initiatives.filter((i) => i.status === "active" || i.status === "planning");
@@ -37,8 +40,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   });
   const since30 = addDays(today(), -29);
   const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= since30).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
-  const months = monthsBack(6);
-  const visitsByMonth = months.map((m) => ({ label: monthName(m).slice(0, 3), value: visits.filter((v) => v.date.startsWith(m)).length, hint: monthName(m) }));
+  const weeks = weeksBack(8);
+  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
   const rosterParts = [
     { label: "Solid", value: rosterActive.filter((r) => r.status === "solid").length, color: "var(--good)" },
@@ -65,7 +68,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const soldAsOf = metricsAll.filter((m) => m.period === curMonth).map((m) => m.as_of).sort().pop();
   const gmNext = nextGmMeeting();
   const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
-  const mission = groupNotes.find((n) => n.key === "mission")?.body;
 
   const upcoming = primary.map((s) => {
     const next = visits.filter((x) => x.store_id === s.id && x.next_visit_date && x.next_visit_date >= today())
@@ -93,6 +95,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
       </div>
 
+      {reports.length > 0 && (
+        <div className="bookmarks reports">
+          <span className="eyebrow" style={{ alignSelf: "center" }}>Reports</span>
+          {reports.map((b) => {
+            const s = stores.find((x) => x.id === b.store_id);
+            return <a key={b.id} className="bookmark" href={b.url} target="_blank" rel="noreferrer" style={s ? { ["--accent" as string]: storeAccent(s) } : undefined}><span className="k">{s?.short_name || "all"}</span>{b.title}</a>;
+          })}
+        </div>
+      )}
+
       <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
 
       <div className="grid cols-3" style={{ marginTop: 18 }}>
@@ -111,8 +123,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           </div>
         </section>
         <section className="card">
-          <div className="cardhead"><h2>Visits by month</h2></div>
-          <Columns points={visitsByMonth} />
+          <div className="cardhead"><h2>Visits by week</h2></div>
+          <Columns points={visitsByWeek} />
           <div style={{ marginTop: 14 }}>
             <div className="cardhead" style={{ marginBottom: 6 }}><h2>Roster status</h2></div>
             <Stacked parts={rosterParts} />
@@ -161,7 +173,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <div className="stack">
           <section className="card groupcard">
             <div className="cardhead"><h2>Group focus</h2><Link className="more" href="/group">Open</Link></div>
-            {mission ? <p className="pre small" style={{ marginBottom: 10 }}>{mission}</p> : <p className="faint small" style={{ marginBottom: 10 }}>Mission, vision, and values live here.</p>}
             <div className="small"><span className="eyebrow">Next GM meeting</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
             {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
           </section>

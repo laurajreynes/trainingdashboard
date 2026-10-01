@@ -62,7 +62,6 @@ export default async function Examples({ searchParams }: { searchParams: Promise
         <div>
           <div className="eyebrow">Screenshots and examples</div>
           <h1>Examples</h1>
-          <div className="sub small">Good examples to show, opportunities to coach, patterns to address. Tap any one to open the slideshow.</div>
         </div>
         <div className="small" style={{ display: "flex", gap: 10 }}>
           <Link href={qs({ view: undefined })} className={sp.view !== "patterns" ? "" : "faint"}>Gallery</Link>

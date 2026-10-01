@@ -443,3 +443,14 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 /* File uploads (reports) */
 .fileup .frow { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 4px; }
 .fileup input[type="file"] { font-size: 13px; padding: 6px; }
+
+/* Group page */
+.meetingcard { border-top: 3px solid var(--forest); }
+.creed .eyebrow { margin-bottom: 6px; }
+.creed .prose p, .creed .prose li { font-size: 14px; }
+.focuslist .tag { flex: 0 0 auto; min-width: 64px; text-align: center; }
+.focuslist a.plain { color: inherit; text-decoration: none; }
+.focuslist a.plain:hover { text-decoration: underline; }
+.bookmarks.reports { margin: -6px 0 18px; align-items: center; }
+.bookmarks.reports .bookmark { border-left: 3px solid var(--accent, var(--forest)); }
+details.about > summary { font-weight: 600; cursor: pointer; }

@@ -4,7 +4,7 @@ import {
   getGoals, getGoalEntries, getAllRoster, getVisits, getWins, getCommitments, getPeople,
   getMonthPlans, getPlaybook, getPlaybookChecks, getInitiatives, getTodos, getBookmarks,
 } from "@/lib/data";
-import { monthPhase, paceGoal, PHASE_LABEL, PHASE_BLURB, type Phase, type GoalPace } from "@/lib/month";
+import { monthPhase, paceGoal, PHASE_LABEL, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
 
@@ -95,7 +95,6 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
         <div>
           <div className="eyebrow">{mName} · day {mi.day} of {mi.daysInMonth}</div>
           <h2 className="phasetitle">{PHASE_LABEL[mi.phase]}</h2>
-          <p className="muted small">{PHASE_BLURB[mi.phase]}</p>
         </div>
         <div className="phaseside">
           <MonthTrack day={mi.day} total={mi.daysInMonth} />

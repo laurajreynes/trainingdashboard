@@ -67,7 +67,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
 
       <div className="grid main-side">
         <div className="stack">
-          {init.description && <section className="card"><p className="pre">{init.description}</p></section>}
+          {init.description && <details className="card quiet about"><summary>About this initiative</summary><p className="pre" style={{ marginTop: 8 }}>{init.description}</p></details>}
 
           {storeBars.length > 1 && (
             <section className="card">
