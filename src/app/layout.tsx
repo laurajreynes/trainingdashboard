@@ -4,7 +4,7 @@ import "./globals.css";
 import { Shell } from "@/components/Shell";
 
 const body = Nunito({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
-const display = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", axes: ["SOFT", "WONK", "opsz"] });
+const display = Fraunces({ subsets: ["latin"], weight: "variable", variable: "--font-display", axes: ["SOFT", "WONK", "opsz"] });
 
 export const metadata: Metadata = {
   title: "Ressler Training Hub",
