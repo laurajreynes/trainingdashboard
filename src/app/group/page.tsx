@@ -19,7 +19,7 @@ function Lines({ text }: { text: string }) {
       {text.split(/\r?\n/).filter(Boolean).map((line, i) => {
         const m = line.match(/^(.+?):\s(.+)$/);
         if (line.startsWith("- ")) return <li key={i}>{line.slice(2)}</li>;
-        if (m && m[1].length < 60) return <p key={i}><strong>{m[1]}:</strong> {m[2]}</p>;
+        if (m && m[1].length < 60) return <details key={i} className="valueline"><summary>{m[1].replace(/^The Value of /i, "")}</summary><p>{m[2]}</p></details>;
         return <p key={i}>{line}</p>;
       })}
     </div>
