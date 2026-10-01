@@ -71,14 +71,15 @@ body {
 a { color: inherit; text-decoration: none; }
 a:hover { text-decoration: underline; text-decoration-color: var(--gold); }
 h1, h2, h3, h4 {
-  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 48;
+  font-weight: 600;
+  letter-spacing: 0;
   margin: 0;
   line-height: 1.15;
 }
-h1 { font-size: 30px; color: var(--forest); }
-h2 { font-size: 15px; color: var(--ink-dim); font-weight: 700; letter-spacing: 0; }
+h1 { font-size: 34px; color: var(--forest); }
+h2 { font-family: var(--font-body); font-variation-settings: normal; font-size: 15px; color: var(--ink-dim); font-weight: 800; letter-spacing: 0; }
 h3 { font-size: 17px; }
 p { margin: 0 0 8px; }
 p:last-child { margin-bottom: 0; }
@@ -93,7 +94,7 @@ p:last-child { margin-bottom: 0; }
   display: flex; align-items: center; gap: 18px;
   height: 56px;
 }
-.brand { font-family: var(--font-display); font-weight: 800; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; }
+.brand { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "WONK" 1; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; }
 .brand span { color: var(--forest); font-weight: 600; }
 .brand i { width: 26px; height: 26px; border-radius: 7px; background: var(--forest); display: inline-flex; align-items: center; justify-content: center; }
 .brand i svg { width: 16px; height: 16px; }
@@ -269,7 +270,7 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 .phase-track { --phase-color: var(--warn); }
 .phase-close { --phase-color: var(--bad); }
 .phasehead { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
-.phasetitle { font-size: 26px; color: var(--forest); letter-spacing: -0.01em; font-weight: 700; margin: 2px 0 4px; }
+.phasetitle { font-size: 30px; color: var(--forest); letter-spacing: 0; font-weight: 600; margin: 2px 0 4px; }
 .phaseside { min-width: 240px; flex: 0 1 320px; }
 .monthtrack { position: relative; height: 10px; border-radius: 6px; background: var(--line); overflow: visible; margin-top: 8px; }
 .monthtrack .seg { position: absolute; top: 0; height: 100%; opacity: 0.35; }
@@ -461,25 +462,30 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .valueline p { margin: 4px 0 6px 12px; font-size: 13px; line-height: 1.5; color: var(--ink-dim); }
 
 /* Week calendar */
-.weekcal .weekrow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
-.weekcal .day { min-height: 74px; padding: 6px; border-radius: 8px; background: var(--panel-2); border: 1px solid transparent; }
-.weekcal .day.today { border-color: var(--forest); background: var(--panel); }
-.weekcal .day.past { opacity: .6; }
-.weekcal .dayhead { font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; display: flex; justify-content: space-between; }
-.weekcal .day.today .dayhead { color: var(--forest); font-weight: 700; }
-.weekcal .sess { display: block; margin-top: 4px; padding: 4px 6px; border-radius: 6px; background: var(--panel); border-left: 3px solid var(--accent, var(--forest)); text-decoration: none; color: inherit; font-size: 12px; line-height: 1.3; }
+.weekcal .weekrow { display: grid; gap: 8px; margin-top: 8px; }
+.weekcal .day { min-height: 96px; padding: 8px; border-radius: 10px; background: var(--panel-2); border: 1px solid transparent; }
+.weekcal .day.today { border-color: var(--forest); background: var(--panel); box-shadow: 0 6px 18px -12px rgba(31,77,58,.6); }
+.weekcal .day.past { opacity: .55; }
+.weekcal .dayhead { font-size: 12px; color: var(--ink-faint); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 6px; }
+.weekcal .day.today .dayhead { color: var(--forest); font-weight: 800; font-size: 14px; }
+.weekcal .sess { display: block; margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: var(--panel); border-left: 3px solid var(--accent, var(--forest)); text-decoration: none; color: inherit; font-size: 12px; line-height: 1.3; }
+.weekcal .day.today .sess { font-size: 14px; padding: 9px 10px; background: var(--panel-2); }
 .weekcal .sess:hover { background: var(--line); }
-.weekcal .sess .who { font-weight: 700; display: block; color: var(--accent, var(--forest)); }
-.weekcal .sess .what { display: block; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.weekcal .sess.gm { border-left-color: var(--gold); background: var(--panel); }
+.weekcal .sess .when { display: inline-block; font-weight: 800; color: var(--forest); margin-right: 6px; }
+.weekcal .sess .who { font-weight: 800; display: inline; color: var(--accent, var(--forest)); }
+.weekcal .sess .what { display: block; color: var(--ink-dim); }
+.weekcal .day.today .sess .what { color: var(--ink); }
+.weekcal .sess.gm { border-left-color: var(--gold); }
 .weekcal .sess.gm .who { color: var(--forest); }
 .weekcal .sess.due { border-left-style: dashed; }
 @media (max-width: 720px) {
-  .weekcal .weekrow { grid-template-columns: repeat(7, minmax(44px, 1fr)); overflow-x: auto; }
-  .weekcal .sess .what { display: none; }
+  .weekcal .weekrow { grid-template-columns: 1fr !important; }
+  .weekcal .day:not(.today) { min-height: 0; }
 }
 
 /* Phase art */
 .phaseintro { display: flex; gap: 16px; align-items: center; }
 .phaseart { width: 150px; height: 66px; flex: 0 0 auto; }
 @media (max-width: 720px) { .phaseart { width: 110px; height: 48px; } }
+
+.kpi .v, .stat .v, .bigcount, .bigdate { font-variation-settings: "SOFT" 100, "WONK" 0, "opsz" 48; font-weight: 600; letter-spacing: 0; }

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Nunito, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 
-const body = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
+const body = Nunito({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
+const display = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", axes: ["SOFT", "WONK", "opsz"] });
 
 export const metadata: Metadata = {
   title: "Ressler Training Hub",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={body.variable} style={{ ["--font-display" as string]: "var(--font-body)" }}>
+    <html lang="en" className={`${body.variable} ${display.variable}`}>
       <body>
         <Shell>{children}</Shell>
       </body>
