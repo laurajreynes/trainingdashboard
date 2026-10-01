@@ -111,7 +111,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
 
       <div className="kpis">
-        <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>
+        {!(reflecting && trainedPct === 0) && <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>}
         <div className="kpi"><div><div className="v">{peopleHere.length}</div><div className="l">active people</div></div></div>
         <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits, last 30 days</div></div></div>
         <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>

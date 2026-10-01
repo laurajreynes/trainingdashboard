@@ -4,7 +4,7 @@ import {
   getGoals, getGoalEntries, getAllRoster, getVisits, getWins, getCommitments, getPeople,
   getMonthPlans, getPlaybook, getPlaybookChecks, getInitiatives, getTodos, getBookmarks,
 } from "@/lib/data";
-import { monthPhase, paceGoal, PHASE_LABEL, type Phase, type GoalPace } from "@/lib/month";
+import { monthPhase, paceGoal, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
 import { PhaseArt } from "./PhaseArt";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
@@ -96,8 +96,8 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
         <div className="phaseintro">
           <PhaseArt phase={mi.phase} />
           <div>
-            <div className="eyebrow">{mName} · day {mi.day} of {mi.daysInMonth}</div>
-            <h2 className="phasetitle">{PHASE_LABEL[mi.phase]}</h2>
+            <h2 className="phasetitle">{mName}</h2>
+            <div className="eyebrow">day {mi.day} of {mi.daysInMonth} · {mi.daysLeft} left</div>
           </div>
         </div>
         <div className="phaseside">
@@ -108,7 +108,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
       {mi.phase === "reflect" && (
         <div className="grid cols-3" style={{ marginTop: 14 }}>
           <div>
-            <h4 className="minihead">{prevName} gaps</h4>
+            <h4 className="minihead">{prevName} opportunities</h4>
             <GoalFinals paces={paces} />
             {prevNotes.length > 0 && (
               <details className="quiet">
