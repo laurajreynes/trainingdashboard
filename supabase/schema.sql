@@ -211,7 +211,7 @@ create index if not exists examples_people_idx on examples using gin(person_ids)
 
 -- Private storage bucket for the images. The app signs short-lived links to show them.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('examples', 'examples', false, 15728640, array['image/jpeg','image/png','image/webp','image/gif','image/heic'])
+values ('examples', 'examples', false, 26214400, array['image/jpeg','image/png','image/webp','image/gif','image/heic','application/pdf','text/csv','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/octet-stream'])
 on conflict (id) do nothing;
 
 -- Group focus: mission, vision, values, group notes (one row per section)

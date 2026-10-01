@@ -633,9 +633,19 @@ export async function createFileUpload(contentType: string, filename: string): P
   const base = filename.replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "file";
   const d = new Date();
   const path = `files/${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID().slice(0, 8)}-${base}.${ext}`;
+  await ensureBucketTypes();
   const r = await db().storage.from("examples").createSignedUploadUrl(path);
   if (r.error) throw new Error(r.error.message);
   return { path, signedUrl: r.data.signedUrl };
+}
+let bucketReady = false;
+/** The bucket was created for images only; widen it once so reports can live there too. */
+async function ensureBucketTypes() {
+  if (bucketReady) return;
+  const types = [...Object.keys(IMAGE_EXT), ...Object.keys(FILE_TYPES), "application/octet-stream"];
+  const r = await db().storage.updateBucket("examples", { public: false, allowedMimeTypes: Array.from(new Set(types)), fileSizeLimit: 25 * 1024 * 1024 });
+  if (r.error) throw new Error(r.error.message);
+  bucketReady = true;
 }
 export async function addFileBookmark(input: { path: string; title: string; kind: string; storeId: string | null; initiativeId: string | null }) {
   await requireEditor();
