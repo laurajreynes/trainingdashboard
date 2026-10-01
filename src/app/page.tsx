@@ -98,7 +98,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       <div className="kpis">
         <div className="kpi"><div><div className="v">{activePeople.length}</div><div className="l">people on rosters</div></div></div>
-        <div className="kpi"><div><div className="v">{kpiTrained}%</div><div className="l">trained on active initiatives</div></div></div>
+        {!(reflecting && kpiTrained === 0) && <div className="kpi"><div><div className="v">{kpiTrained}%</div><div className="l">trained on active initiatives</div></div></div>}
         <div className="kpi"><div><div className="v">{visits.filter((v) => v.date >= since30).length}</div><div className="l">visits, last 30 days</div></div></div>
         <div className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{openPosts}</div><div className="l">store notes waiting</div></div></div>

@@ -308,7 +308,12 @@ function StoreFocusList({ rows }: { rows: { s: Store; p?: { focus: string | null
   if (!set.length) return null;
   return (
     <ul className="list" style={{ marginTop: 10 }}>
-      {set.map(({ s, p }) => <li key={s.id} className="small"><strong style={{ color: storeAccent(s), minWidth: 74 }}>{s.short_name}</strong><div className="grow muted">{p!.focus}</div></li>)}
+      {set.map(({ s, p }) => {
+        const f = p!.focus!.trim();
+        const first = f.split(/(?<=[.!?])\s/)[0];
+        const short = first.length > 120 ? first.slice(0, 117) + "…" : first;
+        return <li key={s.id} className="small"><strong style={{ color: storeAccent(s), minWidth: 74 }}>{s.short_name}</strong><div className="grow muted"><Link href={`/s/${s.slug}`} className="plain">{short}</Link>{short.length < f.length && <span className="faint"> more</span>}</div></li>;
+      })}
     </ul>
   );
 }
