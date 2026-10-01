@@ -42,9 +42,11 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
-  const next = visits.filter((v) => v.next_visit_date && v.next_visit_date >= today())
+  const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
+  const loggedHere = visits.filter((v) => v.date <= today());
+  const last = loggedHere[0];
+  const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())
     .sort((a, b) => a.next_visit_date!.localeCompare(b.next_visit_date!))[0];
-  const last = visits[0];
 
 
   // ---- charts ----
@@ -52,9 +54,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
-  const visits30 = visits.filter((v) => v.date >= since30).length;
+  const visits30 = loggedHere.filter((v) => v.date >= since30).length;
   const weeks = weeksBack(8);
-  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
+  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: loggedHere.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const initBars = activeInits.map((i) => {
     const ros = roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id));
     const done = ros.filter((r) => r.status === "trained" || r.status === "solid").length;
@@ -215,7 +217,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
           <section className="card">
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
-            <VisitList visits={visits.slice(0, 6)} stores={stores} showStore={family.length > 1} />
+            <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
           </section>
 
           {(goals.length > 0 || editor) && (
@@ -291,14 +293,20 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           ))}
 
           <section className="card">
-            <div className="cardhead"><h2>Next visit</h2></div>
-            {next ? (
-              <>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700 }}>{fmtDate(next.next_visit_date!, { weekday: true })}</div>
+            <div className="cardhead"><h2>Upcoming</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
+            {plannedHere.length ? (
+              <ul className="list">
+                {plannedHere.slice(0, 5).map((v) => (
+                  <li key={v.id}><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong></Link> <span className="faint small">{relDay(v.date)}</span>{v.focus && <div className="small" style={{ marginTop: 2 }}>{v.focus}</div>}</div></li>
+                ))}
+              </ul>
+            ) : next ? (
+              <div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700 }}>{fmtDate(next.next_visit_date!, { weekday: true })}</div>
                 <div className="faint small">{relDay(next.next_visit_date)}</div>
-                {next.next_visit_plan && <p className="pre" style={{ marginTop: 8 }}>{next.next_visit_plan}</p>}
-              </>
-            ) : <p className="empty">Not scheduled. Set it on your next visit log.</p>}
+                {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
+              </div>
+            ) : <p className="empty">Nothing scheduled</p>}
             {last && <p className="faint small" style={{ marginTop: 10 }}>Last visit <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> ({relDay(last.date)})</p>}
           </section>
 

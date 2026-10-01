@@ -459,3 +459,22 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .valueline > summary::before { content: "›"; display: inline-block; width: 12px; color: var(--ink-faint); transition: transform .15s; }
 .valueline[open] > summary::before { transform: rotate(90deg); }
 .valueline p { margin: 4px 0 6px 12px; font-size: 13px; line-height: 1.5; color: var(--ink-dim); }
+
+/* Week calendar */
+.weekcal .weekrow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.weekcal .day { min-height: 74px; padding: 6px; border-radius: 8px; background: var(--panel-2); border: 1px solid transparent; }
+.weekcal .day.today { border-color: var(--forest); background: var(--panel); }
+.weekcal .day.past { opacity: .6; }
+.weekcal .dayhead { font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.weekcal .day.today .dayhead { color: var(--forest); font-weight: 700; }
+.weekcal .sess { display: block; margin-top: 4px; padding: 4px 6px; border-radius: 6px; background: var(--panel); border-left: 3px solid var(--accent, var(--forest)); text-decoration: none; color: inherit; font-size: 12px; line-height: 1.3; }
+.weekcal .sess:hover { background: var(--line); }
+.weekcal .sess .who { font-weight: 700; display: block; color: var(--accent, var(--forest)); }
+.weekcal .sess .what { display: block; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.weekcal .sess.gm { border-left-color: var(--gold); background: var(--panel); }
+.weekcal .sess.gm .who { color: var(--forest); }
+.weekcal .sess.due { border-left-style: dashed; }
+@media (max-width: 720px) {
+  .weekcal .weekrow { grid-template-columns: repeat(7, minmax(44px, 1fr)); overflow-x: auto; }
+  .weekcal .sess .what { display: none; }
+}

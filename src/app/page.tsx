@@ -7,6 +7,7 @@ import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
+import { WeekCalendar } from "@/components/WeekCalendar";
 import { HBars, Columns, Stacked } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks } from "@/lib/data";
@@ -20,7 +21,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   ]);
   const bookmarksAll = await getBookmarks();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
-  const { stores, initiatives, roster, visits, todos, wins, people } = snap;
+  const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
+  const visits = visitsAll.filter((v) => v.date <= today());        // logged
+  const planned = visitsAll.filter((v) => v.date > today());        // scheduled sessions
   const primary = stores.filter((s) => !s.is_bdc);
   const active = initiatives.filter((i) => i.status === "active" || i.status === "planning");
   const open = todos.filter((t) => !t.done);
@@ -69,12 +72,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const gmNext = nextGmMeeting();
   const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
 
-  const upcoming = primary.map((s) => {
-    const next = visits.filter((x) => x.store_id === s.id && x.next_visit_date && x.next_visit_date >= today())
+  const upcoming = navStores.map((s) => {
+    const sess = planned.filter((x) => x.store_id === s.id).sort((a, b) => a.date.localeCompare(b.date))[0];
+    const nv = visits.filter((x) => x.store_id === s.id && x.next_visit_date && x.next_visit_date >= today())
       .sort((a, b) => a.next_visit_date!.localeCompare(b.next_visit_date!))[0];
+    const next = sess ? { date: sess.date, plan: sess.focus, id: sess.id } : nv ? { date: nv.next_visit_date!, plan: nv.next_visit_plan, id: null } : null;
     const last = visits.find((x) => x.store_id === s.id);
     return { store: s, next, last };
-  }).sort((a, b) => (a.next?.next_visit_date || "9").localeCompare(b.next?.next_visit_date || "9"));
+  }).sort((a, b) => (a.next?.date || "9").localeCompare(b.next?.date || "9"));
 
   return (
     <>
@@ -104,6 +109,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           })}
         </div>
       )}
+
+      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
 
       <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
 
@@ -135,15 +142,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       <div className="grid main-side" style={{ marginTop: 18 }}>
         <div className="stack">
           <section className="card">
-            <div className="cardhead"><h2>Where I&apos;m headed</h2></div>
+            <div className="cardhead"><h2>Upcoming by store</h2></div>
             <table className="tbl">
               <thead><tr><th>Store</th><th>Next visit</th><th>Plan</th><th>Last visit</th></tr></thead>
               <tbody>
                 {upcoming.map(({ store, next, last }) => (
                   <tr key={store.id}>
                     <td><Link href={`/s/${store.slug}`} style={{ fontWeight: 600 }}>{store.short_name}</Link></td>
-                    <td>{next ? <><strong>{fmtDate(next.next_visit_date!, { weekday: true })}</strong> <span className="faint small">{relDay(next.next_visit_date)}</span></> : <span className="faint">Not scheduled</span>}</td>
-                    <td className="muted small">{next?.next_visit_plan || ""}</td>
+                    <td>{next ? <><strong>{next.id ? <Link href={`/v/${next.id}`}>{fmtDate(next.date, { weekday: true })}</Link> : fmtDate(next.date, { weekday: true })}</strong> <span className="faint small">{relDay(next.date)}</span></> : <span className="faint">Not scheduled</span>}</td>
+                    <td className="muted small">{next?.plan || ""}</td>
                     <td className="muted small">{last ? <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> : "Never"}</td>
                   </tr>
                 ))}
@@ -166,7 +173,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
           <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
-            <VisitList visits={visits.slice(0, 8)} stores={stores} showStore />
+            <VisitList visits={visits.slice(0, 8)} stores={stores} people={people} showStore />
           </section>
         </div>
 

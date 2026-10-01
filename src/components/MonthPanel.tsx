@@ -127,9 +127,9 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
             )}
           </div>
           <PlanBox
-            title={`What we learned in ${prevName}`} field="lessons" value={plan?.lessons || null}
+            title={`${prevName} in a few lines`} field="lessons" value={plan?.lessons || null}
             month={mi.month} storeId={store?.id || null} editor={editor}
-            placeholder={"What worked, what didn't, what surprised us"}
+            placeholder={"What we focused on, what landed. A snack, not a meal."}
           />
           <PlanBox
             title={`${mName} focus`} field="focus" value={plan?.focus || null}

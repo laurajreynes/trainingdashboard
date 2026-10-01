@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Initiative, InitiativePerson, Person, Store, Todo, Visit, Win, Commitment, GoalEntry, Goal } from "@/lib/types";
 import { INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "@/lib/types";
-import { fmtDate, relDay, pct, storeAccent } from "@/lib/fmt";
+import { fmtDate, relDay, pct, storeAccent, today } from "@/lib/fmt";
 import { toggleTodo, deleteTodo, deleteWin, setCommitmentStatus, deleteCommitment } from "@/app/actions";
 
 export function StatusTag({ status }: { status: Initiative["status"] }) {
@@ -102,7 +102,7 @@ export function TodoList({ todos, editor, stores, people, showStore = false }: {
   );
 }
 
-export function VisitList({ visits, stores, showStore = false }: { visits: Visit[]; stores?: Store[]; showStore?: boolean }) {
+export function VisitList({ visits, stores, people, showStore = false }: { visits: Visit[]; stores?: Store[]; people?: Person[]; showStore?: boolean }) {
   if (!visits.length) return <p className="empty">No visits logged yet</p>;
   return (
     <ul className="list">
@@ -113,7 +113,12 @@ export function VisitList({ visits, stores, showStore = false }: { visits: Visit
             <span className="dot" style={{ ["--accent" as string]: storeAccent(st) }} />
             <div className="grow">
               <Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong>{showStore && st ? ` · ${st.short_name}` : ""}{v.focus ? ` · ${v.focus}` : ""}</Link>
-              {v.summary && <div className="muted small" style={{ marginTop: 2 }}>{v.summary.length > 180 ? v.summary.slice(0, 180) + "…" : v.summary}</div>}
+              {(v.people_ids.length > 0 || v.date > today()) && (
+                <div className="faint small" style={{ marginTop: 2 }}>
+                  {v.date > today() ? "Scheduled" : `${v.people_ids.length} trained`}
+                  {people && v.people_ids.length > 0 && v.people_ids.length <= 4 ? `: ${v.people_ids.map((id) => people.find((p) => p.id === id)?.name).filter(Boolean).join(", ")}` : ""}
+                </div>
+              )}
             </div>
           </li>
         );
