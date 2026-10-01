@@ -478,3 +478,8 @@ details.about > summary { font-weight: 600; cursor: pointer; }
   .weekcal .weekrow { grid-template-columns: repeat(7, minmax(44px, 1fr)); overflow-x: auto; }
   .weekcal .sess .what { display: none; }
 }
+
+/* Phase art */
+.phaseintro { display: flex; gap: 16px; align-items: center; }
+.phaseart { width: 150px; height: 66px; flex: 0 0 auto; }
+@media (max-width: 720px) { .phaseart { width: 110px; height: 48px; } }

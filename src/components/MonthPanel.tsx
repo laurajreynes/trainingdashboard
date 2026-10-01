@@ -6,6 +6,7 @@ import {
 } from "@/lib/data";
 import { monthPhase, paceGoal, PHASE_LABEL, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
+import { PhaseArt } from "./PhaseArt";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
 
 type Props = {
@@ -92,30 +93,22 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   return (
     <section className={`card phase phase-${mi.phase}`} style={{ marginBottom: 22 }}>
       <div className="phasehead">
-        <div>
-          <div className="eyebrow">{mName} · day {mi.day} of {mi.daysInMonth}</div>
-          <h2 className="phasetitle">{PHASE_LABEL[mi.phase]}</h2>
+        <div className="phaseintro">
+          <PhaseArt phase={mi.phase} />
+          <div>
+            <div className="eyebrow">{mName} · day {mi.day} of {mi.daysInMonth}</div>
+            <h2 className="phasetitle">{PHASE_LABEL[mi.phase]}</h2>
+          </div>
         </div>
         <div className="phaseside">
           <MonthTrack day={mi.day} total={mi.daysInMonth} />
-          <div className="phasepreview small faint">
-            Preview:{" "}
-            {(["reflect", "track", "close"] as Phase[]).map((p) => (
-              <Link key={p} href={p === monthPhase(null).phase ? basePath : `${basePath}?phase=${p}`} className={p === mi.phase ? "on" : ""}>{PHASE_LABEL[p]}</Link>
-            ))}
-          </div>
         </div>
       </div>
 
       {mi.phase === "reflect" && (
         <div className="grid cols-3" style={{ marginTop: 14 }}>
           <div>
-            <h4 className="minihead">{prevName} in numbers</h4>
-            <div className="stats tight">
-              <Stat v={lastMonth.visits} l="visits" />
-              <Stat v={lastMonth.trained} l="trained" />
-              <Stat v={lastMonth.wins} l="wins" />
-            </div>
+            <h4 className="minihead">{prevName} gaps</h4>
             <GoalFinals paces={paces} />
             {prevNotes.length > 0 && (
               <details className="quiet">

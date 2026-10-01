@@ -3,8 +3,8 @@ import type { Goal, GoalEntry } from "./types";
 
 export type Phase = "reflect" | "track" | "close";
 
-// Where each phase starts. Reflect covers days 1 through 3, Track days 4 through 20, Close day 21 to month end.
-export const TRACK_STARTS = 4;
+// Where each phase starts. Reflect covers days 1 through 5, Track days 6 through 20, Close day 21 to month end.
+export const TRACK_STARTS = 6;
 export const CLOSE_STARTS = 21;
 
 export const PHASE_LABEL: Record<Phase, string> = {

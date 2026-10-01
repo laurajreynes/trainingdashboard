@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
@@ -80,7 +81,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const servesStores = store.is_bdc ? stores.filter((s) => store.shows_under.includes(s.slug)) : [];
 
   // Store results from the PR import
-  const curMonth = today().slice(0, 7);
+  const mi = monthPhase(sp.phase);
+  const reflecting = mi.phase === "reflect";
+  const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
   const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(6) });
   const thisMonthRows = metricRows.filter((m) => m.period === curMonth);
   const soldMtd = thisMonthRows.reduce((a, m) => a + m.sold, 0);
@@ -113,7 +116,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits, last 30 days</div></div></div>
         <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
-        {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
+        {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
 
       <section style={{ marginBottom: 20 }}>
@@ -146,6 +149,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
       </section>
 
+      {!(reflecting && trainedPct === 0 && visits30 === 0) && (
       <div className="grid cols-3" style={{ marginBottom: 20 }}>
         <section className="card">
           <div className="cardhead"><h2>Coverage by initiative</h2></div>
@@ -160,6 +164,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <Columns points={visitsByWeek} color={storeAccent(store)} />
         </section>
       </div>
+      )}
 
       {(soldMtd > 0 || soldByMonth.some((m) => m.value > 0)) && (
         <div className="grid cols-3" style={{ marginBottom: 20 }}>
@@ -181,7 +186,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             ) : <p className="empty">No appointment numbers this month</p>}
           </section>
           <section className="card">
-            <div className="cardhead"><h2>Where ups came from</h2></div>
+            <div className="cardhead"><h2>Where ups came from, {monthName(curMonth)}</h2></div>
             {upsRow.lot + upsRow.phone + upsRow.web > 0 ? (
               <HBars rows={[
                 { label: "Lot", value: upsRow.lot, color: storeAccent(store) },

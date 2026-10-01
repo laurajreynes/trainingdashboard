@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<{ phase?: string }> }) {
   const sp = await searchParams;
   const [editor, snap, posts, metricsAll, meetings] = await Promise.all([
-    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(2) }), getMeetings(3),
+    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(3) }), getMeetings(3),
   ]);
   const bookmarksAll = await getBookmarks();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
@@ -57,8 +57,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const openPosts = posts.filter((p) => p.status === "open").length;
 
   // Sold this month (from the PR import), rolled up per store, with pace to month end
-  const curMonth = today().slice(0, 7);
-  const [prevMonth] = monthsBack(2);
+  const reflecting = phase.phase === "reflect";
+  const curMonth = reflecting ? phase.prevMonth : phase.month;
+  const prevMonth = monthsBack(3)[reflecting ? 0 : 1];
   const soldFor = (sid: string, period: string) => metricsAll.filter((m) => m.store_id === sid && m.period === period);
   const soldRows = navStores.filter((s) => !s.is_bdc || soldFor(s.id, curMonth).length).map((s) => {
     const rows = soldFor(s.id, curMonth);
@@ -66,9 +67,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     const asOf = rows.map((m) => m.as_of).sort().pop();
     const proj = asOf && asOf < `${curMonth}-${String(new Date(Date.UTC(Number(curMonth.slice(0, 4)), Number(curMonth.slice(5, 7)), 0)).getUTCDate()).padStart(2, "0")}` ? projectToMonthEnd(sold, asOf) : null;
     const prev = soldFor(s.id, prevMonth).reduce((a, m) => a + m.sold, 0);
-    return { label: s.short_name, value: sold, color: storeAccent(s), sub: proj ? `pacing ${proj}` : prev ? `${prev} last mo` : undefined, href: `/s/${s.slug}` };
+    return { label: s.short_name, value: sold, color: storeAccent(s), sub: !reflecting && proj ? `pacing ${proj}` : prev ? `${prev} prior` : undefined, href: `/s/${s.slug}` };
   });
   const soldTotal = soldRows.reduce((a, r) => a + r.value, 0);
+  const monthRows = metricsAll.filter((m) => m.period === curMonth);
+  const apptAll = monthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
+  const upsAll = monthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
   const soldAsOf = metricsAll.filter((m) => m.period === curMonth).map((m) => m.as_of).sort().pop();
   const gmNext = nextGmMeeting();
   const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
@@ -122,10 +126,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
 
       <div className="grid cols-3" style={{ marginTop: 18 }}>
-        <section className="card">
-          <div className="cardhead"><h2>Training coverage</h2><span className="faint small">% trained, active initiatives</span></div>
+        {reflecting && apptAll.due > 0 ? (
+          <section className="card">
+            <div className="cardhead"><h2>Appointments, {monthName(curMonth)}</h2></div>
+            <HBars rows={[
+              { label: "Due", value: apptAll.due, color: "var(--line-strong)" },
+              { label: "Shown", value: apptAll.shown, color: "var(--brand)", sub: `${Math.round((apptAll.shown / apptAll.due) * 100)}%` },
+              { label: "Sold", value: apptAll.sold, color: "var(--good)", sub: apptAll.shown ? `${Math.round((apptAll.sold / apptAll.shown) * 100)}% of shown` : undefined },
+            ]} max={apptAll.due} />
+            {upsAll.lot + upsAll.phone + upsAll.web > 0 && <div style={{ marginTop: 14 }}>
+              <div className="cardhead" style={{ marginBottom: 6 }}><h2>Where ups came from</h2></div>
+              <HBars rows={[{ label: "Lot", value: upsAll.lot, color: "var(--forest)" }, { label: "Phone", value: upsAll.phone, color: "var(--brand)" }, { label: "Web", value: upsAll.web, color: "var(--info)" }]} />
+            </div>}
+          </section>
+        ) : !(reflecting && kpiTrained === 0) && <section className="card">
+          <div className="cardhead"><h2>Training coverage</h2></div>
           <HBars rows={coverage} unit="%" max={100} />
-        </section>
+        </section>}
         <section className="card">
           <div className="cardhead"><h2>Sold in {monthName(curMonth)}</h2>{editor && <Link className="more" href="/import">Import</Link>}</div>
           {soldTotal > 0
@@ -136,14 +153,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             <HBars rows={visits30} />
           </div>
         </section>
-        <section className="card">
+        {!(reflecting && visits.length === 0) && <section className="card">
           <div className="cardhead"><h2>Visits by week</h2></div>
           <Columns points={visitsByWeek} />
-          <div style={{ marginTop: 14 }}>
+          {!reflecting && <div style={{ marginTop: 14 }}>
             <div className="cardhead" style={{ marginBottom: 6 }}><h2>Roster status</h2></div>
             <Stacked parts={rosterParts} />
-          </div>
-        </section>
+          </div>}
+        </section>}
       </div>
 
       <div className="grid main-side" style={{ marginTop: 18 }}>
