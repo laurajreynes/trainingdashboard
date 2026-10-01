@@ -14,7 +14,7 @@ import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
-  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, addTodo, addBookmark, deleteBookmark,, deleteGoalEntry } from "@/app/actions";
+  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, addTodo, addBookmark, deleteBookmark, deleteGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
