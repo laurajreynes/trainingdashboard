@@ -458,4 +458,4 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .valueline > summary { font-weight: 600; font-size: 14px; cursor: pointer; list-style: none; }
 .valueline > summary::before { content: "›"; display: inline-block; width: 12px; color: var(--ink-faint); transition: transform .15s; }
 .valueline[open] > summary::before { transform: rotate(90deg); }
-.valueline p { margin: 4px 0 6px 12px; font-size: 13px; line-height: 1.5; color: var(--ink-muted); }
+.valueline p { margin: 4px 0 6px 12px; font-size: 13px; line-height: 1.5; color: var(--ink-dim); }
