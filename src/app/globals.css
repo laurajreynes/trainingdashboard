@@ -423,6 +423,8 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 
 /* ---------- group ---------- */
 .values { margin: 0; padding-left: 18px; }
+.prose p { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.prose li { margin: 0 0 4px 16px; font-size: 14px; }
 .values li { margin: 2px 0; }
 .nextmeeting { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; padding: 12px 14px; background: var(--panel-2); border-radius: var(--radius); border-left: 4px solid var(--forest); }
 .bigdate { font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--forest); letter-spacing: -0.01em; }

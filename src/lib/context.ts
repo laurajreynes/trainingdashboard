@@ -29,7 +29,7 @@ export async function buildHubContext(): Promise<string> {
 
   const [gnotes, meetings, metrics] = await Promise.all([getGroupNotes(), getMeetings(6), getMetrics({ periods: monthsBack(3) })]);
   out.push("\n# GROUP FOCUS");
-  for (const k of ["mission", "vision", "values", "notes"]) { const b = gnotes.find((n) => n.key === k)?.body; if (b) out.push(`${k}: ${b}`); }
+  for (const k of ["mission", "vision", "values", "notes"]) { const b = gnotes.find((n) => n.key === k)?.body; if (b) out.push(`${k === "vision" ? "philosophy" : k}: ${b}`); }
   out.push(`Next GM meeting (second Thursday): ${nextGmMeeting()}`);
   for (const m of meetings) out.push(`- Meeting ${m.date} ${m.title}${m.agenda ? ` | agenda: ${m.agenda}` : ""}${m.notes ? ` | notes: ${m.notes}` : ""}`);
 

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 const SECTIONS: { key: string; title: string; hint: string }[] = [
   { key: "mission", title: "Mission", hint: "Why the group exists. One or two sentences." },
-  { key: "vision", title: "Vision", hint: "Where we're headed." },
+  { key: "vision", title: "Philosophy", hint: "The areas the group runs on." },
   { key: "values", title: "Values", hint: "One per line." },
 ];
 
@@ -33,7 +33,7 @@ export default async function GroupPage() {
       <div className="grid main-side">
         <div className="stack">
           <section className="card">
-            <div className="cardhead"><h2>Mission, vision, values</h2></div>
+            <div className="cardhead"><h2>Mission, philosophy, values</h2></div>
             <div className="grid cols-3">
               {SECTIONS.map((sec) => (
                 <div key={sec.key}>
@@ -45,9 +45,12 @@ export default async function GroupPage() {
                       <button className="btn sm ghost" style={{ marginTop: 6 }}>Save</button>
                     </form>
                   ) : body(sec.key) ? (
-                    sec.key === "values"
-                      ? <ul className="values">{body(sec.key).split(/\r?\n/).filter(Boolean).map((v, i) => <li key={i}>{v}</li>)}</ul>
-                      : <p className="pre">{body(sec.key)}</p>
+                    <div className="prose">{body(sec.key).split(/\r?\n/).filter(Boolean).map((line, i) => {
+                      const m = line.match(/^(.+?):\s(.+)$/);
+                      if (line.startsWith("- ")) return <li key={i}>{line.slice(2)}</li>;
+                      if (m && m[1].length < 60) return <p key={i}><strong>{m[1]}:</strong> {m[2]}</p>;
+                      return <p key={i}>{line}</p>;
+                    })}</div>
                   ) : <p className="empty">Not written yet</p>}
                 </div>
               ))}
