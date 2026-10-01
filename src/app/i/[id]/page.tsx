@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FileUploader } from "@/components/FileUploader";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import {
@@ -248,6 +249,12 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   <input type="url" name="url" placeholder="https://" required style={{ flex: 2, minWidth: 140 }} />
                   <button className="btn sm">Add</button>
                 </form>
+              )}
+              {editor && (
+                <details className="quiet" style={{ marginTop: 8 }}>
+                  <summary>Upload a PDF or spreadsheet</summary>
+                  <div style={{ marginTop: 8 }}><FileUploader initiativeId={id} /></div>
+                </details>
               )}
             </section>
           )}

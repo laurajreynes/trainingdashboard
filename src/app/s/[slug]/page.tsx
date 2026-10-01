@@ -14,6 +14,7 @@ import {
 import { fmtDate, relDay, today, storeAccent } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
+import { FileUploader } from "@/components/FileUploader";
 import { addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -187,6 +188,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                   <button className="btn sm">Add</button>
                 </div>
               </form>
+              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
+              <FileUploader storeId={store.id} />
             </details>
           )}
           {!bookmarks.length && !editor && <span className="faint small">No links yet</span>}

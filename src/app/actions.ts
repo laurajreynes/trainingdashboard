@@ -617,3 +617,35 @@ export async function clearChat() {
   ok(await db().from("chat_messages").delete().neq("role", "x"));
   refresh();
 }
+
+// ---------- file bookmarks (PDF reports and the like, kept in the private bucket) ----------
+const FILE_TYPES: Record<string, string> = {
+  "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+  "text/csv": "csv", "application/vnd.ms-excel": "xls",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+  "application/msword": "doc", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+};
+export async function createFileUpload(contentType: string, filename: string): Promise<{ path: string; signedUrl: string }> {
+  await requireEditor();
+  const ext = FILE_TYPES[contentType] || filename.split(".").pop()?.toLowerCase() || "";
+  if (!ext || !/^[a-z0-9]{2,5}$/.test(ext)) throw new Error("That file type isn't supported");
+  const base = filename.replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "file";
+  const d = new Date();
+  const path = `files/${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID().slice(0, 8)}-${base}.${ext}`;
+  const r = await db().storage.from("examples").createSignedUploadUrl(path);
+  if (r.error) throw new Error(r.error.message);
+  return { path, signedUrl: r.data.signedUrl };
+}
+export async function addFileBookmark(input: { path: string; title: string; kind: string; storeId: string | null; initiativeId: string | null }) {
+  await requireEditor();
+  if (!input.path.startsWith("files/")) throw new Error("Bad path");
+  ok(await db().from("bookmarks").insert({
+    title: input.title.trim() || input.path.split("/").pop(),
+    url: `/f/${input.path}`,
+    kind: input.kind || "report",
+    store_id: input.storeId || null,
+    initiative_id: input.initiativeId || null,
+  }));
+  refresh();
+}

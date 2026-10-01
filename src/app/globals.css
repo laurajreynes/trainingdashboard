@@ -439,3 +439,7 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
   .storenav { order: 3; width: 100%; }
   h1 { font-size: 28px; }
 }
+
+/* File uploads (reports) */
+.fileup .frow { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 4px; }
+.fileup input[type="file"] { font-size: 13px; padding: 6px; }
