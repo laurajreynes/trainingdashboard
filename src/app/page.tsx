@@ -8,6 +8,7 @@ import { monthName } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { WeekCalendar } from "@/components/WeekCalendar";
+import { FileUploader } from "@/components/FileUploader";
 import { HBars, Columns, Stacked } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks } from "@/lib/data";
@@ -100,13 +101,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
       </div>
 
-      {reports.length > 0 && (
+      {(reports.length > 0 || editor) && (
         <div className="bookmarks reports">
           <span className="eyebrow" style={{ alignSelf: "center" }}>Reports</span>
           {reports.map((b) => {
             const s = stores.find((x) => x.id === b.store_id);
-            return <a key={b.id} className="bookmark" href={b.url} target="_blank" rel="noreferrer" style={s ? { ["--accent" as string]: storeAccent(s) } : undefined}><span className="k">{s?.short_name || "all"}</span>{b.title}</a>;
+            return <a key={b.id} className="bookmark" href={b.url} target="_blank" rel="noreferrer" style={s ? { ["--accent" as string]: storeAccent(s) } : undefined}><span className="k">{s?.short_name || "Group"}</span>{b.title}</a>;
           })}
+          {editor && (
+            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
+              <summary style={{ padding: "6px 0" }}>Add a group report</summary>
+              <div style={{ paddingTop: 6, minWidth: 420 }}><FileUploader storeId={null} /></div>
+            </details>
+          )}
         </div>
       )}
 
