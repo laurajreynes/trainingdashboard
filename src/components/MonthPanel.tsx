@@ -96,8 +96,8 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
         <div className="phaseintro">
           <PhaseArt phase={mi.phase} />
           <div>
-            <h2 className="phasetitle">{mName}</h2>
-            <div className="eyebrow">day {mi.day} of {mi.daysInMonth} · {mi.daysLeft} left</div>
+            <h2 className="phasetitle">Day {mi.day} of {mi.daysInMonth}</h2>
+            <div className="eyebrow">{mName} · {mi.daysLeft} {mi.daysLeft === 1 ? "day" : "days"} left</div>
           </div>
         </div>
         <div className="phaseside">

@@ -6,7 +6,7 @@ function parseTitle(t: string) {
   const m = t.match(/^(.*?)(?:,\s*)?((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})?$/i);
   const base = (m?.[1] || t).trim().replace(/,$/, "");
   const month = m?.[2] || null;
-  const short = base.replace(/^Sales Staff Productivity$/i, "Productivity").replace(/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+/i, "");
+  const short = base.replace(/Sales Staff Productivity$/i, "Productivity").replace(/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+/i, "");
   return { short, month };
 }
 

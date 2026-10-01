@@ -16,7 +16,7 @@ export function Grove({ rows, day, daysInMonth }: { rows: TreeRow[]; day: number
       <path d={`M0 ${ground} Q ${W / 2} ${ground - 8} ${W} ${ground} L ${W} ${H} L 0 ${H} Z`} fill="var(--sage)" opacity=".55" />
       {rows.map(({ store, pct, sessions }, i) => {
         const cx = 20 + slot * i + slot / 2;
-        const grow = 0.18 + 0.82 * Math.min(1, pct / 100);     // sprout at 0, full tree at 100%
+        const grow = 0.3 + 0.7 * Math.min(1, pct / 100);     // sprout at 0, full tree at 100%
         const h = 62 * grow, w = 30 * (0.5 + 0.5 * grow);
         const c = storeAccent(store);
         return (
