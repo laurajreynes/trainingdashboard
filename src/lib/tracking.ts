@@ -31,7 +31,7 @@ export function sellingDays(month: string): { total: number; done: number; remai
     const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
     if (dow !== 0 && !hol.has(iso)) dates.push(iso);
   }
-  const done = dates.filter((d) => d <= t).length;
+  const done = dates.filter((d) => d < t).length;   // today is still in progress
   return { total: dates.length, done, remaining: dates.length - done, dates };
 }
 
