@@ -140,7 +140,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 <div className="faint small">{relDay(next.next_visit_date)}</div>
                 {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
               </div>
-            ) : (
+            ) : todayHere.length ? null : (
               <form action={addStorePost} className="reqvisit">
                 <input type="hidden" name="store_id" value={store.id} />
                 <input type="hidden" name="kind" value="question" />
