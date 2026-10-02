@@ -503,7 +503,7 @@ export async function deleteExample(fd: FormData) {
 export async function saveGroupNote(fd: FormData) {
   await requireEditor();
   const key = must(fd, "key");
-  if (!["mission", "vision", "values", "notes"].includes(key)) throw new Error("Unknown section");
+  if (!["mission", "vision", "values", "notes"].includes(key) && !key.startsWith("targets:")) throw new Error("Unknown section");
   ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();
 }
@@ -657,5 +657,33 @@ export async function addFileBookmark(input: { path: string; title: string; kind
     store_id: input.storeId || null,
     initiative_id: input.initiativeId || null,
   }));
+  refresh();
+}
+
+// ---------- tracking: month targets and month-to-date sold ----------
+/** Save new/used targets for every store row at once. Fields: t.<key>.new, t.<key>.used */
+export async function saveTargets(fd: FormData) {
+  await requireEditor();
+  const month = must(fd, "month");
+  const out: Record<string, { new: number | null; used: number | null }> = {};
+  for (const [k, v] of fd.entries()) {
+    const m = k.match(/^t\.(.+)\.(new|used)$/);
+    if (!m) continue;
+    const key = m[1];
+    out[key] = out[key] || { new: null, used: null };
+    const n = String(v).trim() === "" ? null : Number(v);
+    out[key][m[2] as "new" | "used"] = n === null || Number.isNaN(n) ? null : n;
+  }
+  ok(await db().from("group_notes").upsert({ key: `targets:${month}`, body: JSON.stringify(out), updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
+/** Month-to-date new and used sold for one store row, through a date. */
+export async function setStoreSoldSplit(fd: FormData) {
+  await requireEditor();
+  const nw = num(fd, "new_sold") ?? 0, us = num(fd, "used_sold") ?? 0;
+  ok(await db().from("store_metrics").upsert({
+    store_id: must(fd, "store_id"), location: s(fd, "location"), period: must(fd, "period"), as_of: must(fd, "as_of"),
+    sold: Math.round(nw + us), new_sold: Math.round(nw), used_sold: Math.round(us), source: "manual",
+  }, { onConflict: "store_id,location,period" }));
   refresh();
 }

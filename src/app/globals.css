@@ -573,3 +573,17 @@ a.plain:hover { text-decoration: underline; }
 .reports .rwrap { display: inline-flex; align-items: flex-start; gap: 2px; }
 .reports .rwrap .iconbtn { opacity: 0; }
 .reports .rwrap:hover .iconbtn { opacity: 1; }
+
+/* Tracking */
+.daysbox { display: flex; gap: 18px; align-items: flex-end; }
+.daysbox .v { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--forest); line-height: 1; }
+.daysbox .l { font-size: 11px; color: var(--ink-faint); }
+.trackgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.trackcard { border-top: 3px solid var(--accent); }
+.tbl.track th, .tbl.track td { padding: 5px 6px; text-align: right; }
+.tbl.track th:first-child, .tbl.track td:first-child { text-align: left; }
+.tbl.track tr.total td { border-top: 2px solid var(--line-strong); font-weight: 700; }
+.tag.good { background: var(--good-soft); color: var(--good); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+
