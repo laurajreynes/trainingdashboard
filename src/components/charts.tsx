@@ -131,6 +131,17 @@ export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"
         })}
       </div>
       <div className="legend small">{points[0].parts.map((x, k) => <span key={x.label}><i style={{ background: colors[k % colors.length] }} />{x.label}</span>)}</div>
+      <details className="quiet charttable">
+        <summary>Table</summary>
+        <table className="tbl small" style={{ marginTop: 6 }}>
+          <thead><tr><th></th>{points[0].parts.map((x) => <th key={x.label}>{x.label}</th>)}<th>Total</th></tr></thead>
+          <tbody>
+            {points.filter((p) => total(p) > 0).map((p) => (
+              <tr key={p.label}><td>{p.hint || p.label}</td>{p.parts.map((x) => <td key={x.label}>{x.value}</td>)}<td><strong>{total(p)}</strong></td></tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
     </div>
   );
 }
@@ -152,6 +163,26 @@ export function DotGrid({ groups }: { groups: { label: string; color?: string; p
             </div>
           </div>
         );
+      })}
+    </div>
+  );
+}
+
+
+/** One bar per store: how many of its people have been in a session this month. */
+export function ReachBars({ rows, compact }: { rows: { label: string; reached: number; total: number; color?: string; href?: string }[]; compact?: boolean }) {
+  if (!rows.length) return null;
+  return (
+    <div className={`reach${compact ? " compact" : ""}`}>
+      {rows.map((r) => {
+        const pct = r.total ? Math.round((r.reached / r.total) * 100) : 0;
+        const inner = (
+          <>
+            <div className="reach-head"><span className="reach-label" style={{ color: r.color || "var(--forest)" }}>{r.label}</span><span className="reach-n">{r.reached}<span className="faint">/{r.total}</span></span></div>
+            <div className="reach-track"><div className="reach-fill" style={{ width: `${pct}%`, background: r.color || "var(--brand)" }} /></div>
+          </>
+        );
+        return r.href ? <a key={r.label} href={r.href} className="reach-row" title={`${r.label}: ${r.reached} of ${r.total} people reached this month`}>{inner}</a> : <div key={r.label} className="reach-row">{inner}</div>;
       })}
     </div>
   );

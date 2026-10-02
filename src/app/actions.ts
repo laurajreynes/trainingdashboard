@@ -402,7 +402,8 @@ export async function addStorePost(fd: FormData) {
   const good = await acceptManagerCode(s(fd, "code"));
   if (!good) redirect(`${back}${back.includes("?") ? "&" : "?"}code=bad#store-notes`);
   const kind = s(fd, "kind");
-  const body = must(fd, "body").slice(0, 4000);
+  const topic = s(fd, "topic");
+  const body = (must(fd, "body") + (topic ? `: ${topic}` : "")).slice(0, 4000);
   ok(await db().from("store_posts").insert({
     store_id: must(fd, "store_id"),
     author: (s(fd, "author") || "Anonymous").slice(0, 80),

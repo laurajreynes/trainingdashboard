@@ -594,3 +594,19 @@ a.plain:hover { text-decoration: underline; }
 .weekcal .day.today .sess { font-size: 15px; }
 .weekcal .day.today .dayhead { font-size: 15px; }
 a.kpi { text-decoration: none; color: inherit; }
+
+/* Reach bars */
+.reach { display: grid; gap: 8px; }
+.reach.compact { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px 14px; min-width: 360px; max-width: 560px; }
+.reach-row { display: block; text-decoration: none; color: inherit; }
+.reach-row:hover { text-decoration: none; }
+.reach-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+.reach-label { font-weight: 800; }
+.reach-n { font-variant-numeric: tabular-nums; font-weight: 700; }
+.reach-track { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+.reach-fill { height: 100%; border-radius: 4px; transform-origin: left; animation: growx .7s cubic-bezier(.2,.8,.2,1) both; }
+.charttable { margin-top: 6px; border-top: 0; padding-top: 0; }
+.charttable .tbl td, .charttable .tbl th { padding: 3px 8px; text-align: right; }
+.charttable .tbl td:first-child, .charttable .tbl th:first-child { text-align: left; }
+.pagehead .reach.compact { margin-left: auto; }
+@media (max-width: 720px) { .reach.compact { min-width: 0; width: 100%; } }

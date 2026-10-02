@@ -9,10 +9,9 @@ import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { WeekCalendar } from "@/components/WeekCalendar";
 import { FileUploader } from "@/components/FileUploader";
-import { Grove } from "@/components/Grove";
 import { ReportsCard } from "@/components/ReportsCard";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
-import { HBars, Stacked, StackedColumns, DotGrid } from "@/components/charts";
+import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks } from "@/lib/data";
 
@@ -81,7 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     ] };
   });
   const touched = new Set(visits.filter((v) => v.date >= phase.monthStart).flatMap((v) => v.people_ids));
-  const reachGroups = navStores.map((s) => ({ label: s.short_name, color: storeAccent(s), people: activePeople.filter((p) => p.store_id === s.id).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) })).filter((g) => g.people.length);
+  const reachGroups = navStores.map((s) => ({ label: s.short_name, color: storeAccent(s), href: `/s/${s.slug}`, people: activePeople.filter((p) => p.store_id === s.id).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) })).filter((g) => g.people.length);
   const monthRows = metricsAll.filter((m) => m.period === curMonth);
   const apptAll = monthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsAll = monthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
@@ -122,7 +121,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           <div className="eyebrow">All stores</div>
           <h1>{monthName(phase.month)}</h1>
         </div>
-        <Grove day={phase.day} daysInMonth={phase.daysInMonth} rows={navStores.map((s) => ({ store: s, pct: coverage.find((c) => c.label === s.short_name)?.value || 0, sessions: visits.filter((v) => v.store_id === s.id && v.date >= phase.monthStart).length }))} />
+        <ReachBars compact rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color, href: g.href }))} />
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
@@ -177,16 +176,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
               <HBars rows={[{ label: "Lot", value: upsAll.lot, color: "var(--forest)" }, { label: "Phone", value: upsAll.phone, color: "var(--brand)" }, { label: "Web", value: upsAll.web, color: "var(--info)" }]} />
             </div>}
           </section>
-        ) : (
-          <section className="card">
-            <div className="cardhead"><h2>Training coverage</h2></div>
-            <HBars rows={coverage} unit="%" max={100} />
-            <div style={{ marginTop: 14 }}><Stacked parts={rosterParts} /></div>
-          </section>
-        )}
+        ) : null}
         <section className="card">
-          <div className="cardhead"><h2>Reached in {monthName(phase.month)}</h2></div>
-          <DotGrid groups={reachGroups} />
+          <div className="cardhead"><h2>Training coverage</h2></div>
+          <HBars rows={coverage} unit="%" max={100} />
+          <div style={{ marginTop: 14 }}><Stacked parts={rosterParts} /></div>
         </section>
       </div>
 

@@ -4,7 +4,7 @@ import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
-import { HBars, Ring, Stacked, StackedColumns, DotGrid } from "@/components/charts";
+import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
@@ -17,7 +17,7 @@ import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
-import { updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
+import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -140,7 +140,21 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 <div className="faint small">{relDay(next.next_visit_date)}</div>
                 {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
               </div>
-            ) : <p className="empty">Nothing scheduled</p>}
+            ) : (
+              <form action={addStorePost} className="reqvisit">
+                <input type="hidden" name="store_id" value={store.id} />
+                <input type="hidden" name="kind" value="question" />
+                <input type="hidden" name="back" value={`/s/${store.slug}`} />
+                <input type="text" name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999 }} aria-hidden="true" />
+                <div className="eyebrow" style={{ marginBottom: 6 }}>Request a visit</div>
+                <div className="frow">
+                  <input type="text" name="author" placeholder="Your name" required />
+                  <input type="text" name="topic" placeholder="Topic (optional)" />
+                </div>
+                <input type="hidden" name="body" value="Visit requested" />
+                <button className="btn sm">Send to Laura</button>
+              </form>
+            )}
             {last && <p className="faint small" style={{ marginTop: 10 }}>Last visit <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> ({relDay(last.date)})</p>}
           </section>
         </div>
@@ -213,7 +227,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </section>
         <section className="card">
           <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
-          <DotGrid groups={reachGroups} />
+          <ReachBars rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color }))} />
         </section>
       </div>
       )}
