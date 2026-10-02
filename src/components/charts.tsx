@@ -101,3 +101,58 @@ export function Ring({ pct, size = 64, color = "var(--brand)", label }: { pct: n
     </div>
   );
 }
+
+/** Columns split into stacked parts (new on top of used). Hover any column for the breakdown. */
+export type StackPoint = { label: string; hint?: string; parts: { label: string; value: number }[] };
+export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"], height = 96 }: { points: StackPoint[]; colors?: string[]; height?: number }) {
+  if (!points.length) return <p className="empty">No data yet</p>;
+  const total = (p: StackPoint) => p.parts.reduce((a, x) => a + x.value, 0);
+  const max = Math.max(1, ...points.map(total));
+  return (
+    <div>
+      <div className="cols stackcols" style={{ height }} role="img" aria-label="Stacked column chart">
+        {points.map((p, i) => {
+          const t = total(p);
+          const last = i === points.length - 1;
+          const tip = `${p.hint || p.label}: ${t}` + (t ? ` (${p.parts.map((x) => `${x.label.toLowerCase()} ${x.value}`).join(", ")})` : "");
+          return (
+            <div className="col" key={p.label} title={tip} style={{ opacity: last ? 1 : 0.8 }}>
+              <div className="col-val">{t > 0 ? t : ""}</div>
+              <div className="col-track">
+                <div className="col-fill stack" style={{ height: `${(t / max) * 100}%` }}>
+                  {p.parts.map((x, k) => (
+                    <div key={x.label} className="stackpart" style={{ flex: `${x.value} ${x.value} 0`, background: colors[k % colors.length] }} title={`${p.hint || p.label}: ${x.label} ${x.value}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="col-label">{p.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="legend small">{points[0].parts.map((x, k) => <span key={x.label}><i style={{ background: colors[k % colors.length] }} />{x.label}</span>)}</div>
+    </div>
+  );
+}
+
+/** One dot per person; filled when they've been worked with. Hover for the name. */
+export function DotGrid({ groups }: { groups: { label: string; color?: string; people: { name: string; on: boolean; href?: string }[] }[] }) {
+  if (!groups.length) return <p className="empty">No people yet</p>;
+  return (
+    <div className="dotgrid">
+      {groups.map((g) => {
+        const n = g.people.filter((p) => p.on).length;
+        return (
+          <div key={g.label} className="dotrow">
+            <div className="dotlabel"><strong>{g.label}</strong><span className="faint"> {n}/{g.people.length}</span></div>
+            <div className="dots">
+              {g.people.map((p) => p.href
+                ? <a key={p.name} href={p.href} className={`dot${p.on ? " on" : ""}`} title={p.name} style={{ ["--accent" as string]: g.color || "var(--brand)" }} />
+                : <span key={p.name} className={`dot${p.on ? " on" : ""}`} title={p.name} style={{ ["--accent" as string]: g.color || "var(--brand)" }} />)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

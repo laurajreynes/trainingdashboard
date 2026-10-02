@@ -4,7 +4,7 @@ import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
-import { HBars, Columns, Ring, Stacked } from "@/components/charts";
+import { HBars, Ring, Stacked, StackedColumns, DotGrid } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
@@ -56,9 +56,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
   const visits30 = loggedHere.filter((v) => v.date >= weeksBack(1)[0]).length;
-  const firstVisit = loggedHere.length ? loggedHere.map((v) => v.date).sort()[0] : today();
-  const weeks = weeksBack(8).filter((w, i, all) => i >= all.length - 4 || all[i + 1] === undefined || all[i + 1] > firstVisit);
-  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: loggedHere.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const initBars = activeInits.map((i) => {
     const ros = roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id));
     const done = ros.filter((r) => r.status === "trained" || r.status === "solid").length;
@@ -85,12 +82,25 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const mi = monthPhase(sp.phase);
   const reflecting = mi.phase === "reflect";
   const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
-  const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(6) });
+  const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(9) });
   const thisMonthRows = metricRows.filter((m) => m.period === curMonth);
   const soldMtd = thisMonthRows.reduce((a, m) => a + m.sold, 0);
   const soldAsOf = thisMonthRows.map((m) => m.as_of).sort().pop();
   const soldProj = soldAsOf ? projectToMonthEnd(soldMtd, soldAsOf) : null;
+  const stackFor = (rowsIn: typeof metricRows) => monthsBack(9).map((m) => {
+    const rs = rowsIn.filter((x) => x.period === m);
+    const nw = rs.reduce((a, x) => a + (x.new_sold ?? 0), 0);
+    const us = rs.reduce((a, x) => a + (x.used_sold ?? (x.new_sold == null ? x.sold : 0)), 0);
+    return { label: monthName(m).slice(0, 3), hint: monthName(m), parts: [{ label: "New", value: nw }, { label: "Used", value: us }] };
+  });
+  const soldStack = stackFor(metricRows);
+  const locStack = (l: string) => stackFor(metricRows.filter((x) => x.location === l));
   const soldByMonth = monthsBack(6).map((m) => ({ label: monthName(m).slice(0, 3), value: metricRows.filter((x) => x.period === m).reduce((a, x) => a + x.sold, 0), hint: monthName(m) }));
+  const touched = new Set(loggedHere.filter((v) => v.date >= mi.monthStart).flatMap((v) => v.people_ids));
+  const reachGroups = (store.locations.length ? [null, ...store.locations] : [null]).map((l) => ({
+    label: l || (store.locations.length ? "Main" : store.short_name), color: storeAccent(store),
+    people: peopleHere.filter((p) => (l ? p.location === l : !p.location || !store.locations.includes(p.location))).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })),
+  })).filter((g) => g.people.length);
   const apptRow = thisMonthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsRow = thisMonthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
 
@@ -161,8 +171,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <Stacked parts={rosterParts} />
         </section>
         <section className="card">
-          <div className="cardhead"><h2>Visits by week</h2></div>
-          <Columns points={visitsByWeek} color={storeAccent(store)} />
+          <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
+          <DotGrid groups={reachGroups} />
         </section>
       </div>
       )}
@@ -171,9 +181,19 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="grid cols-3" style={{ marginBottom: 20 }}>
           <section className="card">
             <div className="cardhead"><h2>Sold by month</h2></div>
-            <Columns points={soldByMonth} color={storeAccent(store)} />
-            {thisMonthRows.some((m) => m.location) && (
-              <p className="faint small" style={{ marginTop: 8 }}>{monthName(curMonth)}: {thisMonthRows.map((m) => `${m.location || "Main"} ${m.sold}`).join(" · ")}</p>
+            <StackedColumns points={soldStack} colors={[storeAccent(store), "var(--sage)"]} />
+            {store.locations.length > 0 && (
+              <details className="quiet" style={{ marginTop: 10 }}>
+                <summary>{store.locations.join(" and ")}</summary>
+                <div className="grid cols-2" style={{ marginTop: 8 }}>
+                  {store.locations.map((l) => (
+                    <div key={l}>
+                      <div className="eyebrow"><Link href={`/s/${store.slug}/at/${l.toLowerCase()}`}>{l}</Link></div>
+                      <StackedColumns points={locStack(l)} colors={[storeAccent(store), "var(--sage)"]} height={64} />
+                    </div>
+                  ))}
+                </div>
+              </details>
             )}
           </section>
           <section className="card">

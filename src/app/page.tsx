@@ -11,7 +11,7 @@ import { WeekCalendar } from "@/components/WeekCalendar";
 import { FileUploader } from "@/components/FileUploader";
 import { Grove } from "@/components/Grove";
 import { ReportsCard } from "@/components/ReportsCard";
-import { HBars, Columns, Stacked } from "@/components/charts";
+import { HBars, Stacked, StackedColumns, DotGrid } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks } from "@/lib/data";
 
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<{ phase?: string }> }) {
   const sp = await searchParams;
   const [editor, snap, posts, metricsAll, meetings] = await Promise.all([
-    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(3) }), getMeetings(3),
+    isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(9) }), getMeetings(3),
   ]);
   const bookmarksAll = await getBookmarks();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
@@ -48,9 +48,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const weekStart = weeksBack(1)[0];
   const visitsWeek = visits.filter((v) => v.date >= weekStart).length;
   const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= weekStart).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
-  const firstVisit = visits.length ? visits.map((v) => v.date).sort()[0] : today();
-  const weeks = weeksBack(8).filter((w, i, all) => i >= all.length - 4 || all[i + 1] === undefined || all[i + 1] > firstVisit);
-  const visitsByWeek = weeks.map((w, i) => ({ label: fmtDate(w).replace(/,.*$/, ""), value: visits.filter((v) => v.date >= w && v.date < (weeks[i + 1] || addDays(w, 7))).length, hint: `Week of ${fmtDate(w)}` }));
   const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
   const rosterParts = [
     { label: "Solid", value: rosterActive.filter((r) => r.status === "solid").length, color: "var(--good)" },
@@ -75,6 +72,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     return { label: s.short_name, value: sold, color: storeAccent(s), sub: !reflecting && proj ? `pacing ${proj}` : prev ? `${prev} prior` : undefined, href: `/s/${s.slug}` };
   });
   const soldTotal = soldRows.reduce((a, r) => a + r.value, 0);
+  const groupStack = monthsBack(9).map((m) => {
+    const rs = metricsAll.filter((x) => x.period === m);
+    return { label: monthName(m).slice(0, 3), hint: monthName(m), parts: [
+      { label: "New", value: rs.reduce((a, x) => a + (x.new_sold ?? 0), 0) },
+      { label: "Used", value: rs.reduce((a, x) => a + (x.used_sold ?? (x.new_sold == null ? x.sold : 0)), 0) },
+    ] };
+  });
+  const touched = new Set(visits.filter((v) => v.date >= phase.monthStart).flatMap((v) => v.people_ids));
+  const reachGroups = navStores.map((s) => ({ label: s.short_name, color: storeAccent(s), people: activePeople.filter((p) => p.store_id === s.id).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) })).filter((g) => g.people.length);
   const monthRows = metricsAll.filter((m) => m.period === curMonth);
   const apptAll = monthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsAll = monthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
@@ -148,18 +154,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             ? <HBars rows={soldRows} />
             : <p className="empty">No results loaded for this month yet.{editor ? " Paste the PR Inputs tab on the import page." : ""}</p>}
           <div style={{ marginTop: 14 }}>
-            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Visits this week</h2></div>
-            <HBars rows={visits30} />
+            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Sold by month, all stores</h2></div>
+            <StackedColumns points={groupStack} height={80} />
           </div>
         </section>
-        {!(reflecting && visits.length === 0) && <section className="card">
-          <div className="cardhead"><h2>Visits by week</h2></div>
-          <Columns points={visitsByWeek} />
+        <section className="card">
+          <div className="cardhead"><h2>Reached in {monthName(phase.month)}</h2></div>
+          <DotGrid groups={reachGroups} />
           {!reflecting && <div style={{ marginTop: 14 }}>
             <div className="cardhead" style={{ marginBottom: 6 }}><h2>Roster status</h2></div>
             <Stacked parts={rosterParts} />
           </div>}
-        </section>}
+        </section>
       </div>
 
       <div className="grid main-side" style={{ marginTop: 18 }}>

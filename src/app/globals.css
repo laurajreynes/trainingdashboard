@@ -544,3 +544,24 @@ a.plain:hover { text-decoration: underline; }
 .reports .chipr .k { font-size: 11px; font-weight: 800; color: var(--accent, var(--forest)); }
 .reports .chipr .t { font-size: 13px; }
 @media (max-width: 720px) { .reports { grid-template-columns: 1fr; } }
+
+/* Stacked columns */
+.col-fill.stack { display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 4px 4px 0 0; background: transparent !important; }
+.stackpart { width: 100%; min-height: 0; transition: filter .15s; }
+.col:hover .stackpart { filter: brightness(1.08); }
+.legend { display: flex; gap: 14px; margin-top: 6px; color: var(--ink-dim); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+/* Dot grid: who has been reached */
+.dotgrid { display: flex; flex-direction: column; gap: 8px; }
+.dotrow { display: grid; grid-template-columns: minmax(70px, 110px) 1fr; gap: 10px; align-items: center; font-size: 13px; }
+.dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.dot { width: 13px; height: 13px; border-radius: 50%; background: var(--panel-2); border: 1.5px solid var(--line-strong); display: inline-block; transition: transform .12s; }
+.dot.on { background: var(--accent); border-color: var(--accent); }
+.dot:hover { transform: scale(1.35); }
+.dot.on { animation: pop .4s ease-out both; }
+@keyframes pop { from { transform: scale(.4); } to { transform: scale(1); } }
+
+/* Location sub-tabs */
+.storenav a.sub { font-size: 12px; padding-left: 8px; padding-right: 8px; opacity: .8; }
+.storenav a.sub::before { content: "·"; margin-right: 6px; color: var(--ink-faint); }
