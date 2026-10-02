@@ -49,8 +49,6 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
           <div><div className="v">{days.total}</div><div className="l">selling days</div></div>
           <div><div className="v">{done}</div><div className="l">completed</div></div>
           <div><div className="v">{Math.max(0, days.total - done)}</div><div className="l">remaining</div></div>
-          {isCurrent && days.dates.includes(today()) && <div><div className="v">{done + 1}</div><div className="l">today</div></div>}
-          {asOfAll && <div className="faint small" style={{ alignSelf: "center" }}>numbers through {fmtDate(asOfAll)}</div>}
         </div>
       </div>
       <div className="small faint" style={{ marginBottom: 12 }}>
