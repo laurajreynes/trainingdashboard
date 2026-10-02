@@ -117,7 +117,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
       </div>
 
-      <ReportsCard reports={reports} stores={stores}>
+      <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (
           <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
             <summary style={{ padding: "4px 0" }}>Add a group report</summary>

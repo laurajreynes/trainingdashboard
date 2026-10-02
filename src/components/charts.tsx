@@ -121,7 +121,7 @@ export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"
               <div className="col-track">
                 <div className="col-fill stack" style={{ height: `${(t / max) * 100}%` }}>
                   {p.parts.map((x, k) => (
-                    <div key={x.label} className="stackpart" style={{ flex: `${x.value} ${x.value} 0`, background: colors[k % colors.length] }} title={`${p.hint || p.label}: ${x.label} ${x.value}`} />
+                    <div key={x.label} className="stackpart" style={{ height: `${t ? (x.value / t) * 100 : 0}%`, background: colors[k % colors.length] }} title={`${p.hint || p.label}: ${x.label} ${x.value}`} />
                   ))}
                 </div>
               </div>

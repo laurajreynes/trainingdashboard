@@ -1,5 +1,6 @@
 import type { Bookmark, Store } from "@/lib/types";
 import { storeAccent } from "@/lib/fmt";
+import { deleteBookmark } from "@/app/actions";
 
 /** "Sales Staff Productivity, September 2026" → { short: "Productivity", month: "September 2026" } */
 function parseTitle(t: string) {
@@ -10,7 +11,7 @@ function parseTitle(t: string) {
   return { short, month };
 }
 
-export function ReportsCard({ reports, stores, children }: { reports: Bookmark[]; stores: Store[]; children?: React.ReactNode }) {
+export function ReportsCard({ reports, stores, children, editor }: { reports: Bookmark[]; stores: Store[]; children?: React.ReactNode; editor?: boolean }) {
   if (!reports.length && !children) return null;
   const group = reports.filter((b) => !b.store_id);
   const byStore = reports.filter((b) => b.store_id);
@@ -22,14 +23,14 @@ export function ReportsCard({ reports, stores, children }: { reports: Bookmark[]
         <div>
           {group.map((b) => {
             const { short } = parseTitle(b.title);
-            return <a key={b.id} className="feature" href={b.url} target="_blank" rel="noreferrer"><span className="k">Group</span><span className="t">{short}</span></a>;
+            return <span key={b.id} className="rwrap"><a className="feature" href={b.url} target="_blank" rel="noreferrer"><span className="k">Group</span><span className="t">{short}</span></a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
           })}
         </div>
         <div className="grid-chips">
           {byStore.map((b) => {
             const s = stores.find((x) => x.id === b.store_id);
             const { short } = parseTitle(b.title);
-            return <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" style={{ ["--accent" as string]: storeAccent(s) }}><span className="k">{s?.short_name}</span><span className="t">{short}</span></a>;
+            return <span key={b.id} className="rwrap"><a className="chipr" href={b.url} target="_blank" rel="noreferrer" style={{ ["--accent" as string]: storeAccent(s) }}><span className="k">{s?.short_name}</span><span className="t">{short}</span></a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
           })}
         </div>
       </div>

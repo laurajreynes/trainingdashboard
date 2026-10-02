@@ -16,6 +16,7 @@ import { fmtDate, relDay, today, storeAccent } from "@/lib/fmt";
 import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
+import { ReportsCard } from "@/components/ReportsCard";
 import { addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -130,19 +131,11 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
 
-      <section style={{ marginBottom: 20 }}>
-        <div className="bookmarks">
-          {bookmarks.map((b) => (
-            <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
-              <a className="bookmark" href={b.url} target="_blank" rel="noreferrer">
-                <span className="k">{b.kind}</span>{b.title}{b.store_id === null && <span className="faint small">all</span>}
-              </a>
-              {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
-            </span>
-          ))}
+      <div style={{ marginBottom: 20 }}>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor}>
           {editor && (
             <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
-              <summary style={{ padding: "6px 0" }}>Add a report or link</summary>
+              <summary style={{ padding: "4px 0" }}>Add a report or link</summary>
               <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
                 <input type="hidden" name="store_id" value={store.id} />
                 <div className="frow">
@@ -156,9 +149,18 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               <FileUploader storeId={store.id} />
             </details>
           )}
-          
-        </div>
-      </section>
+        </ReportsCard>
+        {bookmarks.some((b) => b.kind !== "report") && (
+          <div className="bookmarks" style={{ marginTop: 10 }}>
+            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
+              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
+                <a className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span>{b.title}</a>
+                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {!(reflecting && trainedPct === 0 && visits30 === 0) && (
       <div className="grid cols-3" style={{ marginBottom: 20 }}>
