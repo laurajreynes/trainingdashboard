@@ -17,7 +17,7 @@ import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
-import { addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
+import { updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +45,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
   const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
+  const todayHere = visits.filter((v) => v.date === today());
   const loggedHere = visits.filter((v) => v.date <= today());
   const last = loggedHere[0];
   const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())
@@ -118,6 +119,44 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </div>
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
+      </div>
+
+      <div className="grid topfold" style={{ marginBottom: 18 }}>
+        <div className="stack">
+          <section className="card">
+            <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
+            {todayHere.map((v) => (
+              <div key={v.id} className="todaysess"><span className="tag good">Today</span> <Link href={`/v/${v.id}`}><strong>{v.focus || "Visit"}</strong></Link></div>
+            ))}
+            {plannedHere.length ? (
+              <ul className="list">
+                {plannedHere.slice(0, 4).map((v) => (
+                  <li key={v.id}><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong></Link> <span className="faint small">{relDay(v.date)}</span>{v.focus && <div className="small" style={{ marginTop: 2 }}>{v.focus}</div>}</div></li>
+                ))}
+              </ul>
+            ) : next ? (
+              <div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700 }}>{fmtDate(next.next_visit_date!, { weekday: true })}</div>
+                <div className="faint small">{relDay(next.next_visit_date)}</div>
+                {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
+              </div>
+            ) : <p className="empty">Nothing scheduled</p>}
+            {last && <p className="faint small" style={{ marginTop: 10 }}>Last visit <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> ({relDay(last.date)})</p>}
+          </section>
+        </div>
+        <div>
+          <section>
+            <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
+            {storeInits.length ? (
+              <div className="grid cols-2 initgrid">
+                {storeInits.map((i) => (
+                  <InitiativeCard key={i.id} init={i} stores={stores}
+                    roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
+                ))}
+              </div>
+            ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
+          </section>
+        </div>
       </div>
 
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
@@ -223,17 +262,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
       <div className="grid main-side">
         <div className="stack">
-          <section>
-            <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
-            {storeInits.length ? (
-              <div className="grid cols-2">
-                {storeInits.map((i) => (
-                  <InitiativeCard key={i.id} init={i} stores={stores}
-                    roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
-                ))}
-              </div>
-            ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
-          </section>
 
           {(examples.length > 0 || editor) && (
             <section className="card">
@@ -320,23 +348,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             </section>
           ))}
 
-          <section className="card">
-            <div className="cardhead"><h2>Upcoming</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
-            {plannedHere.length ? (
-              <ul className="list">
-                {plannedHere.slice(0, 5).map((v) => (
-                  <li key={v.id}><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong></Link> <span className="faint small">{relDay(v.date)}</span>{v.focus && <div className="small" style={{ marginTop: 2 }}>{v.focus}</div>}</div></li>
-                ))}
-              </ul>
-            ) : next ? (
-              <div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700 }}>{fmtDate(next.next_visit_date!, { weekday: true })}</div>
-                <div className="faint small">{relDay(next.next_visit_date)}</div>
-                {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
-              </div>
-            ) : <p className="empty">Nothing scheduled</p>}
-            {last && <p className="faint small" style={{ marginTop: 10 }}>Last visit <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> ({relDay(last.date)})</p>}
-          </section>
 
           <section className="card">
             <div className="cardhead"><h2>To-dos</h2></div>
@@ -368,6 +379,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </section>
         </div>
       </div>
+      {editor && (
+        <details className="quiet" style={{ marginTop: 18 }}>
+          <summary>Store name</summary>
+          <form action={updateStore} className="inline" style={{ marginTop: 8 }}>
+            <input type="hidden" name="id" value={store.id} />
+            <input type="text" name="name" defaultValue={store.name} placeholder="Full name" style={{ flex: 2, minWidth: 180 }} />
+            <input type="text" name="short_name" defaultValue={store.short_name} placeholder="Tab name" style={{ flex: 1, minWidth: 120 }} />
+            <button className="btn sm">Save</button>
+          </form>
+        </details>
+      )}
     </div>
   );
 }

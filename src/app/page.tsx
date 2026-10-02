@@ -11,6 +11,7 @@ import { WeekCalendar } from "@/components/WeekCalendar";
 import { FileUploader } from "@/components/FileUploader";
 import { Grove } from "@/components/Grove";
 import { ReportsCard } from "@/components/ReportsCard";
+import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, StackedColumns, DotGrid } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks } from "@/lib/data";
@@ -85,6 +86,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const apptAll = monthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsAll = monthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
   const soldAsOf = metricsAll.filter((m) => m.period === curMonth).map((m) => m.as_of).sort().pop();
+  const targets = await getTargets(phase.month);
+  const sd = sellingDays(phase.month);
+  const tracking = (() => {
+    let withTarget = 0, onPace = 0;
+    for (const s of navStores.filter((x) => !x.is_bdc)) {
+      for (const loc of [null, ...s.locations]) {
+        const t = targets[targetKey(s.id, loc)];
+        const goal = t && (t.new !== null || t.used !== null) ? (t.new || 0) + (t.used || 0) : 0;
+        if (!goal) continue;
+        withTarget++;
+        const m = metricsAll.find((x) => x.store_id === s.id && (x.location || null) === loc && x.period === phase.month);
+        const done = m ? sd.dates.filter((d) => d <= m.as_of).length : sd.done;
+        if (m && track(m.sold, done, sd.total) >= goal) onPace++;
+      }
+    }
+    return { withTarget, onPace };
+  })();
   const gmNext = nextGmMeeting();
   const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
 
@@ -108,14 +126,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
+      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
+
       <div className="kpis">
-        <div className="kpi"><div><div className="v">{activePeople.length}</div><div className="l">people on rosters</div></div></div>
-        {!(reflecting && kpiTrained === 0) && <div className="kpi"><div><div className="v">{kpiTrained}%</div><div className="l">trained on active initiatives</div></div></div>}
+        <Link href="/initiatives" className="kpi"><div><div className="v">{active.length}</div><div className="l">active initiative{active.length === 1 ? "" : "s"}</div></div></Link>
+        <Link href="/tracking" className="kpi"><div><div className="v">{tracking.withTarget ? `${tracking.onPace}/${tracking.withTarget}` : "–"}</div><div className="l">{tracking.withTarget ? "stores tracking to goal" : "set targets to track"}</div></div></Link>
         <div className="kpi"><div><div className="v">{visitsWeek}</div><div className="l">visits this week</div></div></div>
-        <div className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></div>
-        <div className="kpi"><div><div className="v">{openPosts}</div><div className="l">store notes waiting</div></div></div>
-        {soldTotal > 0 && <div className="kpi"><div><div className="v">{soldTotal}</div><div className="l">sold in {monthName(curMonth)}{soldAsOf ? ` thru ${fmtDate(soldAsOf)}` : ""}</div></div></div>}
+        <Link href="/todos" className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></Link>
       </div>
+
+      <section style={{ marginBottom: 18 }}>
+        <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
+        {active.length ? (
+          <div className="grid cols-3">
+            {active.map((i) => <InitiativeCard key={i.id} init={i} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
+          </div>
+        ) : (
+          <div className="card"><p className="empty">No initiatives yet. <Link href="/initiatives">Create the first one.</Link></p></div>
+        )}
+      </section>
 
       <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (
@@ -126,11 +155,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         )}
       </ReportsCard>
 
-      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
-
-      <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
+      <div style={{ marginTop: 18 }}>
+        <MonthPanel store={null} family={primary} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath="/" />
+      </div>
 
       <div className="grid cols-3" style={{ marginTop: 18 }}>
+        <section className="card">
+          <div className="cardhead"><h2>Sold in {monthName(curMonth)}</h2>{editor && <Link className="more" href="/tracking">Tracking</Link>}</div>
+          {soldTotal > 0 ? <HBars rows={soldRows} /> : <p className="empty">No numbers yet. <Link href="/tracking">Enter month to date</Link>.</p>}
+        </section>
         {reflecting && apptAll.due > 0 ? (
           <section className="card">
             <div className="cardhead"><h2>Appointments, {monthName(curMonth)}</h2></div>
@@ -144,68 +177,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
               <HBars rows={[{ label: "Lot", value: upsAll.lot, color: "var(--forest)" }, { label: "Phone", value: upsAll.phone, color: "var(--brand)" }, { label: "Web", value: upsAll.web, color: "var(--info)" }]} />
             </div>}
           </section>
-        ) : !(reflecting && kpiTrained === 0) && <section className="card">
-          <div className="cardhead"><h2>Training coverage</h2></div>
-          <HBars rows={coverage} unit="%" max={100} />
-        </section>}
-        <section className="card">
-          <div className="cardhead"><h2>Sold in {monthName(curMonth)}</h2>{editor && <Link className="more" href="/import">Import</Link>}</div>
-          {soldTotal > 0
-            ? <HBars rows={soldRows} />
-            : <p className="empty">No results loaded for this month yet.{editor ? " Paste the PR Inputs tab on the import page." : ""}</p>}
-          <div style={{ marginTop: 14 }}>
-            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Sold by month, all stores</h2></div>
-            <StackedColumns points={groupStack} height={80} />
-          </div>
-        </section>
+        ) : (
+          <section className="card">
+            <div className="cardhead"><h2>Training coverage</h2></div>
+            <HBars rows={coverage} unit="%" max={100} />
+            <div style={{ marginTop: 14 }}><Stacked parts={rosterParts} /></div>
+          </section>
+        )}
         <section className="card">
           <div className="cardhead"><h2>Reached in {monthName(phase.month)}</h2></div>
           <DotGrid groups={reachGroups} />
-          {!reflecting && <div style={{ marginTop: 14 }}>
-            <div className="cardhead" style={{ marginBottom: 6 }}><h2>Roster status</h2></div>
-            <Stacked parts={rosterParts} />
-          </div>}
         </section>
       </div>
 
       <div className="grid main-side" style={{ marginTop: 18 }}>
         <div className="stack">
           <section className="card">
-            <div className="cardhead"><h2>Upcoming by store</h2></div>
-            <table className="tbl">
-              <thead><tr><th>Store</th><th>Next visit</th><th>Plan</th><th>Last visit</th></tr></thead>
-              <tbody>
-                {upcoming.map(({ store, next, last }) => (
-                  <tr key={store.id}>
-                    <td><Link href={`/s/${store.slug}`} style={{ fontWeight: 600 }}>{store.short_name}</Link></td>
-                    <td>{next ? <><strong>{next.id ? <Link href={`/v/${next.id}`}>{fmtDate(next.date, { weekday: true })}</Link> : fmtDate(next.date, { weekday: true })}</strong> <span className="faint small">{relDay(next.date)}</span></> : <span className="faint">Not scheduled</span>}</td>
-                    <td className="muted small">{next?.plan || ""}</td>
-                    <td className="muted small">{last ? <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> : "Never"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-
-          {phase.phase !== "reflect" && (
-            <section>
-              <div className="cardhead"><h2>Active initiatives</h2><Link className="more" href="/initiatives">All initiatives</Link></div>
-              {active.length ? (
-                <div className="grid cols-2">
-                  {active.map((i) => <InitiativeCard key={i.id} init={i} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
-                </div>
-              ) : (
-                <div className="card"><p className="empty">No initiatives yet. <Link href="/initiatives">Create the first one.</Link></p></div>
-              )}
-            </section>
-          )}
-
-          <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
             <VisitList visits={visits.slice(0, 8)} stores={stores} people={people} showStore />
           </section>
         </div>
-
         <div className="stack">
           <section className="card groupcard">
             <div className="cardhead"><h2>Group focus</h2><Link className="more" href="/group">Open</Link></div>

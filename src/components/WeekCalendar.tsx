@@ -19,11 +19,11 @@ export function WeekCalendar({ visits, todos, stores, editor }: Props) {
   const gm = nextGmMeeting();
   const store = (id: string | null) => stores.find((s) => s.id === id);
   const todayIdx = days.indexOf(t);
-  const cols = days.map((d) => (d === t ? "2.2fr" : "1fr")).join(" ");
+  const cols = days.map((d) => (d === t ? "2.6fr" : "1fr")).join(" ");
   return (
     <section className="card weekcal">
       <div className="cardhead">
-        <h2>This week</h2>
+        <h2>Today and this week</h2>
         {editor && <Link className="more" href="/visit/new?plan=1">Schedule</Link>}
       </div>
       <div className="weekrow" style={{ gridTemplateColumns: cols }}>

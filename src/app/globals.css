@@ -587,3 +587,10 @@ a.plain:hover { text-decoration: underline; }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }
 .tag.bad { background: var(--bad-soft); color: var(--bad); }
 
+
+.grid.topfold { grid-template-columns: minmax(260px, 1fr) 2fr; }
+@media (max-width: 860px) { .grid.topfold { grid-template-columns: 1fr; } }
+.todaysess { margin-bottom: 8px; font-size: 15px; }
+.weekcal .day.today .sess { font-size: 15px; }
+.weekcal .day.today .dayhead { font-size: 15px; }
+a.kpi { text-decoration: none; color: inherit; }

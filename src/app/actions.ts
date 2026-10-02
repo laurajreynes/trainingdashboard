@@ -687,3 +687,10 @@ export async function setStoreSoldSplit(fd: FormData) {
   }, { onConflict: "store_id,location,period" }));
   refresh();
 }
+
+// ---------- store settings ----------
+export async function updateStore(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("stores").update({ name: must(fd, "name"), short_name: must(fd, "short_name") }).eq("id", must(fd, "id")));
+  refresh();
+}
