@@ -182,7 +182,7 @@ export const COMMITMENT_LABEL: Record<Commitment["status"], string> = {
   done: "Done",
 };
 
-export const ROLES = ["Salesperson", "BDC Agent", "Manager", "GM", "Service Advisor", "Other"];
+export const ROLES = ["Salesperson", "BDC Agent", "Sales Manager", "GM", "F&I", "Service Advisor", "Other"];
 
 export type StorePost = {
   id: string;
