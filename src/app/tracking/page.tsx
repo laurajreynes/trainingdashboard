@@ -106,15 +106,6 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
         })}
       </div>
 
-      <section className="card" style={{ marginTop: 18 }}>
-        <div className="cardhead"><h2>All stores</h2><span className={`tag ${trackClass(totals.target ? Math.round((totals.tr / totals.target) * 100) : null)}`}>{totals.target ? `${Math.round((totals.tr / totals.target) * 100)}% of target` : "set targets below"}</span></div>
-        <div className="stats tight">
-          <div className="stat"><div className="v">{totals.mtd}</div><div className="l">month to date</div></div>
-          <div className="stat"><div className="v">{totals.tr}</div><div className="l">tracking</div></div>
-          <div className="stat"><div className="v">{totals.target || "–"}</div><div className="l">target</div></div>
-          <div className="stat"><div className="v">{totals.prev || "–"}</div><div className="l">{monthName(prevMonth)}</div></div>
-        </div>
-      </section>
 
       {editor && (
         <details className="card quiet" style={{ marginTop: 18 }}>
