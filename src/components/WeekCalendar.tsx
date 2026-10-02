@@ -5,10 +5,12 @@ import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting } from "
 type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean };
 
 /** "11am Toyota training" → time "11am", rest "Toyota training". */
-export function splitTime(focus: string | null): { time: string | null; text: string } {
-  if (!focus) return { time: null, text: "" };
-  const m = focus.match(/^\s*(\d{1,2}(?::\d{2})?\s?(?:am|pm))\s*[-–:,]?\s*(.*)$/i);
-  return m ? { time: m[1].replace(/\s/g, "").toLowerCase(), text: m[2] } : { time: null, text: focus };
+export function splitTime(focus: string | null): { time: string | null; text: string; minutes: number } {
+  if (!focus) return { time: null, text: "", minutes: 9999 };
+  const m = focus.match(/^\s*(\d{1,2})(?::(\d{2}))?\s?(am|pm)\s*[-–:,]?\s*(.*)$/i);
+  if (!m) return { time: null, text: focus, minutes: 9999 };
+  const h = (Number(m[1]) % 12) + (m[3].toLowerCase() === "pm" ? 12 : 0);
+  return { time: `${m[1]}${m[2] ? ":" + m[2] : ""}${m[3].toLowerCase()}`, text: m[4], minutes: h * 60 + Number(m[2] || 0) };
 }
 
 /** Monday to Friday of this week. Today gets the wide column. */
@@ -28,7 +30,7 @@ export function WeekCalendar({ visits, todos, stores, editor }: Props) {
       </div>
       <div className="weekrow" style={{ gridTemplateColumns: cols }}>
         {days.map((d) => {
-          const sessions = visits.filter((v) => v.date === d).sort((a, b) => (splitTime(a.focus).time || "zz").localeCompare(splitTime(b.focus).time || "zz"));
+          const sessions = visits.filter((v) => v.date === d).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
           const dues = todos.filter((x) => !x.done && x.due === d);
           const isToday = d === t;
           return (

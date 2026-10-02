@@ -94,14 +94,14 @@ p:last-child { margin-bottom: 0; }
   border-top: 3px solid var(--forest);
   border-bottom: 1px solid var(--line);
   padding: 0 clamp(14px, 3vw, 32px);
-  display: flex; align-items: center; gap: 18px;
-  height: 56px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  min-height: 56px;
 }
 .brand { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; }
 .brand span { color: var(--forest); font-weight: 600; }
 .brand i { width: 26px; height: 26px; border-radius: 7px; background: var(--forest); display: inline-flex; align-items: center; justify-content: center; }
 .brand i svg { width: 22px; height: 22px; }
-.storenav { display: flex; gap: 0; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.storenav { display: flex; gap: 0; flex: 1 1 auto; flex-wrap: wrap; }
 .storenav a {
   padding: 8px 10px; border-radius: 8px; white-space: nowrap;
   font-weight: 600; font-size: 14px;
@@ -109,7 +109,7 @@ p:last-child { margin-bottom: 0; }
 }
 .storenav a:hover { text-decoration: none; color: var(--ink); background: var(--panel-2); }
 .storenav a.on { color: var(--ink); border-bottom-color: var(--accent, var(--gold)); }
-.utilnav { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.utilnav { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; margin-left: auto; }
 .utilnav a, .utilnav button { white-space: nowrap; font-size: 13px; color: var(--ink-dim); padding: 6px 8px; border-radius: 8px; background: none; border: 0; cursor: pointer; font-family: inherit; }
 .utilnav a:hover, .utilnav button:hover { background: var(--panel-2); text-decoration: none; color: var(--ink); }
 .utilnav .pill { background: var(--gold-soft); color: var(--gold); font-weight: 600; }
