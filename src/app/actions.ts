@@ -156,6 +156,15 @@ export async function removeFromInitiative(fd: FormData) {
 }
 
 // ---------- visits ----------
+
+/** A logged session on an initiative counts as training for the people who were there: not-yet rows become trained on that date. */
+async function markTrainedFromVisit(date: string, initiativeIds: string[], peopleIds: string[]) {
+  if (!initiativeIds.length || !peopleIds.length || date > new Date().toISOString().slice(0, 10)) return;
+  const r = await db().from("initiative_people").select("id, initiative_id, person_id, status").in("initiative_id", initiativeIds).in("person_id", peopleIds);
+  if (r.error) return;
+  const rows = (r.data as { id: string; status: string }[]).filter((x) => x.status === "not_started" || x.status === "needs_followup");
+  for (const row of rows) await db().from("initiative_people").update({ status: "trained", trained_on: date, updated_at: new Date().toISOString() }).eq("id", row.id);
+}
 export async function addVisit(fd: FormData) {
   await requireEditor();
   const r = await db().from("visits").insert({
@@ -180,6 +189,7 @@ export async function addVisit(fd: FormData) {
       }))));
     }
   }
+  await markTrainedFromVisit(s(fd, "date") || new Date().toISOString().slice(0, 10), list(fd, "initiative_ids"), list(fd, "people_ids"));
   refresh();
   redirect(`/v/${(r.data as { id: string }).id}`);
 }
@@ -195,6 +205,7 @@ export async function updateVisit(fd: FormData) {
     next_visit_date: s(fd, "next_visit_date"),
     next_visit_plan: s(fd, "next_visit_plan"),
   }).eq("id", must(fd, "id")));
+  await markTrainedFromVisit(s(fd, "date") || new Date().toISOString().slice(0, 10), list(fd, "initiative_ids"), list(fd, "people_ids"));
   refresh();
 }
 export async function deleteVisit(fd: FormData) {
