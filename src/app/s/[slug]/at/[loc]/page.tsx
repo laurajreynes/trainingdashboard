@@ -4,7 +4,10 @@ import { isEditor } from "@/lib/auth";
 import { getStoreBySlug, getStores, getPeople, getMetrics, getBookmarks, getVisits, getAllRoster, getInitiatives } from "@/lib/data";
 import { storeAccent, monthName, monthsBack, today, fmtDate } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
-import { StackedColumns, DotGrid } from "@/components/charts";
+import { StackedColumns, ReachBars } from "@/components/charts";
+import { InitiativeCard } from "@/components/ui";
+import { splitTime } from "@/components/WeekCalendar";
+import { getStages } from "@/lib/data";
 import { VisitList } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +19,8 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   if (!store) notFound();
   const location = store.locations.find((l) => l.toLowerCase() === loc.toLowerCase());
   if (!location) notFound();
-  const [people, metrics, bookmarks, visits, roster, initiatives] = await Promise.all([
-    getPeople([store.id]), getMetrics({ storeIds: [store.id], periods: monthsBack(9) }), getBookmarks([store.id]), getVisits({ storeIds: [store.id], limit: 100 }), getAllRoster(), getInitiatives(),
+  const [people, metrics, bookmarks, visits, roster, initiatives, stages] = await Promise.all([
+    getPeople([store.id]), getMetrics({ storeIds: [store.id], periods: monthsBack(9) }), getBookmarks([store.id]), getVisits({ storeIds: [store.id], limit: 100 }), getAllRoster(), getInitiatives(), getStages(),
   ]);
   const here = people.filter((p) => p.active && p.location === location);
   const ids = new Set(here.map((p) => p.id));
@@ -32,7 +35,10 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   const cur = rows.find((x) => x.period === showMonth);
   const reports = bookmarks.filter((b) => b.kind === "report" && b.title.toLowerCase().includes(location.toLowerCase()));
   const touched = new Set(visits.filter((v) => v.date >= mi.monthStart && v.date <= today()).flatMap((v) => v.people_ids));
-  const hereVisits = visits.filter((v) => v.date <= today() && (v.people_ids.some((id) => ids.has(id)) || (v.focus || "").toLowerCase().includes(location.toLowerCase()))).slice(0, 6);
+  const mentions = (v: { focus: string | null; people_ids: string[] }) => v.people_ids.some((id) => ids.has(id)) || (v.focus || "").toLowerCase().includes(location.toLowerCase());
+  const hereVisits = visits.filter((v) => v.date <= today() && mentions(v)).slice(0, 6);
+  const upcoming = [...visits.filter((v) => v.date === today() && mentions(v)), ...visits.filter((v) => v.date > today() && mentions(v)).sort((a, b) => a.date.localeCompare(b.date))].slice(0, 5);
+  const initsHere = initiatives.filter((i) => i.status !== "done" && i.store_ids.includes(store.id) && roster.some((r) => r.initiative_id === i.id && ids.has(r.person_id)));
   const active = new Set(initiatives.filter((i) => i.status === "active" && i.store_ids.includes(store.id)).map((i) => i.id));
   const trained = here.filter((p) => roster.some((r) => r.person_id === p.id && active.has(r.initiative_id) && (r.status === "trained" || r.status === "solid"))).length;
 
@@ -54,6 +60,24 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
         {trained > 0 && <div className="kpi"><div><div className="v">{trained}</div><div className="l">trained on active initiatives</div></div></div>}
       </div>
 
+      <section className="card nextstrip" style={{ marginBottom: 18 }}>
+        <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
+        {upcoming.length ? (
+          <div className="nextrow">
+            {upcoming.map((v) => { const { time, text } = splitTime(v.focus); const isToday = v.date === today(); return (
+              <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`}><span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}</span><span className="what">{text || v.focus || "Visit"}</span></Link>
+            ); })}
+          </div>
+        ) : <p className="empty">Nothing scheduled here yet</p>}
+      </section>
+
+      {initsHere.length > 0 && (
+        <section style={{ marginBottom: 18 }}>
+          <div className="cardhead"><h2>Initiatives here</h2></div>
+          <div className="grid cols-3">{initsHere.map((i) => <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]} roster={roster.filter((r) => r.initiative_id === i.id && ids.has(r.person_id))} />)}</div>
+        </section>
+      )}
+
       {reports.length > 0 && (
         <div className="bookmarks" style={{ marginBottom: 18 }}>
           {reports.map((b) => <a key={b.id} className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">report</span>{b.title}</a>)}
@@ -67,7 +91,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
         </section>
         <section className="card">
           <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
-          <DotGrid groups={[{ label: location, color: storeAccent(store), people: here.map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) }]} />
+          <ReachBars rows={[{ label: location, color: storeAccent(store), reached: here.filter((p) => touched.has(p.id)).length, total: here.length }]} />
         </section>
       </div>
 
