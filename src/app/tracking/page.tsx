@@ -18,7 +18,8 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
   const month = /^\d{4}-\d{2}$/.test(sp.month || "") ? sp.month! : mi.month;
   const [editor, stores] = await Promise.all([isEditor(), getStores()]);
   const prevMonth = monthsBack(2)[0] === month ? monthsBack(3)[0] : mi.prevMonth;
-  const [targets, metrics] = await Promise.all([getTargets(month), getMetrics({ periods: [month, prevMonth] })]);
+  const lastYear = `${Number(month.slice(0, 4)) - 1}${month.slice(4)}`;
+  const [targets, metrics] = await Promise.all([getTargets(month), getMetrics({ periods: [month, prevMonth, lastYear] })]);
   const days = sellingDays(month);
   const isCurrent = month === mi.month;
 
@@ -59,20 +60,25 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
         {rows.map((r) => {
           const m = metric(r, month);
           const pm = metric(r, prevMonth);
-          const t = targets[r.key] || { new: null, used: null };
+          const saved = targets[r.key] || { new: null, used: null };
+          const ly = metric(r, lastYear);
+          const hasTarget = saved.new !== null || saved.used !== null;
+          // No target yet: track against the same month last year, and say so
+          const t = hasTarget ? saved : ly ? { new: ly.new_sold ?? null, used: ly.used_sold ?? null } : saved;
+          const vsLastYear = !hasTarget && Boolean(ly);
           const nw = cell(m ? m.new_sold ?? (m.used_sold == null ? null : m.sold - (m.used_sold || 0)) : null, t.new);
           const us = cell(m ? m.used_sold ?? (m.new_sold == null ? null : m.sold - (m.new_sold || 0)) : null, t.used);
-          const tot = cell(m ? m.sold : null, t.new !== null || t.used !== null ? (t.new || 0) + (t.used || 0) : null);
+          const tot = cell(m ? m.sold : null, hasTarget ? (t.new || 0) + (t.used || 0) : ly ? ly.sold : null);
           totals.mtd += tot.mtd || 0; totals.tr += tot.tr || 0; totals.target += tot.target || 0; totals.prev += pm?.sold || 0;
           const lines = [["New", nw, pm?.new_sold ?? null], ["Used", us, pm?.used_sold ?? null], ["Total", tot, pm?.sold ?? null]] as const;
           return (
             <section className="card trackcard" key={r.key} style={{ ["--accent" as string]: r.color }}>
               <div className="cardhead">
                 <h2><Link href={`/s/${r.slug}`} style={{ color: r.color }}>{r.name}</Link></h2>
-                <span className={`tag ${trackClass(tot.pct)}`}>{tot.pct !== null ? `${tot.pct}% of target` : tot.target ? "no numbers yet" : "no target"}</span>
+                <span className={`tag ${trackClass(tot.pct)}`}>{tot.pct !== null ? `${tot.pct}% of ${vsLastYear ? "last year" : "target"}` : tot.target ? "no numbers yet" : "no target"}</span>
               </div>
               <table className="tbl track">
-                <thead><tr><th></th><th>MTD</th><th>Tracking</th><th>Target</th><th>Track</th><th className="faint">{monthName(prevMonth).slice(0, 3)}</th></tr></thead>
+                <thead><tr><th></th><th>MTD</th><th>Tracking</th><th>{vsLastYear ? <span className="faint">Last yr</span> : "Target"}</th><th>Track</th><th className="faint">{monthName(prevMonth).slice(0, 3)}</th></tr></thead>
                 <tbody>
                   {lines.map(([label, c, prev]) => (
                     <tr key={label} className={label === "Total" ? "total" : ""}>
