@@ -10,6 +10,7 @@ import { MonthPanel } from "@/components/MonthPanel";
 import { WeekCalendar } from "@/components/WeekCalendar";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
+import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
@@ -125,6 +126,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <ReachBars compact rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color, href: g.href }))} />
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
+
+      <Model />
 
       <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
 

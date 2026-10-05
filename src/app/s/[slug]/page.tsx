@@ -17,6 +17,7 @@ import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
+import { Model } from "@/components/Model";
 import { splitTime } from "@/components/WeekCalendar";
 import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
@@ -124,6 +125,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
+
+      <Model compact />
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
