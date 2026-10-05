@@ -55,7 +55,10 @@ export default async function InitiativePage({ params, searchParams }: { params:
   });
   const groups = (filterStore ? [filterStore] : stores).map((s) => ({
     store: s,
-    rows: onRoster.filter((p) => p.store_id === s.id).sort((a, b) => a.name.localeCompare(b.name)),
+    rows: onRoster.filter((p) => p.store_id === s.id).sort((a, b) => {
+      const ord = (id: string) => ({ not_started: 0, needs_followup: 1, trained: 2, solid: 3 } as Record<string, number>)[rosterByPerson.get(id)?.status || "not_started"] ?? 0;
+      return ord(a.id) - ord(b.id) || a.name.localeCompare(b.name);
+    }),
   })).filter((g) => g.rows.length);
 
   return (
