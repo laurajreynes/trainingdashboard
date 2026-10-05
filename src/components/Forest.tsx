@@ -17,12 +17,15 @@ export function Forest({ trees, label }: { trees: { color: string; title: string
           const h = 22 + j(i, 2) * 16 - row * 6;
           const w = 9 + j(i, 3) * 5;
           const base = ground - row * 5 + (row ? 0 : 2);
+          const shades = ["#1f4d3a", "#2a6b4f", "#3c8a66", "#2f7a58", "#17402f"];
+          const top = shades[Math.floor(j(i, 4) * shades.length)];
+          const bottom = shades[Math.floor(j(i, 5) * shades.length)];
           return (
             <g key={i} className="tree" style={{ animationDelay: `${(i % 7) * 0.4}s` }}>
               <title>{t.title}</title>
               <rect x={x - 1.2} y={base - h * 0.3} width="2.4" height={h * 0.3} fill="#7a5a3a" />
-              <path d={`M${x} ${base - h} L${x + w / 2} ${base - h * 0.45} L${x - w / 2} ${base - h * 0.45} Z`} fill="var(--forest)" opacity={row ? 0.75 : 1} />
-              <path d={`M${x} ${base - h * 0.78} L${x + w * 0.62} ${base - h * 0.22} L${x - w * 0.62} ${base - h * 0.22} Z`} fill={t.color} opacity={row ? 0.8 : 1} />
+              <path d={`M${x} ${base - h} L${x + w / 2} ${base - h * 0.45} L${x - w / 2} ${base - h * 0.45} Z`} fill={top} opacity={row ? 0.75 : 1} />
+              <path d={`M${x} ${base - h * 0.78} L${x + w * 0.62} ${base - h * 0.22} L${x - w * 0.62} ${base - h * 0.22} Z`} fill={bottom} opacity={row ? 0.8 : 1} />
             </g>
           );
         })}
