@@ -48,9 +48,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
   const todayHere = visits.filter((v) => v.date === today()).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
-  // This store's own sessions only (a shared BDC keeps its own page), today first, then the next few
-  const own = (v: { store_id: string }) => v.store_id === store.id;
-  const upcomingHere = [...todayHere.filter(own), ...plannedHere.filter(own).sort((a, b) => a.date.localeCompare(b.date) || splitTime(a.focus).minutes - splitTime(b.focus).minutes)].slice(0, 5);
+  // This store's sessions plus the shared BDC's, today first, then the next few
+  const upcomingHere = [...todayHere, ...plannedHere.sort((a, b) => a.date.localeCompare(b.date) || splitTime(a.focus).minutes - splitTime(b.focus).minutes)].slice(0, 6);
   const loggedHere = visits.filter((v) => v.date <= today());
   const last = loggedHere[0];
   const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())
@@ -134,8 +133,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               const { time, text } = splitTime(v.focus);
               const isToday = v.date === today();
               return (
-                <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`}>
-                  <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}</span>
+                <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`} style={v.store_id !== store.id ? { ["--accent" as string]: storeAccent(stores.find((s) => s.id === v.store_id)) } : undefined}>
+                  <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}{v.store_id !== store.id ? ` · ${stores.find((s) => s.id === v.store_id)?.short_name || ""}` : ""}</span>
                   <span className="what">{text || v.focus || "Visit"}</span>
                 </Link>
               );
