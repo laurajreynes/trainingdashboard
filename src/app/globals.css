@@ -322,11 +322,15 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 .exkind { position: absolute; top: 6px; left: 6px; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,0.92); color: var(--ink); }
 .exkind.good { color: var(--good); } .exkind.warn { color: var(--warn); } .exkind.info { color: var(--info); }
 .exmeta { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 6px; font-size: 12px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,0.65)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(10, 11, 13, 0.92); display: flex; align-items: center; justify-content: center; padding: 16px; }
-.lbbody { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; max-width: 1200px; width: 100%; max-height: 100%; }
+.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(10, 11, 13, 0.92); display: flex; align-items: center; justify-content: center; padding: 16px 64px; }
+.lbbody { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 14px; width: 100%; max-width: none; max-height: 100%; align-items: start; }
+@media (max-width: 860px) { .lbbody { grid-template-columns: 1fr; } }
 .lbimg { display: flex; align-items: center; justify-content: center; min-height: 0; }
-.lbimg img { max-width: 100%; max-height: calc(100vh - 32px); object-fit: contain; border-radius: 8px; background: #000; }
-.lbside { background: var(--panel); color: var(--ink); border-radius: 10px; padding: 14px 16px; overflow-y: auto; max-height: calc(100vh - 32px); }
+.lbimg img { width: 100%; max-height: calc(100vh - 32px); object-fit: contain; border-radius: 8px; background: #000; }
+.lbside { background: var(--panel); color: var(--ink); border-radius: 10px; padding: 12px 14px; overflow-y: auto; max-height: calc(100vh - 32px); font-size: 13px; }
+.lbhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.lbname { font-weight: 600; font-size: 15px; }
+.lbnote { margin: 8px 0 0; line-height: 1.45; color: var(--ink-dim); }
 .lbtheme { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
 .lbx, .lbnav { position: fixed; z-index: 101; background: rgba(255,255,255,0.12); color: #fff; border: 0; border-radius: 999px; width: 44px; height: 44px; font-size: 28px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .lbx:hover, .lbnav:hover { background: rgba(255,255,255,0.25); }
@@ -497,8 +501,8 @@ a.plain:hover { text-decoration: underline; }
 
 /* Motion */
 @media (prefers-reduced-motion: no-preference) {
-  .card { transition: transform .18s ease, box-shadow .18s ease; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(31,77,58,.06), 0 14px 30px rgba(31,77,58,.12); }
+  .card { transition: box-shadow .18s ease; }
+  .card:hover { box-shadow: 0 2px 4px rgba(31,77,58,.06), 0 14px 30px rgba(31,77,58,.12); }
   .bookmark, .sess, .kpi, .chip { transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
   .bookmark:hover, .sess:hover, .kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(31,77,58,.12); }
   .hbar-fill { transform-origin: left center; animation: growx .7s cubic-bezier(.2,.8,.2,1) both; }
@@ -515,8 +519,6 @@ a.plain:hover { text-decoration: underline; }
   .grove .tree { transform-origin: bottom center; animation: sway 5s ease-in-out infinite; }
   .grove .tree:nth-child(odd) { animation-delay: -2.5s; }
   .grove .sun { animation: shine 6s ease-in-out infinite; }
-  .page > * { animation: rise .45s ease-out both; }
-  .page > *:nth-child(2) { animation-delay: .05s; } .page > *:nth-child(3) { animation-delay: .1s; } .page > *:nth-child(4) { animation-delay: .15s; } .page > *:nth-child(5) { animation-delay: .2s; }
 }
 @keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes growy { from { transform: scaleY(0); } to { transform: scaleY(1); } }

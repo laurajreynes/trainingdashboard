@@ -26,7 +26,6 @@ export function ExampleGallery({ items, people, initiatives, stores, themes = []
   const [editing, setEditing] = useState(false);
   const name = (id: string) => people.find((p) => p.id === id)?.name || "";
   const initName = (id: string | null) => initiatives.find((i) => i.id === id)?.name || "";
-  const storeName = (id: string | null) => stores.find((s) => s.id === id)?.name || "";
 
   const close = useCallback(() => { setIdx(null); setEditing(false); }, []);
   const step = useCallback((d: number) => setIdx((i) => (i === null ? null : (i + d + items.length) % items.length)), [items.length]);
@@ -59,9 +58,7 @@ export function ExampleGallery({ items, people, initiatives, stores, themes = []
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={e.url} alt={e.caption || ""} loading="lazy" />
             <span className={`exkind ${kindClass(e.kind)}`}>{EXAMPLE_KIND_LABEL[e.kind]}</span>
-            {(e.theme || e.person_ids.length > 0) && (
-              <span className="exmeta">{e.theme || ""}{e.theme && e.person_ids.length ? " · " : ""}{e.person_ids.map(name).filter(Boolean).join(", ")}</span>
-            )}
+            {e.person_ids.length > 0 && <span className="exmeta">{e.person_ids.map(name).filter(Boolean).join(", ")}</span>}
           </button>
         ))}
       </div>
@@ -77,16 +74,12 @@ export function ExampleGallery({ items, people, initiatives, stores, themes = []
               <img src={cur.url} alt={cur.caption || ""} />
             </div>
             <aside className="lbside">
-              <div className="small faint">{idx! + 1} of {items.length}</div>
-              <div style={{ margin: "6px 0 8px" }}><span className={`tag ${kindClass(cur.kind)}`}>{EXAMPLE_KIND_LABEL[cur.kind]}</span></div>
-              {cur.theme && <div className="lbtheme">{cur.theme}</div>}
-              {cur.caption && <p className="pre" style={{ marginTop: 6 }}>{cur.caption}</p>}
-              <div className="small muted" style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 3 }}>
-                {cur.person_ids.length > 0 && <span>{cur.person_ids.map((id, i) => <span key={id}>{i ? ", " : ""}<Link href={`/p/${id}`}>{name(id)}</Link></span>)}</span>}
-                {cur.initiative_id && <span><Link href={`/i/${cur.initiative_id}`}>{initName(cur.initiative_id)}</Link></span>}
-                {cur.store_id && <span>{storeName(cur.store_id)}</span>}
-                <span>{fmtDate(cur.taken_on)}</span>
+              <div className="lbhead">
+                {cur.person_ids.length > 0 && <div className="lbname">{cur.person_ids.map((id, i) => <span key={id}>{i ? ", " : ""}<Link href={`/p/${id}`}>{name(id)}</Link></span>)}</div>}
+                <span className={`tag ${kindClass(cur.kind)}`}>{EXAMPLE_KIND_LABEL[cur.kind]}</span>
               </div>
+              {cur.caption && <p className="lbnote">{cur.caption}</p>}
+              <div className="small faint" style={{ marginTop: 8 }}>{fmtDate(cur.taken_on)}{cur.initiative_id ? <> · <Link href={`/i/${cur.initiative_id}`}>{initName(cur.initiative_id)}</Link></> : null} · {idx! + 1} of {items.length}</div>
               {editor && !editing && (
                 <div className="inline" style={{ marginTop: 12 }}>
                   <button type="button" className="btn sm ghost" onClick={() => setEditing(true)}>Edit</button>
