@@ -613,3 +613,11 @@ a.kpi { text-decoration: none; color: inherit; }
 
 .tag.stage { background: var(--sun-soft); color: var(--forest); font-weight: 600; white-space: nowrap; }
 h1 .tag.stage { font-size: 12px; vertical-align: middle; }
+
+/* Next training strip */
+.nextrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.nextitem { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 10px; background: var(--panel-2); text-decoration: none; color: inherit; min-width: 180px; max-width: 320px; border-left: 3px solid var(--accent, var(--forest)); }
+.nextitem.today { background: var(--sun-soft); }
+.nextitem .when { font-size: 12px; font-weight: 600; color: var(--forest); }
+.nextitem .what { font-size: 14px; }
+.nextitem:hover { text-decoration: none; background: var(--line); }

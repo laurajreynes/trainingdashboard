@@ -48,6 +48,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
   const todayHere = visits.filter((v) => v.date === today()).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
+  // This store's own sessions only (a shared BDC keeps its own page), today first, then the next few
+  const own = (v: { store_id: string }) => v.store_id === store.id;
+  const upcomingHere = [...todayHere.filter(own), ...plannedHere.filter(own).sort((a, b) => a.date.localeCompare(b.date) || splitTime(a.focus).minutes - splitTime(b.focus).minutes)].slice(0, 5);
   const loggedHere = visits.filter((v) => v.date <= today());
   const last = loggedHere[0];
   const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())
@@ -123,57 +126,49 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
 
-      <div className="grid topfold" style={{ marginBottom: 18 }}>
-        <div className="stack">
-          <section className="card">
-            <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
-            {todayHere.map((v) => (
-              <div key={v.id} className="todaysess"><span className="tag good">Today</span> <Link href={`/v/${v.id}`}><strong>{v.focus || "Visit"}</strong></Link></div>
+      <section className="card nextstrip" style={{ marginBottom: 18 }}>
+        <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
+        {upcomingHere.length ? (
+          <div className="nextrow">
+            {upcomingHere.map((v) => {
+              const { time, text } = splitTime(v.focus);
+              const isToday = v.date === today();
+              return (
+                <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`}>
+                  <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}</span>
+                  <span className="what">{text || v.focus || "Visit"}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <form action={addStorePost} className="reqvisit">
+            <input type="hidden" name="store_id" value={store.id} />
+            <input type="hidden" name="kind" value="question" />
+            <input type="hidden" name="back" value={`/s/${store.slug}`} />
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999 }} aria-hidden="true" />
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Request a visit</div>
+            <div className="frow">
+              <input type="text" name="author" placeholder="Your name" required />
+              <input type="text" name="topic" placeholder="Topic (optional)" />
+            </div>
+            <input type="hidden" name="body" value="Visit requested" />
+            <button className="btn sm">Send to Laura</button>
+          </form>
+        )}
+      </section>
+
+      <section style={{ marginBottom: 18 }}>
+        <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
+        {storeInits.length ? (
+          <div className="grid cols-3">
+            {storeInits.map((i) => (
+              <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]}
+                roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
             ))}
-            {plannedHere.length ? (
-              <ul className="list">
-                {plannedHere.slice(0, 4).map((v) => (
-                  <li key={v.id}><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong></Link> <span className="faint small">{relDay(v.date)}</span>{v.focus && <div className="small" style={{ marginTop: 2 }}>{v.focus}</div>}</div></li>
-                ))}
-              </ul>
-            ) : next ? (
-              <div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700 }}>{fmtDate(next.next_visit_date!, { weekday: true })}</div>
-                <div className="faint small">{relDay(next.next_visit_date)}</div>
-                {next.next_visit_plan && <p style={{ marginTop: 6 }}>{next.next_visit_plan}</p>}
-              </div>
-            ) : todayHere.length ? null : (
-              <form action={addStorePost} className="reqvisit">
-                <input type="hidden" name="store_id" value={store.id} />
-                <input type="hidden" name="kind" value="question" />
-                <input type="hidden" name="back" value={`/s/${store.slug}`} />
-                <input type="text" name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999 }} aria-hidden="true" />
-                <div className="eyebrow" style={{ marginBottom: 6 }}>Request a visit</div>
-                <div className="frow">
-                  <input type="text" name="author" placeholder="Your name" required />
-                  <input type="text" name="topic" placeholder="Topic (optional)" />
-                </div>
-                <input type="hidden" name="body" value="Visit requested" />
-                <button className="btn sm">Send to Laura</button>
-              </form>
-            )}
-            {last && <p className="faint small" style={{ marginTop: 10 }}>Last visit <Link href={`/v/${last.id}`}>{fmtDate(last.date)}</Link> ({relDay(last.date)})</p>}
-          </section>
-        </div>
-        <div>
-          <section>
-            <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
-            {storeInits.length ? (
-              <div className="grid cols-2 initgrid">
-                {storeInits.map((i) => (
-                  <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]}
-                    roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
-                ))}
-              </div>
-            ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
-          </section>
-        </div>
-      </div>
+          </div>
+        ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
+      </section>
 
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
 
