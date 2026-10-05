@@ -120,9 +120,9 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
             )}
           </div>
           <PlanBox
-            title={`${prevName} in a few lines`} field="lessons" value={plan?.lessons || null}
+            title={`${prevName} recap`} field="lessons" value={plan?.lessons || null}
             month={mi.month} storeId={store?.id || null} editor={editor}
-            placeholder={"What we focused on, what landed. A snack, not a meal."}
+            placeholder={"What we focused on, what landed. Short."}
           />
           <PlanBox
             title={`${mName} focus`} field="focus" value={plan?.focus || null}
@@ -204,7 +204,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
           <summary>Set up {nextName}{nextPlan?.focus ? " · focus written" : ""}</summary>
           <div className="grid cols-2" style={{ marginTop: 10 }}>
             <PlanBox
-              title={`What ${mName} taught us`} field="lessons" value={nextPlan?.lessons || null}
+              title={`${mName} recap`} field="lessons" value={nextPlan?.lessons || null}
               month={mi.nextMonth} storeId={store?.id || null} editor={editor}
               placeholder={"What worked, what didn't, what surprised us"}
             />
