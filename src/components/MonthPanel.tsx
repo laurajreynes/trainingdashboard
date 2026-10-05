@@ -6,7 +6,7 @@ import {
 } from "@/lib/data";
 import { monthPhase, paceGoal, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
-import { PhaseArt } from "./PhaseArt";
+import { Forest } from "./Forest";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
 
 type Props = {
@@ -53,6 +53,10 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
     wins: wins.filter((w) => inRange(w.date, a, b)).length,
   });
   const lastMonth = stat(mi.prevStart, mi.prevEnd);
+  const forestTrees = scopedRoster
+    .filter((r) => (r.status === "trained" || r.status === "solid") && inRange(r.trained_on, mi.monthStart, mi.today))
+    .sort((a, b) => (a.trained_on || "").localeCompare(b.trained_on || ""))
+    .map((r) => { const p = people.find((x) => x.id === r.person_id); const s = allStores.find((x) => x.id === p?.store_id); return { color: storeAccent(s), title: `${p?.name || ""}${s ? " · " + s.short_name : ""}` }; });
   const thisMonth = stat(mi.monthStart, mi.today);
 
   const planFor = (month: string) => plans.find((p) => p.month === month && (scoped ? p.store_id === store!.id : p.store_id === null));
@@ -94,7 +98,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
     <section className={`card phase phase-${mi.phase}`} style={{ marginBottom: 22 }}>
       <div className="phasehead">
         <div className="phaseintro">
-          <PhaseArt phase={mi.phase} />
+          <Forest trees={forestTrees} label={`${forestTrees.length} trained in ${mName}`} />
           <div>
             <h2 className="phasetitle">{fmtDate(mi.today)}</h2>
             <div className="eyebrow">{mi.daysLeft} {mi.daysLeft === 1 ? "day" : "days"} left in {mName}</div>
