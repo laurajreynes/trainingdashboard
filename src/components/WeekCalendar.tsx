@@ -8,7 +8,13 @@ type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean
 export function splitTime(focus: string | null): { time: string | null; text: string; minutes: number } {
   if (!focus) return { time: null, text: "", minutes: 9999 };
   const m = focus.match(/^\s*(\d{1,2})(?::(\d{2}))?\s?(am|pm)\s*[-–:,]?\s*(.*)$/i);
-  if (!m) return { time: null, text: focus, minutes: 9999 };
+  if (!m) {
+    const w = focus.match(/^\s*(AM|PM|Late morning|Early afternoon|Midday|Morning|Afternoon)\s*[-–:,]?\s*(.*)$/i);
+    if (!w) return { time: null, text: focus, minutes: 9999 };
+    const k = w[1].toLowerCase();
+    const minutes = k === "am" || k === "morning" ? 8 * 60 : k === "late morning" ? 11 * 60 : k === "midday" ? 12 * 60 : k === "early afternoon" ? 13 * 60 : 14 * 60;
+    return { time: w[1].toUpperCase() === w[1] ? w[1] : w[1].toLowerCase(), text: w[2], minutes };
+  }
   const h = (Number(m[1]) % 12) + (m[3].toLowerCase() === "pm" ? 12 : 0);
   return { time: `${m[1]}${m[2] ? ":" + m[2] : ""}${m[3].toLowerCase()}`, text: m[4], minutes: h * 60 + Number(m[2] || 0) };
 }
