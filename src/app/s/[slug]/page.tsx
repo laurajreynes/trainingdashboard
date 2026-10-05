@@ -36,13 +36,13 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const stages = await getStages();
-  const bookmarks = bookmarksAll.filter((b) => !b.initiative_id);
+  const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const peopleIdSet = new Set(people.map((p) => p.id));
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => (e.store_id && ids.includes(e.store_id)) || e.person_ids.some((pid) => peopleIdSet.has(pid))).slice(0, 8);
   const examples = await signExamples(exHere);
-  const storeInits = initiatives.filter((i) => i.store_ids.some((id) => ids.includes(id)) && i.status !== "done");
+  const storeInits = initiatives.filter((i) => i.store_ids.includes(store.id) && i.status !== "done");   // this store only; shared BDC initiatives live on the BDC tab
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
