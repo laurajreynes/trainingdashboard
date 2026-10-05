@@ -1,5 +1,5 @@
 import { isEditor } from "@/lib/auth";
-import { getStores, getInitiatives, getAllRoster } from "@/lib/data";
+import { getStores, getInitiatives, getAllRoster, getStages } from "@/lib/data";
 import { InitiativeCard } from "@/components/ui";
 import { addInitiative } from "@/app/actions";
 import { today } from "@/lib/fmt";
@@ -7,7 +7,7 @@ import { today } from "@/lib/fmt";
 export const dynamic = "force-dynamic";
 
 export default async function Initiatives() {
-  const [editor, stores, initiatives, roster] = await Promise.all([isEditor(), getStores(), getInitiatives(), getAllRoster()]);
+  const [editor, stores, initiatives, roster, stages] = await Promise.all([isEditor(), getStores(), getInitiatives(), getAllRoster(), getStages()]);
   const live = initiatives.filter((i) => i.status !== "done");
   const done = initiatives.filter((i) => i.status === "done");
   return (
@@ -15,7 +15,7 @@ export default async function Initiatives() {
       <div className="pagehead"><div><div className="eyebrow">All stores</div><h1>Initiatives</h1></div></div>
       <div className="stack">
         {live.length ? (
-          <div className="grid cols-3">{live.map((i) => <InitiativeCard key={i.id} init={i} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}</div>
+          <div className="grid cols-3">{live.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}</div>
         ) : <div className="card"><p className="empty">Nothing yet. Add the first initiative below.</p></div>}
 
         {editor && (
@@ -44,7 +44,7 @@ export default async function Initiatives() {
         {done.length > 0 && (
           <details className="quiet">
             <summary>Done ({done.length})</summary>
-            <div className="grid cols-3" style={{ marginTop: 12 }}>{done.map((i) => <InitiativeCard key={i.id} init={i} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}</div>
+            <div className="grid cols-3" style={{ marginTop: 12 }}>{done.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}</div>
           </details>
         )}
       </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples, getMetrics } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples, getMetrics, getStages } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
@@ -34,6 +34,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
     getWins({ storeIds: ids, limit: 6 }), getPeople(ids), getBookmarks(ids), getCommitments(ids), getGoals({ storeIds: ids }),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
+  const stages = await getStages();
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id);
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const peopleIdSet = new Set(people.map((p) => p.id));
@@ -164,7 +165,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             {storeInits.length ? (
               <div className="grid cols-2 initgrid">
                 {storeInits.map((i) => (
-                  <InitiativeCard key={i.id} init={i} stores={stores}
+                  <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]}
                     roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
                 ))}
               </div>

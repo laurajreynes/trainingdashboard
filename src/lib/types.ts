@@ -252,3 +252,7 @@ export type StoreMetric = {
   source: string | null;
   created_at: string;
 };
+
+/** Where an initiative is in its life. Kept beside the initiative, shown as a pill. */
+export const STAGES = ["Planning", "Rolling out", "Training", "Coaching execution", "Measuring", "Sustaining"] as const;
+export type Stage = (typeof STAGES)[number];

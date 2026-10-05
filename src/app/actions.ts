@@ -515,7 +515,7 @@ export async function deleteExample(fd: FormData) {
 export async function saveGroupNote(fd: FormData) {
   await requireEditor();
   const key = must(fd, "key");
-  if (!["mission", "vision", "values", "notes"].includes(key) && !key.startsWith("targets:")) throw new Error("Unknown section");
+  if (!["mission", "vision", "values", "notes"].includes(key) && !key.startsWith("targets:") && !key.startsWith("stage:")) throw new Error("Unknown section");
   ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();
 }
@@ -704,5 +704,13 @@ export async function setStoreSoldSplit(fd: FormData) {
 export async function updateStore(fd: FormData) {
   await requireEditor();
   ok(await db().from("stores").update({ name: must(fd, "name"), short_name: must(fd, "short_name") }).eq("id", must(fd, "id")));
+  refresh();
+}
+
+export async function setInitiativeStage(fd: FormData) {
+  await requireEditor();
+  const id = must(fd, "initiative_id");
+  const stage = s(fd, "stage") || "";
+  ok(await db().from("group_notes").upsert({ key: `stage:${id}`, body: stage, updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();
 }

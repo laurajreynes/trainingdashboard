@@ -13,7 +13,7 @@ import { ReportsCard } from "@/components/ReportsCard";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
-import { getBookmarks } from "@/lib/data";
+import { getBookmarks, getStages } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(9) }), getMeetings(3),
   ]);
   const bookmarksAll = await getBookmarks();
+  const stages = await getStages();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
@@ -131,7 +132,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
         {active.length ? (
           <div className="grid cols-3">
-            {active.map((i) => <InitiativeCard key={i.id} init={i} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
+            {active.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
           </div>
         ) : (
           <div className="card"><p className="empty">No initiatives yet. <Link href="/initiatives">Create the first one.</Link></p></div>

@@ -45,13 +45,13 @@ export function RosterBar({ roster, showLegend = false }: { roster: InitiativePe
   );
 }
 
-export function InitiativeCard({ init, roster, stores }: { init: Initiative; roster: InitiativePerson[]; stores: Store[] }) {
+export function InitiativeCard({ init, roster, stores, stage }: { init: Initiative; roster: InitiativePerson[]; stores: Store[]; stage?: string }) {
   const names = stores.filter((s) => init.store_ids.includes(s.id)).map((s) => s.short_name);
   return (
     <Link href={`/i/${init.id}`} className="initcard">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
         <h3>{init.name}</h3>
-        <StatusTag status={init.status} />
+        {stage ? <span className="tag stage">{stage}</span> : <StatusTag status={init.status} />}
       </div>
       {init.goal_text && <p className="muted small">{init.goal_text}</p>}
       {names.length > 0 && <p className="faint small">{names.join(" · ")}</p>}
