@@ -28,6 +28,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
   const planned = visitsAll.filter((v) => v.date > today());        // scheduled sessions
+  const owed = visits.filter((v) => v.date < today() && !v.summary).slice(0, 12);   // happened, no recap yet
   const primary = stores.filter((s) => !s.is_bdc);
   const active = initiatives.filter((i) => i.status === "active" || i.status === "planning");
   const open = todos.filter((t) => !t.done);
@@ -180,6 +181,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       <div className="grid main-side" style={{ marginTop: 18 }}>
         <div className="stack">
+          {owed.length > 0 && (
+            <section className="card" style={{ borderTop: "3px solid var(--warn)" }}>
+              <div className="cardhead"><h2>Recaps owed · {owed.length}</h2></div>
+              <ul className="list">
+                {owed.map((v) => {
+                  const st = stores.find((s) => s.id === v.store_id);
+                  return <li key={v.id}><span className="dot" style={{ ["--accent" as string]: storeAccent(st) }} /><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong>{st ? ` · ${st.short_name}` : ""}{v.focus ? ` · ${v.focus}` : ""}</Link></div></li>;
+                })}
+              </ul>
+            </section>
+          )}
           <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
             <VisitList visits={visits.slice(0, 8)} stores={stores} people={people} showStore />

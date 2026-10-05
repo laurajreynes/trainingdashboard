@@ -17,6 +17,7 @@ import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
+import { splitTime } from "@/components/WeekCalendar";
 import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
   const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
-  const todayHere = visits.filter((v) => v.date === today());
+  const todayHere = visits.filter((v) => v.date === today()).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
   const loggedHere = visits.filter((v) => v.date <= today());
   const last = loggedHere[0];
   const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
-import { getVisit, getStores, getInitiatives, getPeople, getTodos } from "@/lib/data";
+import { getVisit, getStores, getInitiatives, getPeople, getTodos, getVisits } from "@/lib/data";
 import { fmtDate, relDay, storeAccent } from "@/lib/fmt";
 import { updateVisit, deleteVisit, addTodo } from "@/app/actions";
 import { VisitFields } from "@/components/VisitForm";
@@ -12,6 +12,8 @@ export const dynamic = "force-dynamic";
 export default async function VisitPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [visit, stores, initiatives, people, editor] = await Promise.all([getVisit(id), getStores(), getInitiatives(), getPeople(), isEditor()]);
+  const storeVisits = visit ? await getVisits({ storeIds: [visit.store_id], limit: 200 }) : [];
+  const nextHere = visit ? storeVisits.filter((v) => v.id !== visit.id && v.date > visit.date).sort((a, b) => a.date.localeCompare(b.date))[0] : null;
   if (!visit) notFound();
   const store = stores.find((s) => s.id === visit.store_id)!;
   const inits = initiatives.filter((i) => visit.initiative_ids.includes(i.id));
@@ -69,13 +71,19 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
         <div className="stack">
           <section className="card">
             <div className="cardhead"><h2>Next visit</h2></div>
-            {visit.next_visit_date ? (
+            {nextHere ? (
+              <>
+                <Link href={`/v/${nextHere.id}`} style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700 }}>{fmtDate(nextHere.date, { weekday: true })}</Link>
+                <div className="faint small">{relDay(nextHere.date)}</div>
+                {nextHere.focus && <p style={{ marginTop: 8 }}>{nextHere.focus}</p>}
+              </>
+            ) : visit.next_visit_date ? (
               <>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700 }}>{fmtDate(visit.next_visit_date, { weekday: true })}</div>
                 <div className="faint small">{relDay(visit.next_visit_date)}</div>
                 {visit.next_visit_plan && <p className="pre" style={{ marginTop: 8 }}>{visit.next_visit_plan}</p>}
               </>
-            ) : <p className="empty">Not set</p>}
+            ) : <p className="empty">Nothing scheduled yet. <Link href={`/visit/new?store=${store.slug}&plan=1`}>Schedule one</Link>.</p>}
           </section>
           <section className="card">
             <div className="cardhead"><h2>Follow-ups</h2></div>
