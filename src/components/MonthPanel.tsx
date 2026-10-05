@@ -221,10 +221,10 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
         </details>
       )}
 
-      <Playbook
+      {editor && <Playbook
         items={items} checks={checks} month={mi.month} phase={mi.phase} editor={editor}
         store={store} scopeStores={scoped ? [store!] : allStores.filter((s) => !s.is_bdc)}
-      />
+      />}
     </section>
   );
 }
