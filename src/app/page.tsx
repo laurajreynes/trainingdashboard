@@ -126,12 +126,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
 
-      <div className="kpis">
-        <Link href="/initiatives" className="kpi"><div><div className="v">{active.length}</div><div className="l">active initiative{active.length === 1 ? "" : "s"}</div></div></Link>
-        <Link href="/tracking" className="kpi"><div><div className="v">{tracking.withTarget ? `${tracking.onPace}/${tracking.withTarget}` : "–"}</div><div className="l">{tracking.withTarget ? "stores tracking to goal" : "set targets to track"}</div></div></Link>
-        <div className="kpi"><div><div className="v">{visitsWeek}</div><div className="l">visits this week</div></div></div>
-        <Link href="/todos" className="kpi"><div><div className="v">{open.length}</div><div className="l">open to-dos</div></div></Link>
-      </div>
 
       <section style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
