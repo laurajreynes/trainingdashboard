@@ -118,7 +118,7 @@ export default async function GroupPage() {
 
         <div className="stack">
           <section className="card meetingcard">
-            <div className="eyebrow">Next GM meeting</div>
+            <div className="eyebrow">Next HR/GM meeting · 1pm</div>
             <div className="bigdate">{fmtDate(next, { weekday: true })}</div>
             <div className="muted small" style={{ marginBottom: 10 }}>{relDay(next)} · second Thursday</div>
             {nextMeeting?.agenda
@@ -130,7 +130,7 @@ export default async function GroupPage() {
                 <form action={nextMeeting ? updateMeeting : addMeeting} style={{ marginTop: 8 }}>
                   {nextMeeting ? <input type="hidden" name="id" value={nextMeeting.id} /> : null}
                   <input type="hidden" name="date" value={next} />
-                  <input type="hidden" name="title" value={nextMeeting?.title || "GM meeting"} />
+                  <input type="hidden" name="title" value={nextMeeting?.title || "HR/GM meeting"} />
                   <textarea name="agenda" defaultValue={nextMeeting?.agenda || ""} placeholder={"Training update by store\nThis month's focus\nStore notes worth raising"} style={{ minHeight: 110 }} />
                   {nextMeeting ? <textarea name="notes" defaultValue={nextMeeting.notes || ""} placeholder="Notes (after the meeting)" style={{ minHeight: 60, marginTop: 6 }} /> : null}
                   <button className="btn sm" style={{ marginTop: 6 }}>Save</button>
@@ -147,7 +147,7 @@ export default async function GroupPage() {
                   <li key={m.id}>
                     <div className="grow">
                       <details className="quiet" style={{ borderTop: 0, marginTop: 0, paddingTop: 0 }}>
-                        <summary><strong>{fmtDate(m.date)}</strong>{m.title !== "GM meeting" ? ` · ${m.title}` : ""}{!m.notes && <span className="faint small"> · no notes</span>}</summary>
+                        <summary><strong>{fmtDate(m.date)}</strong>{m.title !== "GM meeting" && m.title !== "HR/GM meeting" ? ` · ${m.title}` : ""}{!m.notes && <span className="faint small"> · no notes</span>}</summary>
                         {m.agenda && <p className="pre muted small" style={{ marginTop: 6 }}>{m.agenda}</p>}
                         {m.notes && <p className="pre small" style={{ marginTop: 6 }}>{m.notes}</p>}
                         {editor && (
@@ -175,7 +175,7 @@ export default async function GroupPage() {
                 <form action={addMeeting} style={{ marginTop: 8 }}>
                   <div className="frow">
                     <input type="date" name="date" defaultValue={today()} required />
-                    <input type="text" name="title" defaultValue="GM meeting" />
+                    <input type="text" name="title" defaultValue="HR/GM meeting" />
                   </div>
                   <textarea name="agenda" placeholder="Agenda" style={{ minHeight: 50 }} />
                   <textarea name="notes" placeholder="Notes" style={{ minHeight: 60, marginTop: 6 }} />

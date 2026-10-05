@@ -38,11 +38,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const activeIds = new Set(initiatives.filter((i) => i.status === "active" || i.status === "sustaining").map((i) => i.id));
   const activePeople = people.filter((p) => p.active);
   const coverage = navStores.map((s) => {
-    const folks = activePeople.filter((p) => p.store_id === s.id);
-    const inits = initiatives.filter((i) => activeIds.has(i.id) && i.store_ids.includes(s.id));
-    const slots = folks.length * inits.length;
-    const done = roster.filter((r) => activeIds.has(r.initiative_id) && (r.status === "trained" || r.status === "solid") && folks.some((p) => p.id === r.person_id) && inits.some((i) => i.id === r.initiative_id)).length;
-    return { label: s.short_name, value: slots ? Math.round((done / slots) * 100) : 0, color: storeAccent(s), sub: slots ? `${done}/${slots}` : "no roster", href: `/s/${s.slug}`, max: 100 };
+    const folks = new Set(activePeople.filter((p) => p.store_id === s.id).map((p) => p.id));
+    const rows = roster.filter((r) => activeIds.has(r.initiative_id) && folks.has(r.person_id));
+    const done = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
+    return { label: s.short_name, value: rows.length ? Math.round((done / rows.length) * 100) : 0, color: storeAccent(s), sub: rows.length ? `${done}/${rows.length}` : "no roster", href: `/coverage#${s.slug}`, max: 100 };
   });
   const since30 = addDays(today(), -29);
   const weekStart = weeksBack(1)[0];
@@ -63,7 +62,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const curMonth = reflecting ? phase.prevMonth : phase.month;
   const prevMonth = monthsBack(3)[reflecting ? 0 : 1];
   const soldFor = (sid: string, period: string) => metricsAll.filter((m) => m.store_id === sid && m.period === period);
-  const soldRows = navStores.filter((s) => !s.is_bdc || soldFor(s.id, curMonth).length).map((s) => {
+  const soldRows = navStores.filter((s) => !s.is_bdc).map((s) => {
     const rows = soldFor(s.id, curMonth);
     const sold = rows.reduce((a, m) => a + m.sold, 0);
     const asOf = rows.map((m) => m.as_of).sort().pop();
@@ -178,7 +177,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           </section>
         ) : null}
         <section className="card">
-          <div className="cardhead"><h2>Training coverage</h2></div>
+          <div className="cardhead"><h2>Training coverage</h2><Link className="more" href="/coverage">Who</Link></div>
           <HBars rows={coverage} unit="%" max={100} />
           <div style={{ marginTop: 14 }}><Stacked parts={rosterParts} /></div>
         </section>
@@ -194,7 +193,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <div className="stack">
           <section className="card groupcard">
             <div className="cardhead"><h2>Group focus</h2><Link className="more" href="/group">Open</Link></div>
-            <div className="small"><span className="eyebrow">Next GM meeting</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
+            <div className="small"><span className="eyebrow">Next HR/GM meeting · 1pm</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
             {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
           </section>
           <OpenPosts posts={posts} stores={stores} editor={editor} />

@@ -56,7 +56,7 @@ export function WeekCalendar({ visits, todos, stores, editor }: Props) {
                   </Link>
                 );
               })}
-              {d === gm && <Link href="/group" className="sess gm"><span className="who">GM meeting</span></Link>}
+              {d === gm && <Link href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link>}
               {dues.map((x) => {
                 const s = store(x.store_id);
                 return <Link key={x.id} href={s ? `/s/${s.slug}` : "/todos"} className="sess due" style={{ ["--accent" as string]: storeAccent(s) }} title={x.text}><span className="what">{x.text}</span></Link>;
