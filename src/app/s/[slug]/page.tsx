@@ -175,7 +175,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {!(reflecting && trainedPct === 0) && <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>}
         <div className="kpi"><div><div className="v">{peopleHere.length}</div><div className="l">active people</div></div></div>
         <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits this week</div></div></div>
-        <div className="kpi"><div><div className="v">{todos.length}</div><div className="l">open to-dos</div></div></div>
+        <div className="kpi"><div><div className="v">{todos.filter((t) => t.store_id === store.id).length}</div><div className="l">open to-dos</div></div></div>
         <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
         {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
@@ -361,7 +361,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
           <section className="card">
             <div className="cardhead"><h2>To-dos</h2></div>
-            <TodoList todos={todos} editor={editor} people={people} />
+            <TodoList todos={todos.filter((t) => t.store_id === store.id)} editor={editor} people={people} />
             {editor && (
               <form action={addTodo} className="inline" style={{ marginTop: 10 }}>
                 <input type="hidden" name="store_id" value={store.id} />
