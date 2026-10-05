@@ -82,7 +82,7 @@ h1, h2, h3, h4 {
   line-height: 1.15;
 }
 h1 { font-size: 34px; color: var(--forest); }
-h2 { font-family: var(--font-body); font-size: 15px; color: var(--ink-dim); font-weight: 800; letter-spacing: 0; }
+h2 { font-family: var(--font-body); font-size: 14px; color: var(--ink-dim); font-weight: 600; letter-spacing: 0; }
 h3 { font-size: 17px; }
 p { margin: 0 0 8px; }
 p:last-child { margin-bottom: 0; }
@@ -470,12 +470,12 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .weekcal .day.today { border-color: var(--forest); background: var(--panel); box-shadow: 0 6px 18px -12px rgba(31,77,58,.6); }
 .weekcal .day.past { opacity: .55; }
 .weekcal .dayhead { font-size: 12px; color: var(--ink-faint); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 6px; }
-.weekcal .day.today .dayhead { color: var(--forest); font-weight: 800; font-size: 14px; }
+.weekcal .day.today .dayhead { color: var(--forest); font-weight: 600; font-size: 14px; }
 .weekcal .sess { display: block; margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: var(--panel); border-left: 3px solid var(--accent, var(--forest)); text-decoration: none; color: inherit; font-size: 12px; line-height: 1.3; }
 .weekcal .day.today .sess { font-size: 14px; padding: 9px 10px; background: var(--panel-2); }
 .weekcal .sess:hover { background: var(--line); }
-.weekcal .sess .when { display: inline-block; font-weight: 800; color: var(--forest); margin-right: 6px; }
-.weekcal .sess .who { font-weight: 800; display: inline; color: var(--accent, var(--forest)); }
+.weekcal .sess .when { display: inline-block; font-weight: 600; color: var(--forest); margin-right: 6px; }
+.weekcal .sess .who { font-weight: 600; display: inline; color: var(--accent, var(--forest)); }
 .weekcal .sess .what { display: block; color: var(--ink-dim); }
 .weekcal .day.today .sess .what { color: var(--ink); }
 .weekcal .sess.gm { border-left-color: var(--gold); }
@@ -491,7 +491,7 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .phaseart { width: 150px; height: 66px; flex: 0 0 auto; }
 @media (max-width: 720px) { .phaseart { width: 110px; height: 48px; } }
 
-.kpi .v, .stat .v, .bigcount, .bigdate { font-weight: 700; letter-spacing: -0.02em; }
+.kpi .v, .stat .v, .bigcount, .bigdate { font-weight: 600; letter-spacing: -0.02em; }
 a.plain { color: inherit; text-decoration: none; }
 a.plain:hover { text-decoration: underline; }
 
@@ -601,7 +601,7 @@ a.kpi { text-decoration: none; color: inherit; }
 .reach-row { display: block; text-decoration: none; color: inherit; }
 .reach-row:hover { text-decoration: none; }
 .reach-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
-.reach-label { font-weight: 800; }
+.reach-label { font-weight: 600; }
 .reach-n { font-variant-numeric: tabular-nums; font-weight: 700; }
 .reach-track { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
 .reach-fill { height: 100%; border-radius: 4px; transform-origin: left; animation: growx .7s cubic-bezier(.2,.8,.2,1) both; }

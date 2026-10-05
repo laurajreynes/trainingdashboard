@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Nunito, Outfit } from "next/font/google";
+import { Inter, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 
-const body = Nunito({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" });
-const display = Outfit({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
+const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" });
+const display = Inter_Tight({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: "Ressler Training Hub",
