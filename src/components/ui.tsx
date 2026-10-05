@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { STAGES } from "@/lib/types";
 import type { Initiative, InitiativePerson, Person, Store, Todo, Visit, Win, Commitment, GoalEntry, Goal } from "@/lib/types";
 import { INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "@/lib/types";
 import { fmtDate, relDay, pct, storeAccent, today } from "@/lib/fmt";
@@ -51,7 +52,7 @@ export function InitiativeCard({ init, roster, stores, stage }: { init: Initiati
     <Link href={`/i/${init.id}`} className="initcard">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
         <h3>{init.name}</h3>
-        {stage ? <span className="tag stage">{stage}</span> : <StatusTag status={init.status} />}
+        {stage ? <StageSteps stage={stage} /> : <StatusTag status={init.status} />}
       </div>
       {init.goal_text && <p className="muted small">{init.goal_text}</p>}
       {names.length > 0 && <p className="faint small">{names.join(" · ")}</p>}
@@ -202,5 +203,17 @@ export function Sparkline({ goal, entries }: { goal: Goal; entries: GoalEntry[] 
       </svg>
       <p className="small muted">Latest {last}{goal.unit} on {fmtDate(pts[pts.length - 1].date)}{goal.target !== null ? ` · target ${goal.target}${goal.unit}` : ""}{hit ? " · hit" : ""}</p>
     </div>
+  );
+}
+
+
+/** Six little segments, filled up to the current stage, with the stage named. */
+export function StageSteps({ stage }: { stage: string }) {
+  const idx = Math.max(0, (STAGES as readonly string[]).indexOf(stage));
+  return (
+    <span className="stagesteps" title={`Stage ${idx + 1} of ${STAGES.length}: ${stage}`}>
+      <span className="stagesteps-bar">{STAGES.map((s, i) => <i key={s} className={i <= idx ? "on" : ""} />)}</span>
+      <span className="stagesteps-label">{stage}</span>
+    </span>
   );
 }
