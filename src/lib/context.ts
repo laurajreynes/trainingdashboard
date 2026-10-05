@@ -47,11 +47,11 @@ export async function buildHubContext(): Promise<string> {
   out.push("\n# INITIATIVES");
   for (const i of snap.initiatives) {
     const ros = snap.roster.filter((r) => r.initiative_id === i.id);
-    const counts = Object.fromEntries(Object.keys(ROSTER_LABEL).map((k) => [k, ros.filter((r) => r.status === k).length]));
+    const counts = Object.fromEntries(["not_started","trained","needs_followup"].map((k) => [k, ros.filter((r) => r.status === k).length]));
     out.push(`## ${i.name} [${INITIATIVE_STATUS_LABEL[i.status]}] stores: ${i.store_ids.map(storeName).join(", ") || "none"}${i.start_date ? ` started ${i.start_date}` : ""}`);
     if (i.goal_text) out.push(`Goal: ${i.goal_text}`);
     if (i.description) out.push(`Description: ${i.description}`);
-    out.push(`Roster: ${ros.length} people; solid ${counts.solid}, trained ${counts.trained}, needs follow-up ${counts.needs_followup}, not started ${counts.not_started}`);
+    out.push(`Roster: ${ros.length} people; trained ${counts.trained}, needs follow-up ${counts.needs_followup}, not started ${counts.not_started}`);
     const byStore = new Map<string, string[]>();
     for (const r of ros) {
       const p = snap.people.find((x) => x.id === r.person_id);

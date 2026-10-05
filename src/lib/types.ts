@@ -165,8 +165,9 @@ export const ROSTER_LABEL: Record<RosterStatus, string> = {
   not_started: "Not yet",
   trained: "Trained",
   needs_followup: "Follow up",
-  solid: "Solid",
+  solid: "Trained", // legacy value, no longer offered
 };
+export const ROSTER_STATUSES: RosterStatus[] = ["not_started", "trained", "needs_followup"];
 
 export const INITIATIVE_STATUS_LABEL: Record<Initiative["status"], string> = {
   planning: "Planning",

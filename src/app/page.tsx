@@ -52,7 +52,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const visits30 = navStores.map((s) => ({ label: s.short_name, value: visits.filter((v) => v.store_id === s.id && v.date >= weekStart).length, color: storeAccent(s), href: `/s/${s.slug}/visits` }));
   const rosterActive = roster.filter((r) => activeIds.has(r.initiative_id));
   const rosterParts = [
-    { label: "Solid", value: rosterActive.filter((r) => r.status === "solid").length, color: "var(--good)" },
     { label: "Trained", value: rosterActive.filter((r) => r.status === "trained").length, color: "var(--brand)" },
     { label: "Follow up", value: rosterActive.filter((r) => r.status === "needs_followup").length, color: "var(--warn)" },
     { label: "Not yet", value: rosterActive.filter((r) => r.status === "not_started").length, color: "var(--line-strong)" },

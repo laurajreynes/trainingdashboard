@@ -46,8 +46,8 @@ export default async function People({ searchParams }: { searchParams: Promise<{
                         {s.locations.length > 0 && <td className="muted small">{p.location || ""}</td>}
                         {liveInits.map((i) => {
                           const r = roster.find((x) => x.initiative_id === i.id && x.person_id === p.id);
-                          const mark = !r ? "" : r.status === "solid" ? "●●" : r.status === "trained" ? "●" : r.status === "needs_followup" ? "!" : "○";
-                          const color = !r ? undefined : r.status === "solid" ? "var(--good)" : r.status === "trained" ? "var(--gold)" : r.status === "needs_followup" ? "var(--warn)" : "var(--ink-faint)";
+                          const mark = !r ? "" : r.status === "trained" || r.status === "solid" ? "●" : r.status === "needs_followup" ? "!" : "○";
+                          const color = !r ? undefined : r.status === "trained" || r.status === "solid" ? "var(--good)" : r.status === "needs_followup" ? "var(--warn)" : "var(--ink-faint)";
                           return <td key={i.id} style={{ color, fontWeight: 700 }} title={r ? r.status : "not on roster"}>{mark}</td>;
                         })}
                       </tr>
@@ -86,7 +86,7 @@ export default async function People({ searchParams }: { searchParams: Promise<{
             </section>
           );
         })}
-        {liveInits.length > 0 && <p className="faint small">Columns: ●● solid · ● trained · ! follow up · ○ not yet</p>}
+        {liveInits.length > 0 && <p className="faint small">Columns: ● trained · ! follow up · ○ not yet</p>}
       </div>
     </>
   );

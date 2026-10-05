@@ -12,7 +12,7 @@ import {
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars } from "@/components/charts";
 import { ExampleUploader } from "@/components/ExampleUploader";
-import { ROSTER_LABEL, type RosterStatus } from "@/lib/types";
+import { ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
@@ -109,7 +109,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   <tbody>
                     {rows.map((p) => {
                       const r = rosterByPerson.get(p.id)!;
-                      const cls = r.status === "solid" ? "good" : r.status === "trained" ? "gold" : r.status === "needs_followup" ? "warn" : "";
+                      const cls = r.status === "trained" || r.status === "solid" ? "good" : r.status === "needs_followup" ? "warn" : "";
                       return (
                         <tr key={p.id}>
                           <td><Link href={`/p/${p.id}`} style={{ fontWeight: 600 }}>{p.name}</Link>{p.location ? <span className="faint small"> · {p.location}</span> : null}</td>
@@ -120,7 +120,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
                                 <input type="hidden" name="initiative_id" value={id} />
                                 <input type="hidden" name="person_id" value={p.id} />
                                 <select name="status" defaultValue={r.status} style={{ width: "auto", padding: "3px 6px", fontSize: 13 }}>
-                                  {(Object.keys(ROSTER_LABEL) as RosterStatus[]).map((k) => <option key={k} value={k}>{ROSTER_LABEL[k]}</option>)}
+                                  {ROSTER_STATUSES.map((k) => <option key={k} value={k}>{ROSTER_LABEL[k]}</option>)}
                                 </select>
                                 <input type="date" name="trained_on" defaultValue={r.trained_on || ""} style={{ width: 140, padding: "3px 6px", fontSize: 13 }} />
                                 <input type="text" name="notes" defaultValue={r.notes || ""} placeholder="note" style={{ flex: 1, minWidth: 120, padding: "3px 6px", fontSize: 13 }} />

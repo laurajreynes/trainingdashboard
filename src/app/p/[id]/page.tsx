@@ -4,7 +4,7 @@ import { isEditor } from "@/lib/auth";
 import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, getWins, getExamples, getExampleThemes, signExamples, getPeople } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { ExampleUploader } from "@/components/ExampleUploader";
-import { ROLES, ROSTER_LABEL, type RosterStatus } from "@/lib/types";
+import { ROLES, ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, storeAccent } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
 import { updatePerson, deletePerson, setRosterStatus, addTodo, addWin } from "@/app/actions";
@@ -47,7 +47,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                 <tbody>
                   {rosterRows.map((i) => {
                     const r = roster.find((x) => x.initiative_id === i.id)!;
-                    const cls = r.status === "solid" ? "good" : r.status === "trained" ? "gold" : r.status === "needs_followup" ? "warn" : "";
+                    const cls = r.status === "trained" || r.status === "solid" ? "good" : r.status === "needs_followup" ? "warn" : "";
                     return (
                       <tr key={i.id}>
                         <td><Link href={`/i/${i.id}`} style={{ fontWeight: 600 }}>{i.name}</Link></td>
@@ -57,7 +57,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                               <input type="hidden" name="initiative_id" value={i.id} />
                               <input type="hidden" name="person_id" value={id} />
                               <select name="status" defaultValue={r.status} style={{ width: "auto", padding: "3px 6px", fontSize: 13 }}>
-                                {(Object.keys(ROSTER_LABEL) as RosterStatus[]).map((k) => <option key={k} value={k}>{ROSTER_LABEL[k]}</option>)}
+                                {ROSTER_STATUSES.map((k) => <option key={k} value={k}>{ROSTER_LABEL[k]}</option>)}
                               </select>
                               <input type="date" name="trained_on" defaultValue={r.trained_on || ""} style={{ width: 140, padding: "3px 6px", fontSize: 13 }} />
                               <input type="text" name="notes" defaultValue={r.notes || ""} placeholder="note" style={{ flex: 1, minWidth: 120, padding: "3px 6px", fontSize: 13 }} />

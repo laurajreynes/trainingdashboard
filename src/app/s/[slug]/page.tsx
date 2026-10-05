@@ -69,7 +69,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
     return { label: i.name, value: ros.length ? Math.round((done / ros.length) * 100) : 0, sub: ros.length ? `${done}/${ros.length}` : "no roster", href: `/i/${i.id}?store=${store.slug}`, max: 100 };
   });
   const rosterParts = [
-    { label: "Solid", value: rosterHere.filter((r) => r.status === "solid").length, color: "var(--good)" },
     { label: "Trained", value: rosterHere.filter((r) => r.status === "trained").length, color: "var(--brand)" },
     { label: "Follow up", value: rosterHere.filter((r) => r.status === "needs_followup").length, color: "var(--warn)" },
     { label: "Not yet", value: rosterHere.filter((r) => r.status === "not_started").length, color: "var(--line-strong)" },

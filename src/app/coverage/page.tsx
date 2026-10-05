@@ -5,7 +5,7 @@ import { ROSTER_LABEL, type RosterStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const ORDER: RosterStatus[] = ["solid", "trained", "needs_followup", "not_started"];
+const ORDER: RosterStatus[] = ["trained", "needs_followup", "not_started"];
 const TAG: Record<string, string> = { solid: "good", trained: "good", needs_followup: "warn", not_started: "" };
 
 /** Who's trained, who needs a follow-up, who hasn't been reached: every active initiative, by store. */

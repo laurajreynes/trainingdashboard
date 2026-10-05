@@ -11,10 +11,9 @@ export function StatusTag({ status }: { status: Initiative["status"] }) {
 }
 
 export function rosterCounts(roster: InitiativePerson[]) {
-  const c = { solid: 0, trained: 0, needs: 0, not: 0, total: roster.length };
+  const c = { trained: 0, needs: 0, not: 0, total: roster.length };
   for (const r of roster) {
-    if (r.status === "solid") c.solid++;
-    else if (r.status === "trained") c.trained++;
+    if (r.status === "trained" || r.status === "solid") c.trained++;
     else if (r.status === "needs_followup") c.needs++;
     else c.not++;
   }
@@ -26,16 +25,14 @@ export function RosterBar({ roster, showLegend = false }: { roster: InitiativePe
   if (!c.total) return <p className="faint small" style={{ marginTop: 8 }}>No one on the roster yet</p>;
   return (
     <>
-      <div className="progress" title={`${c.solid} solid, ${c.trained} trained, ${c.needs} follow up, ${c.not} not yet`}>
-        <span className="solid" style={{ width: `${pct(c.solid, c.total)}%` }} />
+      <div className="progress" title={`${c.trained} trained, ${c.needs} follow up, ${c.not} not yet`}>
         <span className="trained" style={{ width: `${pct(c.trained, c.total)}%` }} />
         <span className="needs" style={{ width: `${pct(c.needs, c.total)}%` }} />
       </div>
       <div className="legend">
-        <span>{c.solid + c.trained} of {c.total} trained</span>
+        <span>{c.trained} of {c.total} trained</span>
         {showLegend && (
           <>
-            <span><i style={{ background: "var(--good)" }} />Solid {c.solid}</span>
             <span><i style={{ background: "var(--gold)" }} />Trained {c.trained}</span>
             <span><i style={{ background: "var(--warn)" }} />Follow up {c.needs}</span>
             <span><i style={{ background: "var(--line)" }} />Not yet {c.not}</span>
