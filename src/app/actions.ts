@@ -515,7 +515,7 @@ export async function deleteExample(fd: FormData) {
 export async function saveGroupNote(fd: FormData) {
   await requireEditor();
   const key = must(fd, "key");
-  if (!["mission", "vision", "values", "notes"].includes(key) && !key.startsWith("targets:") && !key.startsWith("stage:")) throw new Error("Unknown section");
+  if (!["mission", "vision", "values", "notes", "gm_skip"].includes(key) && !key.startsWith("targets:") && !key.startsWith("stage:")) throw new Error("Unknown section");
   ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();
 }

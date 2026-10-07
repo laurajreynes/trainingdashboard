@@ -105,13 +105,21 @@ export function nthWeekday(ym: string, n: number, weekday: number): string {
 }
 
 /** Next second-Thursday GM meeting on or after today. */
-export function nextGmMeeting(): string {
+/** Second Thursday at 1pm. Skipped dates (cancelled meetings) roll to the next month. */
+export function nextGmMeeting(skip: string[] = []): string {
   const t = today();
-  const thisMonth = nthWeekday(t.slice(0, 7), 2, 4);
-  if (thisMonth >= t) return thisMonth;
-  const [y, m] = t.split("-").map(Number);
-  const next = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7);
-  return nthWeekday(next, 2, 4);
+  let ym = t.slice(0, 7);
+  for (let i = 0; i < 12; i++) {
+    const d = nthWeekday(ym, 2, 4);
+    if (d >= t && !skip.includes(d)) return d;
+    const [y, m] = ym.split("-").map(Number);
+    ym = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7);
+  }
+  return nthWeekday(ym, 2, 4);
+}
+/** Dates of cancelled HR/GM meetings, from the gm_skip group note (one per line). */
+export function gmSkips(notes: { key: string; body: string | null }[]): string[] {
+  return (notes.find((n) => n.key === "gm_skip")?.body || "").split(/\s+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x));
 }
 
 /** Days in a YYYY-MM month. */

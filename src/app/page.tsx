@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
-import { getHubSnapshot, getStorePosts, getMetrics, getMeetings } from "@/lib/data";
+import { getHubSnapshot, getStorePosts, getMetrics, getMeetings, getGroupNotes } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, relDay, today } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
@@ -13,7 +13,7 @@ import { ReportsCard } from "@/components/ReportsCard";
 import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
-import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, projectToMonthEnd } from "@/lib/fmt";
+import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks, getStages } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +25,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   ]);
   const bookmarksAll = await getBookmarks();
   const stages = await getStages();
+  const gmSkip = gmSkips(await getGroupNotes());
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
@@ -103,7 +104,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     }
     return { withTarget, onPace };
   })();
-  const gmNext = nextGmMeeting();
+  const gmNext = nextGmMeeting(gmSkip);
   const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
 
   const upcoming = navStores.map((s) => {
@@ -128,7 +129,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       <Model />
 
-      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} />
+      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} />
 
 
       <section style={{ marginBottom: 18 }}>

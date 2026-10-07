@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
 import { getGroupNotes, getMeetings, getMonthPlans, getStores } from "@/lib/data";
-import { fmtDate, relDay, nextGmMeeting, today, monthName, storeAccent } from "@/lib/fmt";
+import { fmtDate, relDay, nextGmMeeting, gmSkips, today, monthName, storeAccent } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
 import { saveGroupNote, addMeeting, updateMeeting, deleteMeeting, saveMonthPlan } from "@/app/actions";
 
@@ -30,7 +30,7 @@ export default async function GroupPage() {
   const mi = monthPhase();
   const [editor, notes, meetings, plans, stores] = await Promise.all([isEditor(), getGroupNotes(), getMeetings(36), getMonthPlans([mi.month]), getStores()]);
   const body = (k: string) => notes.find((n) => n.key === k)?.body || "";
-  const next = nextGmMeeting();
+  const next = nextGmMeeting(gmSkips(notes));
   const nextMeeting = meetings.find((m) => m.date === next);
   const past = meetings.filter((m) => m.date < today());
   const groupPlan = plans.find((p) => p.month === mi.month && p.store_id === null);

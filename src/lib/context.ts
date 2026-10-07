@@ -1,7 +1,7 @@
 import "server-only";
 import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples, getMetrics, getGroupNotes, getMeetings } from "./data";
 import { ROSTER_LABEL, INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "./types";
-import { today, addDays, monthsBack, nextGmMeeting, projectToMonthEnd } from "./fmt";
+import { today, addDays, monthsBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "./fmt";
 import { monthPhase, paceGoal } from "./month";
 
 /** Plain-text picture of the whole hub, for the assistant and the recap. */
@@ -30,7 +30,7 @@ export async function buildHubContext(): Promise<string> {
   const [gnotes, meetings, metrics] = await Promise.all([getGroupNotes(), getMeetings(6), getMetrics({ periods: monthsBack(3) })]);
   out.push("\n# GROUP FOCUS");
   for (const k of ["mission", "vision", "values", "notes"]) { const b = gnotes.find((n) => n.key === k)?.body; if (b) out.push(`${k === "vision" ? "philosophy" : k}: ${b}`); }
-  out.push(`Next HR/GM meeting (second Thursday, 1pm): ${nextGmMeeting()}`);
+  out.push(`Next HR/GM meeting (second Thursday, 1pm): ${nextGmMeeting(gmSkips(gnotes))}`);
   for (const m of meetings) out.push(`- Meeting ${m.date} ${m.title}${m.agenda ? ` | agenda: ${m.agenda}` : ""}${m.notes ? ` | notes: ${m.notes}` : ""}`);
 
   out.push("\n# STORE RESULTS (from the DriveCentric Performance Report; month-to-date through as_of)");

@@ -70,7 +70,9 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
           const us = cell(m ? m.used_sold ?? (m.new_sold == null ? null : m.sold - (m.new_sold || 0)) : null, t.used);
           const tot = cell(m ? m.sold : null, hasTarget ? (t.new || 0) + (t.used || 0) : ly ? ly.sold : null);
           totals.mtd += tot.mtd || 0; totals.tr += tot.tr || 0; totals.target += tot.target || 0; totals.prev += pm?.sold || 0;
-          const lines = [["New", nw, pm?.new_sold ?? null], ["Used", us, pm?.used_sold ?? null], ["Total", tot, pm?.sold ?? null]] as const;
+          // A used-only lot (Belgrade) gets one line, no New row and no Total
+          const usedOnly = Boolean(r.location) && !(m?.new_sold || pm?.new_sold || ly?.new_sold || saved.new);
+          const lines = (usedOnly ? [["Used", us, pm?.used_sold ?? null]] : [["New", nw, pm?.new_sold ?? null], ["Used", us, pm?.used_sold ?? null], ["Total", tot, pm?.sold ?? null]]) as readonly (readonly [string, ReturnType<typeof cell>, number | null])[];
           return (
             <section className="card trackcard" key={r.key} style={{ ["--accent" as string]: r.color }}>
               <div className="cardhead">
@@ -100,7 +102,7 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
                     <input type="hidden" name="store_id" value={r.storeId} />
                     <input type="hidden" name="location" value={r.location || ""} />
                     <input type="hidden" name="period" value={month} />
-                    <input type="number" name="new_sold" placeholder="New" defaultValue={m?.new_sold ?? ""} style={{ width: 70 }} />
+                    {usedOnly ? <input type="hidden" name="new_sold" value="0" /> : <input type="number" name="new_sold" placeholder="New" defaultValue={m?.new_sold ?? ""} style={{ width: 70 }} />}
                     <input type="number" name="used_sold" placeholder="Used" defaultValue={m?.used_sold ?? ""} style={{ width: 70 }} />
                     <input type="date" name="as_of" defaultValue={m?.as_of || today()} style={{ width: 140 }} />
                     <button className="btn sm">Save</button>

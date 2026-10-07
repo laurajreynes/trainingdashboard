@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Store, Visit, Todo } from "@/lib/types";
 import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting } from "@/lib/fmt";
 
-type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean };
+type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean; gmSkip?: string[] };
 
 /** "11am Toyota training" → time "11am", rest "Toyota training". */
 export function splitTime(focus: string | null): { time: string | null; text: string; minutes: number } {
@@ -20,11 +20,11 @@ export function splitTime(focus: string | null): { time: string | null; text: st
 }
 
 /** Monday to Friday of this week. Today gets the wide column. */
-export function WeekCalendar({ visits, todos, stores, editor }: Props) {
+export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Props) {
   const t = today();
   const monday = weeksBack(1)[0];
   const days = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
-  const gm = nextGmMeeting();
+  const gm = nextGmMeeting(gmSkip);
   const store = (id: string | null) => stores.find((s) => s.id === id);
   const todayIdx = days.indexOf(t);
   const cols = days.map((d) => (d === t ? "2.6fr" : "1fr")).join(" ");
