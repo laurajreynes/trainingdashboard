@@ -33,8 +33,8 @@ export default async function InitiativePage({ params, searchParams }: { params:
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const visits = visitsAll.filter((v) => v.initiative_ids.includes(id)).slice(0, 8);
   const bookmarksHere = bookmarksAll.filter((b) => b.initiative_id === id);
-  const fileResources = bookmarksHere.filter((b) => b.kind === "resource");
-  const bookmarks = bookmarksHere.filter((b) => b.kind !== "resource");
+  const fileResources = bookmarksHere.filter((b) => b.kind === "doc");
+  const bookmarks = bookmarksHere.filter((b) => b.kind !== "doc");
   const [exRows, themes] = await Promise.all([getExamples({ initiativeId: id, limit: 120 }), getExampleThemes()]);
   const examples = await signExamples(exRows);
   const exOpts = {
@@ -207,7 +207,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
             {editor && (
               <details className="quiet" style={{ marginTop: 8 }}>
                 <summary>Upload a PDF or deck</summary>
-                <div style={{ marginTop: 8 }}><FileUploader initiativeId={id} kind="resource" label="Upload a resource" /></div>
+                <div style={{ marginTop: 8 }}><FileUploader initiativeId={id} kind="doc" label="Upload a resource" /></div>
               </details>
             )}
           </section>
