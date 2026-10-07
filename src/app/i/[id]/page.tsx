@@ -32,7 +32,9 @@ export default async function InitiativePage({ params, searchParams }: { params:
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const visits = visitsAll.filter((v) => v.initiative_ids.includes(id)).slice(0, 8);
-  const bookmarks = bookmarksAll.filter((b) => b.initiative_id === id);
+  const bookmarksHere = bookmarksAll.filter((b) => b.initiative_id === id);
+  const fileResources = bookmarksHere.filter((b) => b.kind === "resource");
+  const bookmarks = bookmarksHere.filter((b) => b.kind !== "resource");
   const [exRows, themes] = await Promise.all([getExamples({ initiativeId: id, limit: 120 }), getExampleThemes()]);
   const examples = await signExamples(exRows);
   const exOpts = {
@@ -166,8 +168,15 @@ export default async function InitiativePage({ params, searchParams }: { params:
 
           <section className="card">
             <div className="cardhead"><h2>Resources</h2></div>
-            {resources.length ? (
+            {resources.length || fileResources.length ? (
               <ul className="list">
+                {fileResources.map((b) => (
+                  <li key={b.id}>
+                    <span className="tag" style={{ marginTop: 2 }}>doc</span>
+                    <div className="grow"><a href={b.url} target="_blank" rel="noreferrer" style={{ fontWeight: 600 }}>{b.title}</a></div>
+                    {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn">×</button></form>}
+                  </li>
+                ))}
                 {resources.map((r) => (
                   <li key={r.id}>
                     <span className="tag" style={{ marginTop: 2 }}>{r.kind.replace("_", " ")}</span>
@@ -193,6 +202,12 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   <div className="frow wide"><textarea name="body" placeholder="Paste the word track or notes here (optional)" /></div>
                   <button className="btn sm">Add</button>
                 </form>
+              </details>
+            )}
+            {editor && (
+              <details className="quiet" style={{ marginTop: 8 }}>
+                <summary>Upload a PDF or deck</summary>
+                <div style={{ marginTop: 8 }}><FileUploader initiativeId={id} kind="resource" label="Upload a resource" /></div>
               </details>
             )}
           </section>
@@ -266,12 +281,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   <button className="btn sm">Add</button>
                 </form>
               )}
-              {editor && (
-                <details className="quiet" style={{ marginTop: 8 }}>
-                  <summary>Upload a PDF or spreadsheet</summary>
-                  <div style={{ marginTop: 8 }}><FileUploader initiativeId={id} /></div>
-                </details>
-              )}
+
             </section>
           )}
 
