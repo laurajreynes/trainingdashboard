@@ -3,7 +3,7 @@ import { db } from "./supabase";
 import { daysInMonth, today } from "./fmt";
 
 /** Targets per store (and location) for a month, kept as JSON in group_notes under targets:<month>. */
-export type Target = { new: number | null; used: number | null };
+export type Target = { new: number | null; used: number | null; mapNew?: number | null; mapUsed?: number | null };  // map = minimum acceptable performance
 export type Targets = Record<string, Target>;   // key: storeId or storeId|Location
 
 export async function getTargets(month: string): Promise<Targets> {

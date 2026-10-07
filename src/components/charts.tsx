@@ -52,15 +52,17 @@ export function Columns({ points, color = "var(--brand)", height = 72, unit = ""
 }
 
 /** Meter for one ratio against a target. Track is a lighter step of the same hue. */
-export function Meter({ value, target, unit = "", label, color = "var(--brand)" }: { value: number; target?: number | null; unit?: string; label?: string; color?: string }) {
+export function Meter({ value, target, floor, unit = "", label, color = "var(--brand)" }: { value: number; target?: number | null; floor?: number | null; unit?: string; label?: string; color?: string }) {
   const top = Math.max(target ?? 0, value, 1);
   const w = Math.min(100, (value / top) * 100);
   const t = target != null ? Math.min(100, (target / top) * 100) : null;
+  const f = floor != null ? Math.min(100, (floor / top) * 100) : null;
   return (
     <div className="meter" title={`${label ? label + ": " : ""}${value}${unit}${target != null ? ` of ${target}${unit}` : ""}`}>
       {label && <div className="meter-label"><span>{label}</span><strong>{value}{unit}{target != null && <span className="faint"> / {target}{unit}</span>}</strong></div>}
       <div className="meter-track">
         <div className="meter-fill" style={{ width: `${w}%`, background: color }} />
+        {f !== null && <div className="meter-floor" style={{ left: `${f}%` }} title={`MAP ${floor}`} />}
         {t !== null && <div className="meter-target" style={{ left: `${t}%` }} />}
       </div>
     </div>

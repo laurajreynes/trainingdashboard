@@ -677,14 +677,14 @@ export async function addFileBookmark(input: { path: string; title: string; kind
 export async function saveTargets(fd: FormData) {
   await requireEditor();
   const month = must(fd, "month");
-  const out: Record<string, { new: number | null; used: number | null }> = {};
+  const out: Record<string, { new: number | null; used: number | null; mapNew: number | null; mapUsed: number | null }> = {};
   for (const [k, v] of fd.entries()) {
-    const m = k.match(/^t\.(.+)\.(new|used)$/);
+    const m = k.match(/^t\.(.+)\.(new|used|mapNew|mapUsed)$/);
     if (!m) continue;
     const key = m[1];
-    out[key] = out[key] || { new: null, used: null };
+    out[key] = out[key] || { new: null, used: null, mapNew: null, mapUsed: null };
     const n = String(v).trim() === "" ? null : Number(v);
-    out[key][m[2] as "new" | "used"] = n === null || Number.isNaN(n) ? null : n;
+    out[key][m[2] as "new" | "used" | "mapNew" | "mapUsed"] = n === null || Number.isNaN(n) ? null : n;
   }
   ok(await db().from("group_notes").upsert({ key: `targets:${month}`, body: JSON.stringify(out), updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();

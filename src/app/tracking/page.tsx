@@ -61,6 +61,8 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
           const m = metric(r, month);
           const pm = metric(r, prevMonth);
           const saved = targets[r.key] || { new: null, used: null };
+          const hasMap = saved.mapNew != null || saved.mapUsed != null;
+          const mapOf = (label: string) => label === "New" ? saved.mapNew ?? null : label === "Used" ? saved.mapUsed ?? null : (saved.mapNew || 0) + (saved.mapUsed || 0);
           const ly = metric(r, lastYear);
           const hasTarget = saved.new !== null || saved.used !== null;
           // No target yet: track against the same month last year, and say so
@@ -80,13 +82,14 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
                 <span className={`tag ${trackClass(tot.pct)}`}>{tot.pct !== null ? `${tot.pct}% of ${vsLastYear ? "last year" : "target"}` : tot.target ? "no numbers yet" : "no target"}</span>
               </div>
               <table className="tbl track">
-                <thead><tr><th></th><th>MTD</th><th>Tracking</th><th>{vsLastYear ? <span className="faint">Last yr</span> : "Target"}</th><th>Track</th><th className="faint">{monthName(prevMonth).slice(0, 3)}</th></tr></thead>
+                <thead><tr><th></th><th>MTD</th><th>Tracking</th>{hasMap && <th title="Minimum acceptable performance">MAP</th>}<th>{vsLastYear ? <span className="faint">Last yr</span> : "Target"}</th><th>Track</th><th className="faint">{monthName(prevMonth).slice(0, 3)}</th></tr></thead>
                 <tbody>
                   {lines.map(([label, c, prev]) => (
                     <tr key={label} className={label === "Total" ? "total" : ""}>
                       <td>{label}</td>
                       <td><strong>{c.mtd ?? "–"}</strong></td>
                       <td>{c.tr ?? "–"}</td>
+                      {hasMap && <td className="faint">{mapOf(label) || "–"}</td>}
                       <td>{c.target ?? "–"}</td>
                       <td>{c.pct !== null ? <span className={`tag ${trackClass(c.pct)}`}>{c.pct}%</span> : ""}</td>
                       <td className="faint">{prev ?? ""}</td>
@@ -94,7 +97,7 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
                   ))}
                 </tbody>
               </table>
-              {tot.target ? <Meter value={tot.mtd || 0} target={tot.target} color={r.color} /> : null}
+              {tot.target ? <Meter value={tot.mtd || 0} target={tot.target} floor={hasMap ? (saved.mapNew || 0) + (saved.mapUsed || 0) : null} color={r.color} /> : null}
               {editor && (
                 <details className="quiet" style={{ marginTop: 8 }}>
                   <summary>Update month to date</summary>
@@ -121,7 +124,7 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
           <form action={saveTargets} style={{ marginTop: 10 }}>
             <input type="hidden" name="month" value={month} />
             <table className="tbl">
-              <thead><tr><th>Store</th><th>New</th><th>Used</th><th className="faint">{monthName(prevMonth)} actual</th></tr></thead>
+              <thead><tr><th>Store</th><th>New</th><th>Used</th><th className="faint" title="Minimum acceptable performance">MAP new</th><th className="faint">MAP used</th><th className="faint">{monthName(prevMonth)} actual</th></tr></thead>
               <tbody>
                 {rows.map((r) => {
                   const t = targets[r.key] || { new: null, used: null };
@@ -131,6 +134,8 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
                       <td style={{ fontWeight: 600, color: r.color }}>{r.name}</td>
                       <td><input type="number" name={`t.${r.key}.new`} defaultValue={t.new ?? ""} style={{ width: 90 }} /></td>
                       <td><input type="number" name={`t.${r.key}.used`} defaultValue={t.used ?? ""} style={{ width: 90 }} /></td>
+                      <td><input type="number" name={`t.${r.key}.mapNew`} defaultValue={t.mapNew ?? ""} style={{ width: 80 }} /></td>
+                      <td><input type="number" name={`t.${r.key}.mapUsed`} defaultValue={t.mapUsed ?? ""} style={{ width: 80 }} /></td>
                       <td className="faint small">{pm ? `${pm.new_sold ?? "?"} new · ${pm.used_sold ?? "?"} used` : ""}</td>
                     </tr>
                   );
