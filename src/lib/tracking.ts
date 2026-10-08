@@ -12,6 +12,15 @@ export async function getTargets(month: string): Promise<Targets> {
   try { return JSON.parse(r.data.body as string) as Targets; } catch { return {}; }
 }
 
+/** Gross month to date per store row, kept as JSON under gross:<month>. FE = front end, BE = back end. */
+export type Gross = { newFe: number | null; newBe: number | null; usedFe: number | null; usedBe: number | null };
+export async function getGross(month: string): Promise<Record<string, Gross>> {
+  const r = await db().from("group_notes").select("body").eq("key", `gross:${month}`).maybeSingle();
+  if (r.error || !r.data?.body) return {};
+  try { return JSON.parse(r.data.body as string) as Record<string, Gross>; } catch { return {}; }
+}
+export const money = (n: number) => (n < 0 ? "-$" : "$") + Math.round(Math.abs(n)).toLocaleString("en-US");
+
 export function targetKey(storeId: string, location: string | null) { return location ? `${storeId}|${location}` : storeId; }
 
 const HOLIDAYS: Record<string, string[]> = {

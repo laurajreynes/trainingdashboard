@@ -585,6 +585,8 @@ a.plain:hover { text-decoration: underline; }
 .trackcard { border-top: 3px solid var(--accent); }
 .tbl.track th, .tbl.track td { padding: 5px 6px; text-align: right; }
 .tbl.track th:first-child, .tbl.track td:first-child { text-align: left; }
+.tbl.track.gross { margin-top: 10px; }
+.tbl.track.gross th:first-child { color: var(--ink); font-size: 13px; }
 .tbl.track tr.total td { border-top: 2px solid var(--line-strong); font-weight: 700; }
 .tag.good { background: var(--good-soft); color: var(--good); }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }

@@ -700,6 +700,19 @@ export async function setStoreSoldSplit(fd: FormData) {
   refresh();
 }
 
+/** Gross month to date for one store row: new/used front and back. Merged into the gross:<month> note. */
+export async function setStoreGross(fd: FormData) {
+  await requireEditor();
+  const month = must(fd, "period"), key = must(fd, "key");
+  const cur = await db().from("group_notes").select("body").eq("key", `gross:${month}`).maybeSingle();
+  let all: Record<string, unknown> = {};
+  try { all = cur.data?.body ? JSON.parse(cur.data.body as string) : {}; } catch { all = {}; }
+  const pick = (k: string) => { const v = String(fd.get(k) ?? "").replace(/[$,\s]/g, ""); if (v === "") return null; const n = Number(v); return Number.isNaN(n) ? null : n; };
+  all[key] = { newFe: pick("newFe"), newBe: pick("newBe"), usedFe: pick("usedFe"), usedBe: pick("usedBe") };
+  ok(await db().from("group_notes").upsert({ key: `gross:${month}`, body: JSON.stringify(all), updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
+
 // ---------- store settings ----------
 export async function updateStore(fd: FormData) {
   await requireEditor();

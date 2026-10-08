@@ -3,8 +3,8 @@ import { isEditor } from "@/lib/auth";
 import { getStores, getMetrics } from "@/lib/data";
 import { monthName, storeAccent, fmtDate, today, monthsBack } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
-import { getTargets, sellingDays, track, trackClass, targetKey } from "@/lib/tracking";
-import { saveTargets, setStoreSoldSplit } from "@/app/actions";
+import { getTargets, sellingDays, track, trackClass, targetKey, getGross, money } from "@/lib/tracking";
+import { saveTargets, setStoreSoldSplit, setStoreGross } from "@/app/actions";
 import { Meter } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
   const [editor, stores] = await Promise.all([isEditor(), getStores()]);
   const prevMonth = monthsBack(2)[0] === month ? monthsBack(3)[0] : mi.prevMonth;
   const lastYear = `${Number(month.slice(0, 4)) - 1}${month.slice(4)}`;
-  const [targets, metrics] = await Promise.all([getTargets(month), getMetrics({ periods: [month, prevMonth, lastYear] })]);
+  const [targets, metrics, gross] = await Promise.all([getTargets(month), getMetrics({ periods: [month, prevMonth, lastYear] }), getGross(month)]);
   const days = sellingDays(month);
   const isCurrent = month === mi.month;
 
@@ -97,6 +97,43 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
                   ))}
                 </tbody>
               </table>
+              {(() => {
+                const g = gross[r.key];
+                const has = g && (g.newFe != null || g.newBe != null || g.usedFe != null || g.usedBe != null);
+                const nUnits = nw.mtd || 0, uUnits = us.mtd || 0;
+                const newG = (g?.newFe || 0) + (g?.newBe || 0), usedG = (g?.usedFe || 0) + (g?.usedBe || 0);
+                const fe = (g?.newFe || 0) + (g?.usedFe || 0), be = (g?.newBe || 0) + (g?.usedBe || 0), total = fe + be;
+                const pvr = (gr: number, u: number) => (u ? money(gr / u) : "–");
+                return (
+                  <>
+                    {has && (
+                      <table className="tbl track gross">
+                        <thead><tr><th>Gross</th><th>Front</th><th>Back</th><th>Total</th><th>PVR</th></tr></thead>
+                        <tbody>
+                          {!usedOnly && <tr><td>New</td><td>{money(g!.newFe || 0)}</td><td>{money(g!.newBe || 0)}</td><td>{money(newG)}</td><td>{pvr(newG, nUnits)}</td></tr>}
+                          <tr><td>Used</td><td>{money(g!.usedFe || 0)}</td><td>{money(g!.usedBe || 0)}</td><td>{money(usedG)}</td><td>{pvr(usedG, uUnits)}</td></tr>
+                          {!usedOnly && <tr className="total"><td>Total</td><td>{money(fe)}</td><td>{money(be)}</td><td>{money(total)}</td><td>{pvr(total, nUnits + uUnits)}</td></tr>}
+                        </tbody>
+                      </table>
+                    )}
+                    {has && <div className="small faint" style={{ marginTop: 4 }}>Tracking {money(track(total, done, days.total))} gross for the month</div>}
+                    {editor && (
+                      <details className="quiet" style={{ marginTop: 8 }}>
+                        <summary>Update gross</summary>
+                        <form action={setStoreGross} className="inline" style={{ marginTop: 6 }}>
+                          <input type="hidden" name="key" value={r.key} />
+                          <input type="hidden" name="period" value={month} />
+                          {!usedOnly && <input type="text" inputMode="numeric" name="newFe" placeholder="New front" defaultValue={g?.newFe ?? ""} style={{ width: 92 }} />}
+                          {!usedOnly && <input type="text" inputMode="numeric" name="newBe" placeholder="New back" defaultValue={g?.newBe ?? ""} style={{ width: 92 }} />}
+                          <input type="text" inputMode="numeric" name="usedFe" placeholder="Used front" defaultValue={g?.usedFe ?? ""} style={{ width: 92 }} />
+                          <input type="text" inputMode="numeric" name="usedBe" placeholder="Used back" defaultValue={g?.usedBe ?? ""} style={{ width: 92 }} />
+                          <button className="btn sm">Save</button>
+                        </form>
+                      </details>
+                    )}
+                  </>
+                );
+              })()}
               {tot.target ? <Meter value={tot.mtd || 0} target={tot.target} floor={hasMap ? (saved.mapNew || 0) + (saved.mapUsed || 0) : null} color={r.color} /> : null}
               {editor && (
                 <details className="quiet" style={{ marginTop: 8 }}>
