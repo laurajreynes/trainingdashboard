@@ -17,10 +17,6 @@ export function ReportsCard({ reports, stores, children, editor }: { reports: Bo
   const shops = reports.filter(isShop);
   const group = reports.filter((b) => !b.store_id && !isShop(b));
   const byStore = reports.filter((b) => b.store_id && !isShop(b));
-  const chip = (b: Bookmark, short: string) => {
-    const s = stores.find((x) => x.id === b.store_id);
-    return <span key={b.id} className="rwrap"><a className="chipr" href={b.url} target="_blank" rel="noreferrer" style={{ ["--accent" as string]: storeAccent(s) }}><span className="k">{s?.short_name || "Group"}</span><span className="t">{short}</span></a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
-  };
   const months = Array.from(new Set(reports.map((b) => parseTitle(b.title).month).filter(Boolean)));
   return (
     <section className="card">
@@ -42,16 +38,17 @@ export function ReportsCard({ reports, stores, children, editor }: { reports: Bo
               })}
             </div>
           ))}
+          {shops.length > 0 && (
+            <div className="storecol" style={{ ["--accent" as string]: "var(--forest)" }}>
+              <div className="storecol-h">Mystery shops</div>
+              {shops.map((b) => {
+                const s = stores.find((x) => x.id === b.store_id);
+                return <span key={b.id} className="rwrap"><a className="rlink" href={b.url} target="_blank" rel="noreferrer" style={{ color: storeAccent(s) }}>{parseTitle(b.title).short.replace(/^Competitive Mystery Shop,?\s*/i, "")}</a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
+              })}
+            </div>
+          )}
         </div>
       </div>
-      {shops.length > 0 && (
-        <div className="shops">
-          <div className="eyebrow">Competitive mystery shops</div>
-          <div className="grid-chips">
-            {shops.map((b) => chip(b, parseTitle(b.title).short.replace(/^Competitive Mystery Shop,?\s*/i, "")))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
