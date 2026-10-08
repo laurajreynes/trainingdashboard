@@ -45,18 +45,22 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                 <span className="dow">{isToday ? "Today" : fmtDate(d, { weekday: true }).split(",")[0]}</span>
                 <span className="dnum">{fmtDate(d)}</span>
               </div>
-              {sessions.map((v) => {
-                const s = store(v.store_id);
-                const { time, text } = splitTime(v.focus);
-                return (
-                  <Link key={v.id} href={s ? `/s/${s.slug}` : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
-                    {time && <span className="when">{time}</span>}
-                    <span className="who">{s?.short_name || "Visit"}</span>
-                    {text && <span className="what">{text}</span>}
-                  </Link>
-                );
-              })}
-              {d === gm && <Link href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link>}
+              {(() => {
+                // Sessions and the 1pm HR/GM meeting in time order
+                const items: { key: string; minutes: number; node: React.ReactNode }[] = sessions.map((v) => {
+                  const s = store(v.store_id);
+                  const { time, text, minutes } = splitTime(v.focus);
+                  return { key: v.id, minutes, node: (
+                    <Link key={v.id} href={s ? `/s/${s.slug}` : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
+                      {time && <span className="when">{time}</span>}
+                      <span className="who">{s?.short_name || "Visit"}</span>
+                      {text && <span className="what">{text}</span>}
+                    </Link>
+                  ) };
+                });
+                if (d === gm) items.push({ key: "gm", minutes: 13 * 60, node: <Link key="gm" href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link> });
+                return items.sort((a, b) => a.minutes - b.minutes).map((i) => i.node);
+              })()}
               {dues.map((x) => {
                 const s = store(x.store_id);
                 return <Link key={x.id} href={s ? `/s/${s.slug}` : "/todos"} className="sess due" style={{ ["--accent" as string]: storeAccent(s) }} title={x.text}><span className="what">{x.text}</span></Link>;
