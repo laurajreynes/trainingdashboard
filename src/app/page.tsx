@@ -15,7 +15,8 @@ import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "@/lib/fmt";
-import { getBookmarks, getStages, getAreas } from "@/lib/data";
+import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
+import { Bulletin } from "@/components/Bulletin";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const bookmarksAll = await getBookmarks();
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
   const gmSkip = gmSkips(await getGroupNotes());
+  const bulletin = await getBulletin();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
@@ -207,6 +209,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             <div className="small"><span className="eyebrow">Next HR/GM meeting · 1pm</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
             {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
           </section>
+          <Bulletin items={bulletin} stores={stores} />
           <OpenPosts posts={posts} stores={stores} editor={editor} />
           <section className="card">
             <div className="cardhead"><h2>Open to-dos</h2><Link className="more" href="/todos">All</Link></div>

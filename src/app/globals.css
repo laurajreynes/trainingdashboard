@@ -694,3 +694,7 @@ details.accordion > summary h2 { margin: 0; }
 .cycle-n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--forest); color: #fff; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 .cycle-step h3 { margin: 0 0 4px; font-size: 15px; }
 @media (max-width: 900px) { .cycle { grid-template-columns: 1fr; } }
+
+/* marketing bulletin */
+.bulletin { border-top: 3px solid var(--brand); }
+.bulletin .list li { align-items: flex-start; }

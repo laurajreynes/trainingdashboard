@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
+import { Bulletin } from "@/components/Bulletin";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
@@ -40,6 +41,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
+  const bulletin = await getBulletin();
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
@@ -366,6 +368,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
 
         <div className="stack">
+          <Bulletin items={bulletin} stores={stores} store={store} />
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
           {bdcCards.map(({ b, folks, ros, lastVisit }) => (

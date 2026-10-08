@@ -171,6 +171,10 @@ export async function signExamples(list: Example[], seconds = 60 * 60 * 6): Prom
   return list.map((e) => ({ ...e, url: byPath.get(e.path) || "" })).filter((e) => e.url);
 }
 
+export async function getBulletin(): Promise<import("@/app/api/bulletin/route").BulletinItem[]> {
+  const r = await db().from("group_notes").select("body").eq("key", "bulletin").maybeSingle();
+  try { return r.data?.body ? JSON.parse(r.data.body as string) : []; } catch { return []; }
+}
 export async function getGroupNotes(): Promise<GroupNote[]> {
   return rows<GroupNote>(await db().from("group_notes").select("*"));
 }
