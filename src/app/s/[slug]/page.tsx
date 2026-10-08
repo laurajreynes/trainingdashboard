@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples, getMetrics, getStages } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
@@ -13,7 +13,8 @@ import {
   getWins, getPeople, getBookmarks, getCommitments, getGoals, getGoalEntries,
 } from "@/lib/data";
 import { fmtDate, relDay, today, storeAccent } from "@/lib/fmt";
-import { InitiativeCard, TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
+import { TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
+import { InitiativeCard } from "@/components/InitiativeCard";
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
@@ -36,7 +37,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
     getWins({ storeIds: ids, limit: 6 }), getPeople(ids), getBookmarks(ids), getCommitments(ids), getGoals({ storeIds: ids }),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
-  const stages = await getStages();
+  const [stages, areas] = await Promise.all([getStages(), getAreas()]);
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
@@ -164,7 +165,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {storeInits.length ? (
           <div className="grid cols-3">
             {storeInits.map((i) => (
-              <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]}
+              <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]} area={areas[i.id]} hideStore={store.slug}
                 roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
             ))}
           </div>

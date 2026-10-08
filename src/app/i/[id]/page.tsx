@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { STAGES } from "@/lib/types";
-import { getStages } from "@/lib/data";
-import { setInitiativeStage } from "@/app/actions";
+import { getStages, getAreas } from "@/lib/data";
+import { setInitiativeStage, setInitiativeArea } from "@/app/actions";
+import { AREAS, AREA_DEFAULT } from "@/components/InitiativeCard";
 import { FileUploader } from "@/components/FileUploader";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
@@ -24,8 +25,9 @@ export const dynamic = "force-dynamic";
 export default async function InitiativePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ store?: string }> }) {
   const { id } = await params;
   const sp = await searchParams;
-  const [init, stores, editor, stages] = await Promise.all([getInitiative(id), getStores(), isEditor(), getStages()]);
+  const [init, stores, editor, stages, areas] = await Promise.all([getInitiative(id), getStores(), isEditor(), getStages(), getAreas()]);
   const stage = stages[id] || "";
+  const area = areas[id] || AREA_DEFAULT;
   if (!init) notFound();
   const [people, roster, resources, goals, visitsAll, todos, wins, bookmarksAll] = await Promise.all([
     getPeople(), getRoster(id), getResources(id), getGoals({ initiativeId: id }), getVisits({ limit: 300 }), getTodos({ initiativeId: id }), getWins({ initiativeId: id, limit: 8 }), getBookmarks(),
@@ -77,6 +79,15 @@ export default async function InitiativePage({ params, searchParams }: { params:
                 {STAGES.map((st) => <option key={st} value={st}>{st}</option>)}
               </select>
               <button className="btn sm ghost">Set</button>
+            </form>
+          )}
+          {editor && (
+            <form action={setInitiativeArea} className="inline" style={{ marginTop: 6 }}>
+              <input type="hidden" name="initiative_id" value={id} />
+              <select name="area" defaultValue={area} style={{ width: "auto", padding: "3px 6px", fontSize: 13 }}>
+                {AREAS.map((a) => <option key={a} value={a}>{a} opportunities</option>)}
+              </select>
+              <button className="btn sm ghost">Set area</button>
             </form>
           )}
           {init.goal_text && <div className="sub">{init.goal_text}</div>}

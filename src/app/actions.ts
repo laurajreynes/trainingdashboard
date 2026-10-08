@@ -720,6 +720,12 @@ export async function updateStore(fd: FormData) {
   refresh();
 }
 
+export async function setInitiativeArea(fd: FormData) {
+  await requireEditor();
+  const id = must(fd, "initiative_id");
+  ok(await db().from("group_notes").upsert({ key: `area:${id}`, body: s(fd, "area") || "", updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
 export async function setInitiativeStage(fd: FormData) {
   await requireEditor();
   const id = must(fd, "initiative_id");

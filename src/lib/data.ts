@@ -209,6 +209,12 @@ export async function getHubSnapshot() {
 }
 
 /** Initiative stages, stored as group_notes rows keyed stage:<initiative id>. */
+export async function getAreas(): Promise<Record<string, string>> {
+  const r = await db().from("group_notes").select("key, body").like("key", "area:%");
+  const out: Record<string, string> = {};
+  for (const row of (r.data || []) as { key: string; body: string | null }[]) if (row.body) out[row.key.slice(5)] = row.body;
+  return out;
+}
 export async function getStages(): Promise<Record<string, string>> {
   const r = await db().from("group_notes").select("key, body").like("key", "stage:%");
   const out: Record<string, string> = {};

@@ -5,7 +5,8 @@ import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, relDay, today } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
-import { InitiativeCard, TodoList, VisitList, WinList } from "@/components/ui";
+import { TodoList, VisitList, WinList } from "@/components/ui";
+import { InitiativeCard } from "@/components/InitiativeCard";
 import { MonthPanel } from "@/components/MonthPanel";
 import { WeekCalendar } from "@/components/WeekCalendar";
 import { FileUploader } from "@/components/FileUploader";
@@ -14,7 +15,7 @@ import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "@/lib/fmt";
-import { getBookmarks, getStages } from "@/lib/data";
+import { getBookmarks, getStages, getAreas } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     isEditor(), getHubSnapshot(), getStorePosts({ openOnly: true, limit: 40 }), getMetrics({ periods: monthsBack(9) }), getMeetings(3),
   ]);
   const bookmarksAll = await getBookmarks();
-  const stages = await getStages();
+  const [stages, areas] = await Promise.all([getStages(), getAreas()]);
   const gmSkip = gmSkips(await getGroupNotes());
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
@@ -136,7 +137,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
         {active.length ? (
           <div className="grid cols-3">
-            {active.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
+            {active.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} area={areas[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}
           </div>
         ) : (
           <div className="card"><p className="empty">No initiatives yet. <Link href="/initiatives">Create the first one.</Link></p></div>
@@ -185,15 +186,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       <div className="grid main-side" style={{ marginTop: 18 }}>
         <div className="stack">
           {owed.length > 0 && (
-            <section className="card" style={{ borderTop: "3px solid var(--warn)" }}>
-              <div className="cardhead"><h2>Recaps owed · {owed.length}</h2></div>
+            <details className="card accordion" style={{ borderTop: "3px solid var(--warn)" }}>
+              <summary className="cardhead"><h2>Recaps owed · {owed.length}</h2><span className="more">Show</span></summary>
               <ul className="list">
                 {owed.map((v) => {
                   const st = stores.find((s) => s.id === v.store_id);
                   return <li key={v.id}><span className="dot" style={{ ["--accent" as string]: storeAccent(st) }} /><div className="grow"><Link href={`/v/${v.id}`}><strong>{fmtDate(v.date, { weekday: true })}</strong>{st ? ` · ${st.short_name}` : ""}{v.focus ? ` · ${v.focus}` : ""}</Link></div></li>;
                 })}
               </ul>
-            </section>
+            </details>
           )}
           <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
@@ -218,6 +219,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             </section>
           )}
         </div>
+      </div>
+
+      <div className="bigpicture-cta">
+        <Link href="/bigpicture" className="btn big">The big picture: how the training cycle works</Link>
       </div>
     </>
   );

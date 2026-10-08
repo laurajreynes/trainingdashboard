@@ -5,7 +5,7 @@ import { getStoreBySlug, getStores, getPeople, getMetrics, getBookmarks, getVisi
 import { storeAccent, monthName, monthsBack, today, fmtDate } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
 import { StackedColumns, ReachBars } from "@/components/charts";
-import { InitiativeCard } from "@/components/ui";
+import { InitiativeCard } from "@/components/InitiativeCard";
 import { splitTime } from "@/components/WeekCalendar";
 import { getStages } from "@/lib/data";
 import { VisitList } from "@/components/ui";
