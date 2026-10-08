@@ -42,6 +42,10 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   const allGoals = scoped ? [...goals, ...(await getGoals()).filter((g) => g.initiative_id && initIdsHere.has(g.initiative_id) && !goals.some((x) => x.id === g.id))] : goals;
   const entries = await getGoalEntries(allGoals.map((g) => g.id));
   const paces = allGoals.map((g) => paceGoal(g, entries, mi));
+  // Where each goal lives, so three "Phone up appointment set rate" lines read differently
+  const whereOf = (g: { store_id: string | null; initiative_id: string | null }) =>
+    g.store_id ? allStores.find((x) => x.id === g.store_id)?.short_name || "" :
+    g.initiative_id ? (() => { const i = initiatives.find((x) => x.id === g.initiative_id); if (!i) return ""; const st = i.store_ids.map((id) => allStores.find((x) => x.id === id)?.short_name).filter(Boolean); return st.length === 1 ? st[0]! : i.name.split(":")[0]; })() : "";
 
   const inRange = (d: string | null | undefined, a: string, b: string) => Boolean(d && d >= a && d <= b);
   const peopleIds = new Set(people.map((p) => p.id));
@@ -153,7 +157,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
           </div>
           <div>
             <h4 className="minihead">Pace to goal</h4>
-            <PaceList paces={paces} mode="track" />
+            <PaceList paces={paces} mode="track" where={whereOf} />
           </div>
           <div>
             <h4 className="minihead">Needs attention</h4>
@@ -270,14 +274,19 @@ function GoalFinals({ paces }: { paces: GoalPace[] }) {
   );
 }
 
-function PaceList({ paces, mode }: { paces: GoalPace[]; mode: "track" | "close" }) {
+function PaceList({ paces, mode, where }: { paces: GoalPace[]; mode: "track" | "close"; where?: (g: GoalPace["goal"]) => string }) {
   if (!paces.length) return <p className="empty">No goals set. Add one on an initiative or store.</p>;
-  return (
+  // Growth first: hit, on pace, or up on last month. Everything else folds away.
+  const growing = (p: GoalPace) => p.status === "hit" || p.status === "on_pace" || (p.current !== null && p.lastMonth !== null && (p.goal.direction === "down" ? p.current < p.lastMonth : p.current > p.lastMonth));
+  const up = paces.filter(growing), rest = paces.filter((p) => !growing(p));
+  const render = (list: GoalPace[]) => (
     <ul className="list">
-      {paces.map((p) => {
+      {list.map((p) => {
         const u = p.goal.unit;
-        const cls = p.status === "hit" ? "good" : p.status === "on_pace" ? "gold" : p.status === "behind" ? "warn" : "";
-        const label = p.status === "hit" ? "hit" : p.status === "on_pace" ? "on pace" : p.status === "behind" ? "behind" : "no data";
+        const isUp = growing(p);
+        const cls = p.status === "hit" ? "good" : p.status === "on_pace" || isUp ? "gold" : p.status === "behind" ? "warn" : "";
+        const label = p.status === "hit" ? "hit" : p.status === "on_pace" ? "on pace" : isUp ? "up" : p.status === "behind" ? "behind" : "no data";
+        const w = where ? where(p.goal) : "";
         let detail = "";
         if (p.current === null) detail = "Nothing logged this month";
         else if (p.goal.kind === "count") {
@@ -290,7 +299,7 @@ function PaceList({ paces, mode }: { paces: GoalPace[]; mode: "track" | "close" 
         return (
           <li key={p.goal.id} className="small">
             <div className="grow">
-              <div>{p.goal.name}{p.goal.target !== null && <span className="faint"> · goal {fmtVal(Number(p.goal.target), u)}</span>}</div>
+              <div>{w && <strong>{w} · </strong>}{p.goal.name}{p.goal.target !== null && <span className="faint"> · goal {fmtVal(Number(p.goal.target), u)}</span>}</div>
               <div className="meta">{detail}{p.asOf ? ` · as of ${fmtDate(p.asOf)}` : ""}</div>
             </div>
             <span className={`tag ${cls}`}>{label}</span>
@@ -298,6 +307,18 @@ function PaceList({ paces, mode }: { paces: GoalPace[]; mode: "track" | "close" 
         );
       })}
     </ul>
+  );
+  if (mode === "close") return render(paces);
+  return (
+    <>
+      {up.length ? render(up) : <p className="faint small" style={{ marginBottom: 6 }}>Nothing ahead of last month yet</p>}
+      {rest.length > 0 && (
+        <details className="quiet accordion" style={{ marginTop: 6 }}>
+          <summary className="small">{rest.length} not growing yet</summary>
+          {render(rest)}
+        </details>
+      )}
+    </>
   );
 }
 
