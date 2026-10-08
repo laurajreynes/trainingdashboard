@@ -178,7 +178,7 @@ export function CommitmentList({ items, editor }: { items: Commitment[]; editor:
 
 export function Sparkline({ goal, entries }: { goal: Goal; entries: GoalEntry[] }) {
   const pts = entries.filter((e) => e.goal_id === goal.id);
-  const W = 300, H = 56, P = 6;
+  const W = 300, H = 64, P = 8, L = 34, R = 34;   // side room for labels
   if (pts.length < 2) {
     const last = pts[0];
     return <p className="small muted">{last ? `${last.value}${goal.unit} on ${fmtDate(last.date)}` : "No entries yet"}{goal.target !== null ? ` · target ${goal.target}${goal.unit}` : ""}</p>;
@@ -186,17 +186,26 @@ export function Sparkline({ goal, entries }: { goal: Goal; entries: GoalEntry[] 
   const vals = pts.map((p) => Number(p.value));
   const all = goal.target !== null ? [...vals, Number(goal.target)] : vals;
   const min = Math.min(...all), max = Math.max(...all);
-  const y = (v: number) => max === min ? H / 2 : P + (H - 2 * P) * (1 - (v - min) / (max - min));
-  const x = (i: number) => P + (W - 2 * P) * (i / (pts.length - 1));
+  const y = (v: number) => max === min ? H / 2 : P + 10 + (H - 2 * P - 10) * (1 - (v - min) / (max - min));
+  const x = (i: number) => L + (W - L - R) * (i / (pts.length - 1));
   const d = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const last = vals[vals.length - 1];
   const hit = goal.target !== null && (goal.direction === "up" ? last >= Number(goal.target) : last <= Number(goal.target));
+  const col = hit ? "var(--good)" : "var(--gold)";
+  const mon = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short" });
   return (
     <div>
-      <svg className="spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-label={`${goal.name} trend`}>
-        {goal.target !== null && <line x1={P} x2={W - P} y1={y(Number(goal.target))} y2={y(Number(goal.target))} stroke="var(--ink-faint)" strokeDasharray="4 4" strokeWidth="1" />}
-        <path d={d} fill="none" stroke={hit ? "var(--good)" : "var(--gold)"} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        <circle cx={x(pts.length - 1)} cy={y(last)} r="3" fill={hit ? "var(--good)" : "var(--gold)"} />
+      <svg className="spark" viewBox={`0 0 ${W} ${H}`} aria-label={`${goal.name} trend`} style={{ width: "100%", height: "auto" }}>
+        {goal.target !== null && (
+          <>
+            <line x1={L} x2={W - R} y1={y(Number(goal.target))} y2={y(Number(goal.target))} stroke="var(--ink-faint)" strokeDasharray="4 4" strokeWidth="1" />
+            <text x={W - R + 4} y={y(Number(goal.target)) + 3} fontSize="9" fill="var(--ink-faint)">goal {goal.target}{goal.unit}</text>
+          </>
+        )}
+        <path d={d} fill="none" stroke={col} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {pts.map((pt, i) => <circle key={pt.id} cx={x(i)} cy={y(vals[i])} r={i === pts.length - 1 ? 3.5 : 2.5} fill={i === pts.length - 1 ? col : "var(--panel)"} stroke={col} strokeWidth="1.5" />)}
+        <text x={x(0) - 5} y={y(vals[0]) + 3} fontSize="9" textAnchor="end" fill="var(--ink-dim)">{mon(pts[0].date)} {vals[0]}{goal.unit}</text>
+        <text x={x(pts.length - 1) + 6} y={y(last) + 3} fontSize="9" fontWeight="700" fill="var(--ink)">{last}{goal.unit}</text>
       </svg>
       <p className="small muted">Latest {last}{goal.unit} on {fmtDate(pts[pts.length - 1].date)}{goal.target !== null ? ` · target ${goal.target}${goal.unit}` : ""}{hit ? " · hit" : ""}</p>
     </div>
