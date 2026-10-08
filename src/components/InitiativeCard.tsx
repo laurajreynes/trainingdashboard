@@ -1,11 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { STAGES, ROSTER_LABEL } from "@/lib/types";
+import { STAGES, ROSTER_LABEL, AREA_DEFAULT } from "@/lib/types";
 import type { Initiative, InitiativePerson, Store } from "@/lib/types";
-
-export const AREAS = ["Internet and phone", "Internet", "Phone"] as const;
-export const AREA_DEFAULT = AREAS[0];
 
 function counts(roster: InitiativePerson[]) {
   const c = { trained: 0, needs: 0, not: 0, total: roster.length };

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { STAGES } from "@/lib/types";
+import { STAGES, AREAS, AREA_DEFAULT } from "@/lib/types";
 import { getStages, getAreas } from "@/lib/data";
 import { setInitiativeStage, setInitiativeArea } from "@/app/actions";
-import { AREAS, AREA_DEFAULT } from "@/components/InitiativeCard";
 import { FileUploader } from "@/components/FileUploader";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
