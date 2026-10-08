@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas } from "@/lib/data";
+import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
@@ -60,6 +60,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   // ---- charts ----
   const activeInits = storeInits.filter((i) => i.status === "active" || i.status === "sustaining");
+  // Resources: word tracks and scripts on this store's initiatives, plus files uploaded to them
+  const resourceLists = await Promise.all(storeInits.map((i) => getResources(i.id)));
+  const resources = storeInits.flatMap((i, k) => resourceLists[k].map((r) => ({ ...r, initName: i.name })));
+  const fileResources = bookmarksAll.filter((b) => b.kind === "doc" && b.initiative_id && storeInits.some((i) => i.id === b.initiative_id)).map((b) => ({ ...b, initName: storeInits.find((i) => i.id === b.initiative_id)!.name }));
   const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
@@ -182,6 +186,18 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
         {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
       </div>
+
+      {(resources.length > 0 || fileResources.length > 0) && (
+        <section className="card" style={{ marginBottom: 20 }}>
+          <div className="cardhead"><h2>Resources</h2></div>
+          <div className="grid-chips rsrc">
+            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="k">doc</span><span className="t">{b.title}</span></a>)}
+            {resources.map((r) => r.url
+              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></a>
+              : <Link key={r.id} className="chipr" href={`/i/${r.initiative_id}`} title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></Link>)}
+          </div>
+        </section>
+      )}
 
       <div style={{ marginBottom: 20 }}>
         <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor}>
