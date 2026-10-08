@@ -32,8 +32,16 @@ export function ReportsCard({ reports, stores, children, editor }: { reports: Bo
             return <span key={b.id} className="rwrap"><a className="feature" href={b.url} target="_blank" rel="noreferrer"><span className="k">Group</span><span className="t">{short}</span></a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
           })}
         </div>
-        <div className="grid-chips">
-          {byStore.map((b) => chip(b, parseTitle(b.title).short))}
+        <div className="bystore">
+          {stores.filter((s) => byStore.some((b) => b.store_id === s.id)).sort((a, b) => a.sort_order - b.sort_order).map((s) => (
+            <div key={s.id} className="storecol" style={{ ["--accent" as string]: storeAccent(s) }}>
+              <div className="storecol-h">{s.short_name}</div>
+              {byStore.filter((b) => b.store_id === s.id).map((b) => {
+                const { short } = parseTitle(b.title);
+                return <span key={b.id} className="rwrap"><a className="rlink" href={b.url} target="_blank" rel="noreferrer">{short}</a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
+              })}
+            </div>
+          ))}
         </div>
       </div>
       {shops.length > 0 && (
