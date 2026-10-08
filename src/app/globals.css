@@ -542,10 +542,12 @@ a.plain:hover { text-decoration: underline; }
 .reports .feature .k { display: block; font-size: 11px; opacity: .85; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
 .reports .feature .t { display: block; font-family: var(--font-display); font-size: 20px; line-height: 1.15; margin-top: 4px; }
 .reports .feature:hover { text-decoration: none; }
-.reports .grid-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.reports .chipr { display: inline-flex; flex-direction: column; padding: 8px 12px; border-radius: 10px; background: var(--panel-2); text-decoration: none; color: var(--ink); border-left: 3px solid var(--accent, var(--forest)); min-width: 120px; }
-.reports .chipr .k { font-size: 11px; font-weight: 800; color: var(--accent, var(--forest)); }
-.reports .chipr .t { font-size: 13px; }
+.reports .grid-chips, .shops .grid-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.reports + .shops, .shops { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.shops .eyebrow { margin-bottom: 8px; }
+.reports .chipr, .shops .chipr { display: inline-flex; flex-direction: column; padding: 8px 12px; border-radius: 10px; background: var(--panel-2); text-decoration: none; color: var(--ink); border-left: 3px solid var(--accent, var(--forest)); min-width: 120px; }
+.reports .chipr .k, .shops .chipr .k { font-size: 11px; font-weight: 800; color: var(--accent, var(--forest)); }
+.reports .chipr .t, .shops .chipr .t { font-size: 13px; }
 @media (max-width: 720px) { .reports { grid-template-columns: 1fr; } }
 
 /* Stacked columns */
@@ -573,9 +575,9 @@ a.plain:hover { text-decoration: underline; }
 .storenav a.sub { padding-top: 4px; padding-bottom: 4px; }
 @media (max-width: 1100px) { .storenav a.sub { display: none; } }
 
-.reports .rwrap { display: inline-flex; align-items: flex-start; gap: 2px; }
-.reports .rwrap .iconbtn { opacity: 0; }
-.reports .rwrap:hover .iconbtn { opacity: 1; }
+.reports .rwrap, .shops .rwrap { display: inline-flex; align-items: flex-start; gap: 2px; }
+.reports .rwrap .iconbtn, .shops .rwrap .iconbtn { opacity: 0; }
+.reports .rwrap:hover .iconbtn, .shops .rwrap:hover .iconbtn { opacity: 1; }
 
 /* Tracking */
 .daysbox { display: flex; gap: 18px; align-items: flex-end; }
