@@ -41,9 +41,19 @@ export function CarWarsBanner({ init, roster, stores, store, peopleIds, launches
           )}
         </div>
         <div className="carwars-side">
-          <div className="eyebrow">Live on CarWars</div>
-          <div className="carwars-live"><strong>{live}</strong> of {rows.length}</div>
-          <div className="small faint">Checked off as they're set up and trained · <Link href={`/i/${init.id}`}>open</Link></div>
+          {live > 0 || mine.some((m) => isDate(m.when) && m.when < t) ? (
+            <>
+              <div className="eyebrow">Live on CarWars</div>
+              <div className="carwars-live"><strong>{live}</strong> of {rows.length}</div>
+              <div className="small faint">Checked off as they're set up and trained · <Link href={`/i/${init.id}`}>open</Link></div>
+            </>
+          ) : (
+            <>
+              <div className="eyebrow">Status</div>
+              <div className="carwars-live" style={{ fontSize: 20 }}>Not set up yet</div>
+              <div className="small faint">{rows.length} people will come on when it launches · <Link href={`/i/${init.id}`}>open</Link></div>
+            </>
+          )}
         </div>
       </section>
     );
@@ -58,7 +68,7 @@ export function CarWarsBanner({ init, roster, stores, store, peopleIds, launches
         <div className="eyebrow">CarWars launch</div>
         <div className="carwars-now">{current ? current.replace(/^●\s*/, "") : "Planning"}</div>
         <div className="carwars-steps">{steps.map((l, i) => <span key={i} className={l.startsWith("✓") ? "done" : l.startsWith("●") ? "now" : ""}>{l.replace(/^[✓●○]\s*/, "")}</span>)}</div>
-        <div className="small faint">{next ? `Next up: ${next.store} ${next.label.toLowerCase()}, ${fmtDate(next.when)} · ` : ""}<strong>{live}</strong> of {rows.length} live · <Link href={`/i/${init.id}`}>open</Link></div>
+        <div className="small faint">{next ? `Next up: ${next.store} ${next.label.toLowerCase()}, ${fmtDate(next.when)} · ` : ""}{live > 0 ? <><strong>{live}</strong> of {rows.length} live · </> : ""}<Link href={`/i/${init.id}`}>open</Link></div>
       </div>
       <div className="carwars-side">
         <div className="eyebrow">Dates</div>
