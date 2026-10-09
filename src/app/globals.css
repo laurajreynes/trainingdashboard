@@ -656,11 +656,17 @@ h1 .tag.stage { font-size: 12px; vertical-align: middle; }
 .stagesteps-label { font-size: 11px; font-weight: 600; color: var(--forest); white-space: nowrap; }
 
 /* The model strip */
-.model { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 12px 18px; margin-bottom: 18px; border-radius: 12px; background: linear-gradient(135deg, var(--forest), var(--brand)); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+.model { padding: 12px 18px 10px; margin-bottom: 18px; border-radius: 12px; background: linear-gradient(135deg, var(--forest), var(--brand)); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; text-align: center; }
+.model-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 10px; }
 .model.compact { font-size: 15px; padding: 8px 14px; margin-bottom: 14px; }
 .model-step { display: inline-flex; align-items: center; gap: 10px; }
 .model-arrow { opacity: .55; font-weight: 400; }
-.model-word:nth-child(1) { }
+/* bracket from Text to Phone convo with the caption under it */
+.model-note { display: flex; flex-direction: column; align-items: center; margin-top: 2px; font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--sun); }
+.model-bracket { display: block; width: min(34%, 300px); height: 10px; border: 2px solid var(--sun); border-top: 0; border-radius: 0 0 4px 4px; position: relative; margin-left: -8%; }
+.model-bracket::after { content: ""; position: absolute; right: -2px; top: -8px; border: 5px solid transparent; border-bottom-color: var(--sun); border-top: 0; transform: translateX(50%); }
+.model-caption { margin-top: 4px; }
+@media (max-width: 700px) { .model-note { display: none; } }
 @media (max-width: 720px) { .model { font-size: 15px; gap: 2px 8px; } .model-step { gap: 6px; } }
 
 /* initiative cards: compact, click for details */
