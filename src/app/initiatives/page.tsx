@@ -3,17 +3,23 @@ import { getStores, getInitiatives, getAllRoster, getStages, getAreas } from "@/
 import { InitiativeCard } from "@/components/InitiativeCard";
 import { addInitiative } from "@/app/actions";
 import { today } from "@/lib/fmt";
+import { byStore } from "@/lib/order";
+import { CarWarsBanner } from "@/components/CarWars";
+import { getGroupNotes } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Initiatives() {
   const [editor, stores, initiatives, roster, stages, areas] = await Promise.all([isEditor(), getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas()]);
-  const live = initiatives.filter((i) => i.status !== "done");
+  const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done");
+  const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
+  const live = initiatives.filter((i) => i.status !== "done" && i !== carwars).sort(byStore(stores));
   const done = initiatives.filter((i) => i.status === "done");
   return (
     <>
       <div className="pagehead"><div><div className="eyebrow">All stores</div><h1>Initiatives</h1></div></div>
       <div className="stack">
+        {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}
         {live.length ? (
           <div className="grid cols-3">{live.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} area={areas[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}</div>
         ) : <div className="card"><p className="empty">Nothing yet. Add the first initiative below.</p></div>}

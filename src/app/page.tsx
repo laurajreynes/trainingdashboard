@@ -18,6 +18,7 @@ import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, g
 import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
+import { byStore } from "@/lib/order";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const planned = visitsAll.filter((v) => v.date > today());        // scheduled sessions
   const owed = visits.filter((v) => v.date < today() && !v.summary).slice(0, 12);   // happened, no recap yet
   const primary = stores.filter((s) => !s.is_bdc);
-  const active = initiatives.filter((i) => (i.status === "active" || i.status === "planning") && !/carwars/i.test(i.name));
+  const active = initiatives.filter((i) => (i.status === "active" || i.status === "planning") && !/carwars/i.test(i.name)).sort(byStore(stores));
   const open = todos.filter((t) => !t.done);
 
   const phase = monthPhase(sp.phase);
