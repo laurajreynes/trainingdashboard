@@ -14,7 +14,7 @@ export function ApptBoardCard({ board, url, color, title }: { board: Board; url:
         { label: "Set", value: m.set, color: "var(--line-strong)" },
         { label: "Shown", value: m.shown, color, sub: `${pct}%` },
       ]} max={Math.max(m.set, 1)} />
-      <p className="small faint" style={{ marginTop: 6 }}>This week {w.set} set, {w.shown} shown · from DriveCentric{board.updatedAt ? `, ${new Date(board.updatedAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""}</p>
+      <p className="small faint" style={{ marginTop: 6 }}>This week {w.set} set, {w.shown} shown · from DriveCentric{board.updatedAt ? `, ${new Date(board.updatedAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/Denver" })}` : ""}</p>
     </section>
   );
 }
