@@ -31,7 +31,7 @@ export function Model({ compact }: { compact?: boolean }) {
       {!compact && span && (
         <div className="model-note" aria-hidden="true" style={{ paddingLeft: span.left }}>
           <span className="model-bracket" style={{ width: span.width }} />
-          <span className="model-caption" style={{ width: span.width }}>Text is the launchpad to a phone conversation</span>
+          <span className="model-capwrap" style={{ width: span.width }}><span className="model-caption">Text is the launchpad to a phone conversation</span></span>
         </div>
       )}
     </div>

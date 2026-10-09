@@ -665,7 +665,8 @@ h1 .tag.stage { font-size: 12px; vertical-align: middle; }
 .model-note { display: flex; flex-direction: column; align-items: flex-start; margin-top: 2px; font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--sun); text-align: center; }
 .model-bracket { display: block; height: 10px; border: 2px solid var(--sun); border-top: 0; border-radius: 0 0 4px 4px; position: relative; }
 .model-bracket::after { content: ""; position: absolute; right: -2px; top: -9px; border: 5px solid transparent; border-bottom-color: var(--sun); border-top: 0; transform: translateX(50%); }
-.model-caption { margin-top: 4px; display: block; }
+.model-capwrap { display: flex; justify-content: center; margin-top: 4px; }
+.model-caption { white-space: nowrap; }
 @media (max-width: 720px) { .model { font-size: 15px; gap: 2px 8px; } .model-step { gap: 6px; } }
 
 /* initiative cards: compact, click for details */
