@@ -54,9 +54,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const activePeople = people.filter((p) => p.active);
   const coverage = navStores.map((s) => {
     const folks = new Set(activePeople.filter((p) => p.store_id === s.id).map((p) => p.id));
-    const rows = roster.filter((r) => activeIds.has(r.initiative_id) && folks.has(r.person_id));
-    const done = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
-    return { label: s.short_name, value: rows.length ? Math.round((done / rows.length) * 100) : 0, color: storeAccent(s), sub: rows.length ? `${done}/${rows.length}` : "no roster", href: `/coverage#${s.slug}`, max: 100 };
+    // People on a training initiative here (CarWars is a tool launch, not training), trained if trained on any
+    const trainingIds = new Set(initiatives.filter((i) => activeIds.has(i.id) && !/carwars/i.test(i.name)).map((i) => i.id));
+    const rows = roster.filter((r) => trainingIds.has(r.initiative_id) && folks.has(r.person_id));
+    const people = new Set(rows.map((r) => r.person_id));
+    const done = new Set(rows.filter((r) => r.status === "trained" || r.status === "solid").map((r) => r.person_id)).size;
+    return { label: s.short_name, value: people.size ? Math.round((done / people.size) * 100) : 0, color: storeAccent(s), sub: people.size ? `${done}/${people.size}` : "no roster", href: `/coverage#${s.slug}`, max: 100 };
   });
   const since30 = addDays(today(), -29);
   const weekStart = weeksBack(1)[0];
@@ -138,11 +141,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
-      <Model />
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}
-
       <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} />
 
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}
 
       <section style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
@@ -154,6 +155,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           <div className="card"><p className="empty">No initiatives yet. <Link href="/initiatives">Create the first one.</Link></p></div>
         )}
       </section>
+
+
+      <Model />
 
       <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (
@@ -194,7 +198,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         </section>
       </div>
 
-      <div className="grid main-side" style={{ marginTop: 18 }}>
+      <div className="grid cols-3" style={{ marginTop: 18, alignItems: "start" }}>
         <div className="stack">
           {owed.length > 0 && (
             <details className="card accordion" style={{ borderTop: "3px solid var(--warn)" }}>
@@ -209,8 +213,20 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           )}
           <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
-            <VisitList visits={visits.slice(0, 8)} stores={stores} people={people} showStore />
+            <VisitList visits={visits.slice(0, 6)} stores={stores} people={people} showStore />
           </section>
+        </div>
+        <div className="stack">
+          <section className="card">
+            <div className="cardhead"><h2>Open to-dos</h2><Link className="more" href="/todos">All</Link></div>
+            <TodoList todos={open.slice(0, 8)} editor={editor} stores={stores} people={people} showStore />
+          </section>
+          {phase.phase !== "close" && (
+            <section className="card">
+              <div className="cardhead"><h2>Recent wins</h2></div>
+              <WinList wins={wins.slice(0, 4)} editor={editor} people={people} stores={stores} showStore />
+            </section>
+          )}
         </div>
         <div className="stack">
           <section className="card groupcard">
@@ -218,18 +234,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             <div className="small"><span className="eyebrow">Next HR/GM meeting · 1pm</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
             {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
           </section>
-          <Bulletin items={bulletin} stores={stores} />
+          <Bulletin items={bulletin} stores={stores} limit={4} />
           <OpenPosts posts={posts} stores={stores} editor={editor} />
-          <section className="card">
-            <div className="cardhead"><h2>Open to-dos</h2><Link className="more" href="/todos">All</Link></div>
-            <TodoList todos={open.slice(0, 10)} editor={editor} stores={stores} people={people} showStore />
-          </section>
-          {phase.phase !== "close" && (
-            <section className="card">
-              <div className="cardhead"><h2>Recent wins</h2></div>
-              <WinList wins={wins.slice(0, 6)} editor={editor} people={people} stores={stores} showStore />
-            </section>
-          )}
         </div>
       </div>
 

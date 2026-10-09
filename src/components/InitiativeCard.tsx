@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { STAGES, ROSTER_LABEL, AREA_DEFAULT } from "@/lib/types";
 import type { Initiative, InitiativePerson, Store } from "@/lib/types";
+import { Desc } from "@/components/Desc";
 
 function counts(roster: InitiativePerson[]) {
   const c = { trained: 0, needs: 0, not: 0, total: roster.length };
@@ -79,7 +80,7 @@ export function InitiativeCard({ init, roster, stores, stage, area, hideStore }:
             {mine.map((s) => <span key={s.id} className="faint small">{s.short_name}</span>)}
           </div>
           {init.goal_text && <p style={{ fontWeight: 600, marginBottom: 8 }}>{init.goal_text}</p>}
-          {init.description && <p className="pre muted small" style={{ marginBottom: 12 }}>{init.description}</p>}
+          {init.description && <div style={{ marginBottom: 12 }}><Desc text={init.description} small /></div>}
           <Bar roster={roster} legend />
           <div className="initdialog-actions">
             {mine.filter((s) => s.slug !== hideStore).map((s) => (

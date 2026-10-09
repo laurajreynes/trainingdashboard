@@ -272,9 +272,12 @@ details.quiet > summary { cursor: pointer; color: var(--ink-dim); font-size: 13p
 .phase-reflect { --phase-color: var(--sun); }
 .phase-track { --phase-color: var(--brand); }
 .phase-close { --phase-color: var(--forest); }
-.phasehead { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+.phasehead { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; align-items: center; }
+.phasestats { flex: 1 1 300px; max-width: 420px; }
+.phasestats .stat { padding: 8px 12px; }
+.phasestats .stat .v { font-size: 22px; }
 .phasetitle { font-size: 28px; color: var(--forest); letter-spacing: -0.01em; font-weight: 700; margin: 2px 0 4px; }
-.phaseside { min-width: 240px; flex: 0 1 320px; }
+.phaseside { min-width: 200px; flex: 0 1 240px; }
 .monthtrack { position: relative; height: 10px; border-radius: 6px; background: var(--line); overflow: visible; margin-top: 8px; }
 .monthtrack .seg { position: absolute; top: 0; height: 100%; opacity: 0.35; }
 .monthtrack .seg.reflect { background: var(--sun); opacity: .6; border-radius: 6px 0 0 6px; }
@@ -705,20 +708,27 @@ details.accordion > summary h2 { margin: 0; }
 .bulletin { border-top: 3px solid var(--brand); }
 .bulletin .list li { align-items: flex-start; }
 
-/* CarWars banner */
-.carwars { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; margin-bottom: 18px; border-left: 4px solid var(--sun); padding: 14px 18px; }
-.carwars-now { font-family: var(--font-display); font-weight: 800; font-size: 20px; margin: 2px 0 6px; }
-.carwars-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-.carwars-steps span { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--panel-2); color: var(--ink-faint); }
-.carwars-steps span.done { background: var(--sage, #e3efe8); color: var(--forest); text-decoration: line-through; }
-.carwars-steps span.now { background: var(--forest); color: #fff; font-weight: 700; }
-.carwars-dates { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 14px; }
-.carwars-store .k { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--forest); margin-bottom: 2px; }
-.carwars-date { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 2px 0; border-bottom: 1px solid var(--line); }
-.carwars-plan { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 4px; max-width: 420px; }
-.carwars-plan li { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 5px 10px; border-radius: 8px; background: var(--panel-2); }
-.carwars-plan li.done { color: var(--ink-faint); text-decoration: line-through; }
-.carwars-plan li.now { background: var(--forest); color: #fff; font-weight: 700; }
-.carwars-live { font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1.1; margin: 2px 0 4px; }
-.carwars-live strong { color: var(--accent, var(--forest)); }
+/* CarWars banner: one track */
+.carwars { margin-bottom: 18px; border-left: 4px solid var(--accent, var(--sun)); padding: 12px 18px 10px; }
+.carwars-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.carwars-now { font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+.cwtrack { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; position: relative; }
+.cwtrack::before { content: ""; position: absolute; left: 0; right: 0; top: 27px; height: 3px; background: var(--line); border-radius: 2px; }
+.cwstop { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 4px; min-width: 0; }
+.cwwhen { font-size: 11px; font-weight: 700; color: var(--ink-faint); height: 16px; }
+.cwdot { width: 14px; height: 14px; border-radius: 50%; background: var(--panel); border: 3px solid var(--line-strong); margin: 4px 0 6px; position: relative; z-index: 1; }
+.cwtitle { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.cwsub { font-size: 11.5px; color: var(--ink-dim); line-height: 1.2; }
+.cwstop.done .cwdot { background: var(--good); border-color: var(--good); }
+.cwstop.done .cwtitle, .cwstop.done .cwwhen { color: var(--ink-faint); }
+.cwstop.now .cwdot { background: var(--forest); border-color: var(--forest); box-shadow: 0 0 0 4px var(--sage, #e3efe8); }
+.cwstop.now .cwtitle { color: var(--forest); }
+.cwstop.next .cwdot { background: var(--sun); border-color: var(--sun); box-shadow: 0 0 0 4px #fdf3d6; }
+.cwstop.next .cwtitle { color: var(--ink); }
+.cwstop.next .cwwhen { color: var(--gold); }
+.cwstop.later .cwdot { border-color: var(--accent, var(--line-strong)); }
+@media (max-width: 800px) { .cwtrack { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); row-gap: 12px; } .cwtrack::before { display: none; } }
 @media (max-width: 800px) { .carwars { grid-template-columns: 1fr; } }
+.desc p { margin: 0 0 10px; }
+.desc.small p { font-size: 13px; }
+.desc .callout { background: var(--sun-soft, #fdf3d6); border-left: 4px solid var(--sun); padding: 10px 12px; border-radius: 0 8px 8px 0; color: var(--ink); font-weight: 600; }

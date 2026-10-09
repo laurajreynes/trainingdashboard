@@ -108,8 +108,16 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
             <div className="eyebrow">{mi.daysLeft} {mi.daysLeft === 1 ? "day" : "days"} left in {mName}</div>
           </div>
         </div>
+        {mi.phase === "track" && (
+          <div className="stats tight phasestats">
+            <Stat v={thisMonth.visits} l="visits" sub={`${lastMonth.visits} last mo`} />
+            <Stat v={thisMonth.trained} l="trained" sub={`${lastMonth.trained} last mo`} />
+            <Stat v={thisMonth.wins} l="wins" sub={`${lastMonth.wins} last mo`} />
+          </div>
+        )}
         <div className="phaseside">
           <MonthTrack day={mi.day} total={mi.daysInMonth} />
+          <div className="small faint" style={{ marginTop: 6, textAlign: "right" }}>Day {mi.day} of {mi.daysInMonth}</div>
         </div>
       </div>
 
@@ -147,12 +155,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
       {mi.phase === "track" && (
         <div className="grid cols-3" style={{ marginTop: 14 }}>
           <div>
-            <h4 className="minihead">{mName} so far</h4>
-            <div className="stats tight">
-              <Stat v={thisMonth.visits} l="visits" sub={`${lastMonth.visits} last mo`} />
-              <Stat v={thisMonth.trained} l="trained" sub={`${lastMonth.trained} last mo`} />
-              <Stat v={thisMonth.wins} l="wins" sub={`${lastMonth.wins} last mo`} />
-            </div>
+            <h4 className="minihead">{mName} focus</h4>
             <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} />
           </div>
           <div>

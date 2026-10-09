@@ -3,6 +3,7 @@ import { STAGES, AREAS, AREA_DEFAULT } from "@/lib/types";
 import { getStages, getAreas } from "@/lib/data";
 import { setInitiativeStage, setInitiativeArea } from "@/app/actions";
 import { FileUploader } from "@/components/FileUploader";
+import { Desc } from "@/components/Desc";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import {
@@ -95,7 +96,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
 
       <div className="grid main-side">
         <div className="stack">
-          {init.description && <details className="card quiet about"><summary>About this initiative</summary><p className="pre" style={{ marginTop: 8 }}>{init.description}</p></details>}
+          {init.description && <details className="card quiet about"><summary>About this initiative</summary><div style={{ marginTop: 8 }}><Desc text={init.description} /></div></details>}
 
           {storeBars.length > 1 && (
             <section className="card">
