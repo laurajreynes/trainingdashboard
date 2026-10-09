@@ -4,6 +4,8 @@ import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
+import { CarWarsBanner } from "@/components/CarWars";
+import { getGroupNotes } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
@@ -42,11 +44,13 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const bulletin = await getBulletin();
+  const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
+  const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
   const examples = await signExamples(exHere);
-  const storeInits = initiatives.filter((i) => i.store_ids.includes(store.id) && i.status !== "done");   // this store only; shared BDC initiatives live on the BDC tab
+  const storeInits = initiatives.filter((i) => i.store_ids.includes(store.id) && i.status !== "done" && !/carwars/i.test(i.name));   // this store only; shared BDC initiatives live on the BDC tab
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
@@ -133,6 +137,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       <Model compact />
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} />}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>

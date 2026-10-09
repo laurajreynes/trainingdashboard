@@ -17,6 +17,7 @@ import { HBars, Stacked, ReachBars } from "@/components/charts";
 import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
+import { CarWarsBanner } from "@/components/CarWars";
 
 export const dynamic = "force-dynamic";
 
@@ -27,15 +28,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   ]);
   const bookmarksAll = await getBookmarks();
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
-  const gmSkip = gmSkips(await getGroupNotes());
+  const gnotes = await getGroupNotes();
+  const gmSkip = gmSkips(gnotes);
   const bulletin = await getBulletin();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
+  const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done");
+  const carwarsDates = gnotes.find((n) => n.key === "carwars")?.body || null;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
   const planned = visitsAll.filter((v) => v.date > today());        // scheduled sessions
   const owed = visits.filter((v) => v.date < today() && !v.summary).slice(0, 12);   // happened, no recap yet
   const primary = stores.filter((s) => !s.is_bdc);
-  const active = initiatives.filter((i) => i.status === "active" || i.status === "planning");
+  const active = initiatives.filter((i) => (i.status === "active" || i.status === "planning") && !/carwars/i.test(i.name));
   const open = todos.filter((t) => !t.done);
 
   const phase = monthPhase(sp.phase);
@@ -131,6 +135,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       </div>
 
       <Model />
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}
 
       <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} />
 
