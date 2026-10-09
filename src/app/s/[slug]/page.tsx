@@ -418,6 +418,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <input type="hidden" name="id" value={store.id} />
             <input type="text" name="name" defaultValue={store.name} placeholder="Full name" style={{ flex: 2, minWidth: 180 }} />
             <input type="text" name="short_name" defaultValue={store.short_name} placeholder="Tab name" style={{ flex: 1, minWidth: 120 }} />
+            <input type="text" name="locations" defaultValue={store.locations.join(", ")} placeholder="Locations (comma separated)" style={{ flex: 1, minWidth: 140 }} />
             <button className="btn sm">Save</button>
           </form>
         </details>

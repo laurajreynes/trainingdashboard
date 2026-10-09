@@ -716,7 +716,10 @@ export async function setStoreGross(fd: FormData) {
 // ---------- store settings ----------
 export async function updateStore(fd: FormData) {
   await requireEditor();
-  ok(await db().from("stores").update({ name: must(fd, "name"), short_name: must(fd, "short_name") }).eq("id", must(fd, "id")));
+  const locs = fd.get("locations"); // comma separated; blank clears
+  const patch: Record<string, unknown> = { name: must(fd, "name"), short_name: must(fd, "short_name") };
+  if (locs !== null) patch.locations = String(locs).split(",").map((x) => x.trim()).filter(Boolean);
+  ok(await db().from("stores").update(patch).eq("id", must(fd, "id")));
   refresh();
 }
 

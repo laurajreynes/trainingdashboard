@@ -25,6 +25,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           <Link href="/tracking">Tracking</Link>
           <Link href="/group">Group</Link>
           <Link href="/initiatives">Initiatives</Link>
+          <Link href="/marketing">Marketing</Link>
           <Link href="/people">People</Link>
           <Link href="/todos">To-dos</Link>
           <Link href="/examples">Examples</Link>
