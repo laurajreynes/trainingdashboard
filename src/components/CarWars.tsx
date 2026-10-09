@@ -1,51 +1,82 @@
 import Link from "next/link";
 import type { Initiative, InitiativePerson, Store } from "@/lib/types";
-import { fmtDate, storeAccent } from "@/lib/fmt";
+import { fmtDate, storeAccent, today } from "@/lib/fmt";
 import { saveGroupNote } from "@/app/actions";
 
-/** Launch dates come from the `carwars` group note, one per line: "Subaru: 2026-10-16" or "Toyota/Chevy Sales: 2026-11-01" or "Service: TBD". */
-export function parseLaunches(body: string | null | undefined): { label: string; when: string }[] {
+/** Milestones come from the `carwars` group note, one per line: "Chevrolet | Manager review: 2026-10-15" or "Service | Launch: TBD". */
+export type Milestone = { store: string; label: string; when: string };
+export function parseLaunches(body: string | null | undefined): Milestone[] {
   return (body || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
-    const m = l.match(/^(.+?):\s*(.+)$/); return m ? { label: m[1].trim(), when: m[2].trim() } : { label: l, when: "" };
+    const m = l.match(/^(?:(.+?)\s*\|\s*)?(.+?):\s*(.+)$/);
+    return m ? { store: (m[1] || "").trim(), label: m[2].trim(), when: m[3].trim() } : { store: "", label: l, when: "" };
   });
 }
 const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+const forStore = (m: Milestone, s: Store) => new RegExp(s.short_name.split(" ")[0], "i").test(m.store);
 
-/** The CarWars launch, pinned on every page: progress, this store's launch date, and who's live. */
+/** The CarWars launch, pinned on every page. Home: group progress and every store's dates. Store page: that store's plan only. */
 export function CarWarsBanner({ init, roster, stores, store, peopleIds, launches, editor }: {
   init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
 }) {
   const steps = (init.description || "").split(/\r?\n/).map((l) => l.trim()).filter((l) => /^[✓●○]/.test(l));
   const current = steps.find((l) => l.startsWith("●"));
-  const done = steps.filter((l) => l.startsWith("✓")).length;
   const all = parseLaunches(launches);
-  // On a store page, show the launches that mention this store (or everything on the home page)
-  const mine = store ? all.filter((l) => new RegExp(store.short_name.split(" ")[0], "i").test(l.label) || /service/i.test(l.label)) : all;
   const rows = roster.filter((r) => r.initiative_id === init.id && (!peopleIds || peopleIds.has(r.person_id)));
   const live = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
-  const next = all.filter((l) => isDate(l.when)).sort((a, b) => a.when.localeCompare(b.when))[0];
+  const t = today();
+  const when = (m: Milestone) => isDate(m.when) ? fmtDate(m.when, { weekday: true }) : m.when || "TBD";
+
+  if (store) {
+    const mine = all.filter((m) => forStore(m, store)).sort((a, b) => (isDate(a.when) ? a.when : "9").localeCompare(isDate(b.when) ? b.when : "9"));
+    const next = mine.find((m) => isDate(m.when) && m.when >= t);
+    return (
+      <section className="card carwars" style={{ ["--accent" as string]: storeAccent(store) }}>
+        <div className="carwars-main">
+          <div className="eyebrow">CarWars at {store.short_name}</div>
+          <div className="carwars-now">{next ? `${next.label}: ${when(next)}` : mine.length ? "Dates set" : "Dates coming"}</div>
+          {mine.length > 0 && (
+            <ol className="carwars-plan">
+              {mine.map((m) => <li key={m.label} className={isDate(m.when) && m.when < t ? "done" : m === next ? "now" : ""}><span className="l">{m.label}</span><span className="w">{when(m)}</span></li>)}
+            </ol>
+          )}
+        </div>
+        <div className="carwars-side">
+          <div className="eyebrow">Live on CarWars</div>
+          <div className="carwars-live"><strong>{live}</strong> of {rows.length}</div>
+          <div className="small faint">Checked off as they're set up and trained · <Link href={`/i/${init.id}`}>open</Link></div>
+        </div>
+      </section>
+    );
+  }
+
+  const byStore = stores.filter((s) => all.some((m) => forStore(m, s))).sort((a, b) => a.sort_order - b.sort_order);
+  const other = all.filter((m) => !stores.some((s) => forStore(m, s)));
+  const next = all.filter((m) => isDate(m.when) && m.when >= t).sort((a, b) => a.when.localeCompare(b.when))[0];
   return (
     <section className="card carwars">
       <div className="carwars-main">
         <div className="eyebrow">CarWars launch</div>
         <div className="carwars-now">{current ? current.replace(/^●\s*/, "") : "Planning"}</div>
         <div className="carwars-steps">{steps.map((l, i) => <span key={i} className={l.startsWith("✓") ? "done" : l.startsWith("●") ? "now" : ""}>{l.replace(/^[✓●○]\s*/, "")}</span>)}</div>
-        <div className="small faint">{done} of {steps.length} steps · <Link href={`/i/${init.id}`}>open</Link></div>
+        <div className="small faint">{next ? `Next up: ${next.store} ${next.label.toLowerCase()}, ${fmtDate(next.when)} · ` : ""}<strong>{live}</strong> of {rows.length} live · <Link href={`/i/${init.id}`}>open</Link></div>
       </div>
       <div className="carwars-side">
-        <div className="eyebrow">{store ? "Launch" : "Launch dates"}</div>
-        {mine.length ? mine.map((l) => {
-          const s = stores.find((x) => new RegExp(x.short_name.split(" ")[0], "i").test(l.label));
-          return <div key={l.label} className="carwars-date"><span className="k" style={{ color: storeAccent(s) }}>{l.label}</span><strong>{isDate(l.when) ? fmtDate(l.when, { weekday: true }) : l.when || "TBD"}</strong></div>;
-        }) : <div className="faint small">No date yet</div>}
-        {!store && next && <div className="small faint" style={{ marginTop: 4 }}>Next up: {next.label}, {fmtDate(next.when)}</div>}
-        <div className="small" style={{ marginTop: 6 }}><strong>{live}</strong> of {rows.length} live{store ? "" : " across the group"}</div>
-        {editor && !store && (
+        <div className="eyebrow">Dates</div>
+        <div className="carwars-dates">
+          {byStore.map((s) => (
+            <div key={s.id} className="carwars-store">
+              <div className="k" style={{ color: storeAccent(s) }}>{s.short_name}</div>
+              {all.filter((m) => forStore(m, s)).map((m) => <div key={m.label} className="carwars-date"><span>{m.label}</span><strong>{when(m)}</strong></div>)}
+            </div>
+          ))}
+          {other.map((m) => <div key={m.label} className="carwars-store"><div className="k">{m.store || m.label}</div><div className="carwars-date"><span>{m.store ? m.label : ""}</span><strong>{when(m)}</strong></div></div>)}
+        </div>
+        {editor && (
           <details className="quiet" style={{ marginTop: 6 }}>
             <summary className="small">Edit dates</summary>
             <form action={saveGroupNote} style={{ marginTop: 6 }}>
               <input type="hidden" name="key" value="carwars" />
-              <textarea name="body" defaultValue={launches || ""} placeholder={"Subaru: 2026-10-16\nToyota/Chevy Sales: 2026-11-01\nService: TBD"} style={{ minHeight: 70, fontSize: 13 }} />
+              <textarea name="body" defaultValue={launches || ""} placeholder={"Store | Milestone: 2026-10-16\nService | Launch: TBD"} style={{ minHeight: 110, fontSize: 13 }} />
               <button className="btn sm ghost" style={{ marginTop: 4 }}>Save</button>
             </form>
           </details>

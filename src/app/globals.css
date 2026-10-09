@@ -712,6 +712,13 @@ details.accordion > summary h2 { margin: 0; }
 .carwars-steps span { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--panel-2); color: var(--ink-faint); }
 .carwars-steps span.done { background: var(--sage, #e3efe8); color: var(--forest); text-decoration: line-through; }
 .carwars-steps span.now { background: var(--forest); color: #fff; font-weight: 700; }
-.carwars-date { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 3px 0; border-bottom: 1px solid var(--line); }
-.carwars-date .k { font-weight: 700; }
+.carwars-dates { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 14px; }
+.carwars-store .k { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--forest); margin-bottom: 2px; }
+.carwars-date { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 2px 0; border-bottom: 1px solid var(--line); }
+.carwars-plan { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 4px; max-width: 420px; }
+.carwars-plan li { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 5px 10px; border-radius: 8px; background: var(--panel-2); }
+.carwars-plan li.done { color: var(--ink-faint); text-decoration: line-through; }
+.carwars-plan li.now { background: var(--forest); color: #fff; font-weight: 700; }
+.carwars-live { font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1.1; margin: 2px 0 4px; }
+.carwars-live strong { color: var(--accent, var(--forest)); }
 @media (max-width: 800px) { .carwars { grid-template-columns: 1fr; } }

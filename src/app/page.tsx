@@ -18,6 +18,8 @@ import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, g
 import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
+import { getBoard, boardUrl } from "@/lib/board";
+import { ApptBoardCard } from "@/components/ApptBoard";
 import { byStore } from "@/lib/order";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +34,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const gnotes = await getGroupNotes();
   const gmSkip = gmSkips(gnotes);
   const bulletin = await getBulletin();
+  const chevyBoard = await getBoard("chevrolet");
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
   const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done");
@@ -183,7 +186,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
               <HBars rows={[{ label: "Lot", value: upsAll.lot, color: "var(--forest)" }, { label: "Phone", value: upsAll.phone, color: "var(--brand)" }, { label: "Web", value: upsAll.web, color: "var(--info)" }]} />
             </div>}
           </section>
-        ) : null}
+        ) : chevyBoard ? <ApptBoardCard board={chevyBoard} url={boardUrl("chevrolet")} color="var(--chevrolet, #C98A12)" title="Chevrolet appointments" /> : null}
         <section className="card">
           <div className="cardhead"><h2>Training coverage</h2><Link className="more" href="/coverage">Who</Link></div>
           <HBars rows={coverage} unit="%" max={100} />

@@ -5,6 +5,8 @@ import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
+import { getBoard, boardUrl } from "@/lib/board";
+import { ApptBoardCard, ApptPeopleCard } from "@/components/ApptBoard";
 import { getGroupNotes } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
@@ -44,6 +46,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const bulletin = await getBulletin();
+  const board = await getBoard(store.slug);
   const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
   const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
@@ -273,6 +276,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </details>
             )}
           </section>
+          {board ? <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} /> : (
           <section className="card">
             <div className="cardhead"><h2>Appointments, {monthName(curMonth)}</h2></div>
             {apptRow.due > 0 ? (
@@ -282,17 +286,26 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 { label: "Sold", value: apptRow.sold, color: "var(--good)", sub: apptRow.shown ? `${Math.round((apptRow.sold / apptRow.shown) * 100)}% of shown` : undefined },
               ]} max={apptRow.due} />
             ) : <p className="empty">No appointment numbers this month</p>}
-          </section>
+          </section>)}
+          {board ? <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" /> : (
           <section className="card">
-            <div className="cardhead"><h2>Where ups came from, {monthName(curMonth)}</h2></div>
-            {upsRow.lot + upsRow.phone + upsRow.web > 0 ? (
+            <div className="cardhead"><h2>Set rates, {monthName(curMonth)}</h2></div>
+            {goals.filter((g) => g.kind === "rate").length ? (
+              <ul className="list">
+                {goals.filter((g) => g.kind === "rate").map((g) => {
+                  const es = entries.filter((e) => e.goal_id === g.id).sort((a, b) => a.date.localeCompare(b.date));
+                  const last = es[es.length - 1];
+                  return <li key={g.id} className="small"><div className="grow">{g.name}</div><strong>{last ? `${last.value}${g.unit}` : "–"}</strong>{g.target !== null && <span className="faint"> / {g.target}{g.unit}</span>}</li>;
+                })}
+              </ul>
+            ) : upsRow.lot + upsRow.phone + upsRow.web > 0 ? (
               <HBars rows={[
                 { label: "Lot", value: upsRow.lot, color: storeAccent(store) },
                 { label: "Phone", value: upsRow.phone, color: storeAccent(store) },
                 { label: "Web", value: upsRow.web, color: storeAccent(store) },
               ]} />
-            ) : <p className="empty">No traffic numbers this month</p>}
-          </section>
+            ) : <p className="empty">Source traffic report coming from DriveCentric</p>}
+          </section>)}
         </div>
       )}
 
