@@ -5,9 +5,9 @@ export const dynamic = "force-static";
 const STEPS = [
   { n: 1, title: "Get to know the team", body: "Build the relationship first. Sit in, listen, learn how the store runs and who does what." },
   { n: 2, title: "Observe and explore the reporting", body: "Watch the work and read the numbers until the patterns are clear, not just the one-offs." },
-  { n: 3, title: "Identify the opportunities", body: "Pick the behaviors that will move results. Variable ops first: phone, internet, appointments." },
+  { n: 3, title: "Identify the opportunity", body: "Pick the behavior that will move results. Note where the number is today, and get the manager on board." },
   { n: 4, title: "Introduce and train to solutions", body: "Teach the skill, give the tools (templates, word tracks, strategy), practice it with them." },
-  { n: 5, title: "Verify with management", body: "Confirm with the managers that the behavior changed, and that the numbers followed." },
+  { n: 5, title: "Verify with management", body: "Check the behavior at two weeks. Then confirm the numbers followed." },
 ];
 
 /** Laura's overall game plan: a cycle, not a checklist. Once something is fixed it starts over on the next opportunity. */
@@ -34,9 +34,9 @@ export default function BigPicturePage() {
           </li>
         ))}
         <li className="cycle-step loop">
-          <span className="cycle-n">↻</span>
+          <span className="cycle-n">6</span>
           <div>
-            <h3>Start over with what's fixed</h3>
+            <h3>Start over with what’s fixed</h3>
             <p className="muted small">Sustain the win, then go back to step 2 on the next pattern in the reporting.</p>
           </div>
         </li>
