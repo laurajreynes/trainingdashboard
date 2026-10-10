@@ -156,7 +156,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
         <div className="grid cols-3" style={{ marginTop: 14 }}>
           <div>
             <h4 className="minihead">{mName} focus</h4>
-            <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} />
+            <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} month={mi.month} storeId={store?.id || null} editor={editor} />
           </div>
           <div>
             <h4 className="minihead">Pace to goal</h4>
@@ -181,7 +181,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
           <div>
             <div className="bigcount">{mi.daysLeft}<span>{mi.daysLeft === 1 ? "day left" : "days left"}</span></div>
             <p className="muted small">Month ends {fmtDate(mi.monthEnd, { weekday: true })}</p>
-            <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} />
+            <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} month={mi.month} storeId={store?.id || null} editor={editor} />
             <h4 className="minihead" style={{ marginTop: 14 }}>Wins this month · {monthWins.length}</h4>
             <ul className="list">
               {monthWins.slice(0, 4).map((w) => <li key={w.id}><span style={{ color: "var(--gold)" }}>★</span><div className="grow small">{w.text}</div></li>)}
@@ -325,10 +325,21 @@ function PaceList({ paces, mode, where }: { paces: GoalPace[]; mode: "track" | "
   );
 }
 
-function FocusLine({ plan, groupPlan }: { plan?: { focus: string | null }; groupPlan?: { focus: string | null } }) {
+function FocusLine({ plan, groupPlan, month, storeId, editor }: { plan?: { focus: string | null }; groupPlan?: { focus: string | null }; month?: string; storeId?: string | null; editor?: boolean }) {
   const f = plan?.focus || groupPlan?.focus;
-  if (!f) return <p className="faint small" style={{ marginTop: 10 }}>No focus set for this month</p>;
-  return <div className="focusline"><span className="eyebrow">This month&apos;s focus</span><p className="pre">{f}</p></div>;
+  const edit = editor && month ? (
+    <details className="quiet" style={{ marginTop: 6 }}>
+      <summary className="small">Edit focus</summary>
+      <form action={saveMonthPlan} style={{ marginTop: 6 }}>
+        <input type="hidden" name="month" value={month} />
+        {storeId ? <input type="hidden" name="store_id" value={storeId} /> : null}
+        <textarea name="focus" defaultValue={plan?.focus || ""} placeholder="One or two behaviors we're driving this month" style={{ minHeight: 80 }} />
+        <button className="btn sm ghost" style={{ marginTop: 6 }}>Save</button>
+      </form>
+    </details>
+  ) : null;
+  if (!f) return <><p className="faint small" style={{ marginTop: 10 }}>No focus set for this month</p>{edit}</>;
+  return <><div className="focusline"><span className="eyebrow">This month&apos;s focus</span><p className="pre">{f}</p></div>{edit}</>;
 }
 
 function StoreFocusList({ rows }: { rows: { s: Store; p?: { focus: string | null } }[] }) {
