@@ -13,6 +13,7 @@ export type BulletinItem = {
   person?: string;       // salesperson or BDC agent named
   url?: string;          // link back to the email
   initiative?: string;   // initiative id this belongs under
+  shot?: string;         // example id of the screenshot from the email
 };
 
 /** Marketing bulletin: items posted by the scheduled Gmail scan. POST merges by id; the key is the hub passcode. */

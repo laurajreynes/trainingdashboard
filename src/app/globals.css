@@ -777,3 +777,5 @@ details.accordion > summary h2 { margin: 0; }
 .goalgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
 .initgroup { display: grid; gap: 10px; }
 .initgroup + .initgroup { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.bshot { display: block; margin: 6px 0 4px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; max-height: 150px; background: var(--panel-2); }
+.bshot img { display: block; width: 100%; height: auto; object-fit: cover; object-position: top; max-height: 150px; }

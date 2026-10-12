@@ -2,7 +2,7 @@ import Link from "next/link";
 import { isEditor } from "@/lib/auth";
 import { getHubSnapshot, getStorePosts, getMetrics, getMeetings, getGroupNotes } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
-import { fmtDate, relDay, today } from "@/lib/fmt";
+import { fmtDate, today } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
@@ -14,7 +14,7 @@ import { ReportsCard } from "@/components/ReportsCard";
 import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
-import { storeAccent, addDays, navOrder, monthsBack, weeksBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "@/lib/fmt";
+import { storeAccent, addDays, navOrder, monthsBack, weeksBack, gmSkips, projectToMonthEnd } from "@/lib/fmt";
 import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
@@ -115,8 +115,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     }
     return { withTarget, onPace };
   })();
-  const gmNext = nextGmMeeting(gmSkip);
-  const gmAgenda = meetings.find((m) => m.date === gmNext)?.agenda;
 
   const upcoming = navStores.map((s) => {
     const sess = planned.filter((x) => x.store_id === s.id).sort((a, b) => a.date.localeCompare(b.date))[0];
@@ -226,11 +224,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           )}
         </div>
         <div className="stack">
-          <section className="card groupcard">
-            <div className="cardhead"><h2>Group focus</h2><Link className="more" href="/group">Open</Link></div>
-            <div className="small"><span className="eyebrow">Next HR/GM meeting · 1pm</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
-            {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
-          </section>
           <Bulletin items={bulletin} stores={stores} initiatives={initiatives} limit={4} />
           <OpenPosts posts={posts} stores={stores} editor={editor} />
         </div>

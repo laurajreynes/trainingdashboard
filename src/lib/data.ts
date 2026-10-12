@@ -172,9 +172,18 @@ export async function signExamples(list: Example[], seconds = 60 * 60 * 6): Prom
   return list.map((e) => ({ ...e, url: byPath.get(e.path) || "" })).filter((e) => e.url);
 }
 
-export async function getBulletin(): Promise<import("@/app/api/bulletin/route").BulletinItem[]> {
+export type BulletinView = import("@/app/api/bulletin/route").BulletinItem & { shotUrl?: string; shotW?: number | null; shotH?: number | null };
+/** Marketing bulletin items, each with a signed link to its screenshot (an Example) when one is attached. */
+export async function getBulletin(): Promise<BulletinView[]> {
   const r = await db().from("group_notes").select("body").eq("key", "bulletin").maybeSingle();
-  try { return r.data?.body ? JSON.parse(r.data.body as string) : []; } catch { return []; }
+  let items: BulletinView[] = [];
+  try { items = r.data?.body ? JSON.parse(r.data.body as string) : []; } catch { items = []; }
+  const ids = items.map((i) => i.shot).filter(Boolean) as string[];
+  if (!ids.length) return items;
+  const ex = rows<Example>(await db().from("examples").select("*").in("id", ids));
+  const views = await signExamples(ex);
+  const byId = new Map(views.map((v) => [v.id, v]));
+  return items.map((i) => { const v = i.shot ? byId.get(i.shot) : undefined; return v ? { ...i, shotUrl: v.url, shotW: v.width, shotH: v.height } : i; });
 }
 export async function getGroupNotes(): Promise<GroupNote[]> {
   return rows<GroupNote>(await db().from("group_notes").select("*"));
