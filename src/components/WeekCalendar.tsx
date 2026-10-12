@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Store, Visit, Todo } from "@/lib/types";
-import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting } from "@/lib/fmt";
+import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting, nowMinutes } from "@/lib/fmt";
 
 type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean; gmSkip?: string[] };
 
@@ -58,7 +58,7 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                     .replace(/,?\s*until .*$/i, "");
                   const same = text.trim().toLowerCase() === who.toLowerCase() || text.trim().toLowerCase() === (s?.name || "").toLowerCase();
                   return { key: v.id, minutes, node: (
-                    <Link key={v.id} href={s ? (loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`) : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
+                    <Link key={v.id} href={s ? (loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`) : `/v/${v.id}`} className={`sess${v.date < today() || (v.date === today() && minutes < 9999 && minutes + 150 < nowMinutes()) ? " past" : ""}`} style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
                       {time && <span className="when">{time}</span>}
                       <span className="who">{who}</span>
                       {text && !same && <span className="what">{text}</span>}

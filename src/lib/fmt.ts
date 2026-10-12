@@ -2,6 +2,12 @@
 export const TZ = "America/Denver";
 
 /** Today's date in Bozeman as YYYY-MM-DD. */
+/** Minutes since midnight in the store time zone. */
+export function nowMinutes(): number {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+  const h = Number(parts.find((p) => p.type === "hour")?.value || 0), m = Number(parts.find((p) => p.type === "minute")?.value || 0);
+  return (h % 24) * 60 + m;
+}
 export function today(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }

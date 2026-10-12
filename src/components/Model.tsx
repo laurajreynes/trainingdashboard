@@ -3,7 +3,20 @@ import { useEffect, useRef, useState } from "react";
 
 /** The internet model, the thing everything else hangs off. Call first; text is the launchpad to a phone conversation. */
 const STEPS = ["Lead", "Call first", "Text", "Phone convo", "Appointment", "Visit", "Sale"];
-export function Model({ compact }: { compact?: boolean }) {
+export type ModelMark = { step: string; label: string; color: string };
+/** Which step of the model an initiative is pushing on, from its name and area. */
+export function stepFor(name: string, area?: string | null): string | null {
+  const n = name.toLowerCase();
+  if (/carwars/.test(n)) return null;
+  if (/appointment/.test(n)) return "Appointment";
+  if (/reasons to come in|come in|visit/.test(n)) return "Visit";
+  if (/calls over|call first|phone conversation|voicemail/.test(n)) return "Phone convo";
+  if (/text/.test(n)) return "Text";
+  if (/bdc|first response|lead response|templates|lead handling|flexibility/.test(n)) return "Call first";
+  if (area && /phone/i.test(area) && !/internet/i.test(area)) return "Phone convo";
+  return null;
+}
+export function Model({ compact, marks = [] }: { compact?: boolean; marks?: ModelMark[] }) {
   const box = useRef<HTMLDivElement>(null);
   const [span, setSpan] = useState<{ left: number; width: number } | null>(null);
   useEffect(() => {
@@ -23,7 +36,11 @@ export function Model({ compact }: { compact?: boolean }) {
       <div className="model-row">
         {STEPS.map((s, i) => (
           <span key={s} className="model-step">
-            <span className="model-word" data-step={s}>{s}</span>
+            <span className="model-word" data-step={s}>{s}
+              {marks.some((m) => m.step === s) && (
+                <span className="model-dots" aria-hidden="true">{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label} />)}</span>
+              )}
+            </span>
             {i < STEPS.length - 1 && <span className="model-arrow" aria-hidden="true">→</span>}
           </span>
         ))}

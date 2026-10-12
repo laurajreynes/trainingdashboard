@@ -15,12 +15,31 @@ const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
 const forStore = (m: Milestone, s: Store) => new RegExp(s.short_name.split(" ")[0], "i").test(m.store);
 const short = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-type Stop = { title: string; sub?: string; when: string; state: "done" | "now" | "next" | "later"; color?: string; launch?: boolean };
+type Stop = { title: string; sub?: string; when: string; iso?: string; state: "done" | "now" | "next" | "later"; color?: string; launch?: boolean };
+
+/** Where "today" sits on the track: stops are evenly spaced, so interpolate by date between the last passed stop and the next one. */
+function nowFraction(stops: Stop[], t: string): number {
+  const n = stops.length; if (n < 2) return 0;
+  const pos = (i: number) => (i + 0.5) / n;
+  let a = 0;   // Setup is always "passed"
+  for (let i = 1; i < n; i++) if (stops[i].iso && stops[i].iso! <= t) a = i;
+  let b = -1;
+  for (let i = a + 1; i < n; i++) if (stops[i].iso) { b = i; break; }
+  if (b < 0) return pos(a);
+  const d = (x: string) => new Date(x + "T12:00:00").getTime();
+  const start = stops[a].iso ? d(stops[a].iso!) : d(t) - 7 * 864e5;   // Setup has no date: assume a week before the first milestone
+  const span = Math.max(1, d(stops[b].iso!) - start);
+  const f = Math.min(1, Math.max(0, (d(t) - start) / span));
+  return pos(a) + (pos(b) - pos(a)) * f;
+}
 
 /** One horizontal track: what's done, what's now, what's coming, in date order. */
-function Track({ stops }: { stops: Stop[] }) {
+function Track({ stops, t }: { stops: Stop[]; t: string }) {
+  const f = nowFraction(stops, t);
   return (
     <ol className="cwtrack">
+      <span className="cwfill" style={{ width: `${f * 100}%` }} aria-hidden="true" />
+      <span className="cwnow" style={{ left: `${f * 100}%` }} aria-hidden="true" title="Today" />
       {stops.map((s, i) => (
         <li key={i} className={`cwstop ${s.state}`} style={{ ["--accent" as string]: s.color || "var(--forest)" }}>
           <span className="cwwhen">{s.when}</span>
@@ -56,7 +75,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
   const stops: Stop[] = [
     { title: "Setup", when: "now", state: nextIdx === 0 || dated.length === 0 ? "now" : "done" },
     ...dated.map((m, i): Stop => ({
-      title: store ? label(m) : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when),
+      title: store ? label(m) : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when), iso: m.when,
       state: m.when < t ? "done" : i === nextIdx ? "next" : "later", color: storeOf(m) ? storeAccent(storeOf(m)!) : undefined, launch: isLaunch(m),
     })),
     ...tbd.map((m): Stop => ({ title: store ? label(m) : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later" })),
@@ -72,7 +91,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
           {launched && <><strong>{live}</strong> of {rows.length} live{" · "}<Link href={`/i/${init.id}`}>open</Link></>}
         </div>
       </div>
-      <Track stops={stops} />
+      <Track stops={stops} t={t} />
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

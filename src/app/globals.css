@@ -790,3 +790,18 @@ details.accordion > summary h2 { margin: 0; }
 @media (max-width: 760px) { .flow { columns: 1; } }
 .grid.fit { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .rsrc .chipr.tool { border-left-color: var(--sun, #e3c27a); }
+
+/* CarWars: the line fills up to today; launched stars sit on a soft disc */
+.cwfill { position: absolute; left: 0; top: 27px; height: 3px; background: var(--forest); border-radius: 2px; z-index: 0; }
+.cwnow { position: absolute; top: 21px; width: 3px; height: 15px; margin-left: -1px; background: var(--sun, #e3c27a); border-radius: 2px; z-index: 2; }
+.cwstop.done .cwdot.launch { opacity: 1; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent, var(--forest)) 18%, transparent); }
+.cwstop.now .cwdot { box-shadow: none; }
+/* Model strip: dots under a step for the initiatives pushing on it */
+.model-word { position: relative; display: inline-block; }
+.model-dots { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 1px; display: flex; gap: 3px; }
+.model-dots i { width: 7px; height: 7px; border-radius: 50%; display: block; border: 1.5px solid rgba(255,255,255,.85); }
+.model.compact .model-dots i { width: 6px; height: 6px; }
+.model { padding-bottom: 14px; }
+/* Week calendar: sessions already behind us */
+.weekcal .sess.past { opacity: .62; }
+.weekcal .sess.past .who::after { content: " ✓"; color: var(--good); font-weight: 700; }
