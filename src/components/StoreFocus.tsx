@@ -1,4 +1,3 @@
-import { Desc } from "@/components/Desc";
 import { saveGroupNote } from "@/app/actions";
 
 /** The short "What I'm focused on" block at the top of a store page: the same words the GM got in the email. */
@@ -7,7 +6,11 @@ export function StoreFocus({ storeId, body, editor }: { storeId: string; body: s
   return (
     <section className="card focusblock">
       <div className="cardhead"><h2>What I&apos;m focused on</h2></div>
-      {body ? <Desc text={body} /> : <p className="empty">Nothing written yet</p>}
+      {body ? (
+        <ul className="focuslist">
+          {body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+      ) : <p className="empty">Nothing written yet</p>}
       {editor && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit</summary>

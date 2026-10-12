@@ -58,7 +58,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
   const examples = await signExamples(exHere);
-  const storeInits = initiatives.filter((i) => i.store_ids.includes(store.id) && i.status !== "done" && !/carwars/i.test(i.name));   // this store only; shared BDC initiatives live on the BDC tab
+  const storeInits = initiatives.filter((i) => i.store_ids.some((sid) => ids.includes(sid)) && i.status !== "done" && !/carwars/i.test(i.name));   // this store plus the shared BDC: the BDC is part of the dealership
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
@@ -151,7 +151,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
         const bdcStore = stores.find((s) => s.is_bdc);
         if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
-        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits} roster={roster} bdcStore={bdcStore} />;
+        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
       })()}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
@@ -288,17 +288,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </details>
             )}
           </section>
-          {board ? <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} /> : (
-          <section className="card">
-            <div className="cardhead"><h2>Appointments, {monthName(curMonth)}</h2></div>
-            {apptRow.due > 0 ? (
-              <HBars rows={[
-                { label: "Due", value: apptRow.due, color: "var(--line-strong)" },
-                { label: "Shown", value: apptRow.shown, color: storeAccent(store), sub: `${Math.round((apptRow.shown / apptRow.due) * 100)}%` },
-                { label: "Sold", value: apptRow.sold, color: "var(--good)", sub: apptRow.shown ? `${Math.round((apptRow.sold / apptRow.shown) * 100)}% of shown` : undefined },
-              ]} max={apptRow.due} />
-            ) : <p className="empty">No appointment numbers this month</p>}
-          </section>)}
+          {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board ? <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" /> : (
           <section className="card">
             <div className="cardhead"><h2>Set rates, {monthName(curMonth)}</h2></div>

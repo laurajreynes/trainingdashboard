@@ -17,7 +17,7 @@ export function BdcFirst({ store, bdcInit, storeInits, roster, bdcStore }: { sto
         <span className="seq-arrow">→</span>
         <div className={`seq-step ${bdcDone ? "now" : ""}`}>
           <span className="n">2</span>
-          <div><strong>Then the salespeople</strong><div className="small muted">{sales.t} of {sales.n} trained{bdcDone ? " · in progress" : " · not the focus yet"}</div></div>
+          <div><strong>{bdcDone ? "Now the salespeople" : "Bringing in the salespeople"}</strong><div className="small muted">{sales.t} of {sales.n} trained{bdcDone ? " · in progress" : " · starting slowly"}</div></div>
         </div>
       </div>
     </div>
