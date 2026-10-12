@@ -33,14 +33,21 @@ function Track({ stops }: { stops: Stop[] }) {
   );
 }
 
-export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor }: {
+export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor, withBdc }: {
   init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; location?: string; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
+  /** Store pages whose leads start in the Ressler BDC: show the BDC launch next to the store's own sales launch. */
+  withBdc?: boolean;
 }) {
   const t = today();
   const all = parseLaunches(launches);
   const rows = roster.filter((r) => r.initiative_id === init.id && (!peopleIds || peopleIds.has(r.person_id)));
   const live = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
-  const mine = location ? all.filter((m) => new RegExp(location, "i").test(m.store)) : store ? all.filter((m) => forStore(m, store)) : all;
+  const isBdc = (m: Milestone) => /bdc/i.test(m.store);
+  const mine = location ? all.filter((m) => new RegExp(location, "i").test(m.store))
+    : store ? all.filter((m) => forStore(m, store) || (withBdc && isBdc(m)))
+    : all;
+  // On a store page, name the two launches so both dates read clearly.
+  const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? "BDC launch" : "Sales launch") : m.label;
   const dated = mine.filter((m) => isDate(m.when)).sort((a, b) => a.when.localeCompare(b.when));
   const tbd = mine.filter((m) => !isDate(m.when));
   const nextIdx = dated.findIndex((m) => m.when >= t);
@@ -49,18 +56,18 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
   const stops: Stop[] = [
     { title: "Setup", when: "now", state: nextIdx === 0 || dated.length === 0 ? "now" : "done" },
     ...dated.map((m, i): Stop => ({
-      title: store ? m.label : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when),
+      title: store ? label(m) : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when),
       state: m.when < t ? "done" : i === nextIdx ? "next" : "later", color: storeOf(m) ? storeAccent(storeOf(m)!) : undefined, launch: isLaunch(m),
     })),
-    ...tbd.map((m): Stop => ({ title: store ? m.label : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later", launch: isLaunch(m) })),
+    ...tbd.map((m): Stop => ({ title: store ? label(m) : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later", launch: isLaunch(m) })),
   ];
-  const launched = dated.some((m) => m.when < t) || live > 0;
+  const launched = dated.some((m) => isLaunch(m) && m.when < t) || live > 0;
   return (
     <section className="card carwars" style={{ ["--accent" as string]: store ? storeAccent(store) : "var(--sun)" }}>
       <div className="carwars-head">
         <div>
           <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}</h2>
-          <div className="carwars-now">{nextIdx >= 0 ? `Next: ${store ? "" : (storeOf(dated[nextIdx])?.short_name || dated[nextIdx].store) + " "}${dated[nextIdx].label.toLowerCase()}, ${fmtDate(dated[nextIdx].when, { weekday: true })}` : "Dates coming"}</div>
+          <div className="carwars-now">{nextIdx >= 0 ? `Next: ${store ? "" : (storeOf(dated[nextIdx])?.short_name || dated[nextIdx].store) + " "}${label(dated[nextIdx]).toLowerCase()}, ${fmtDate(dated[nextIdx].when, { weekday: true })}` : "Dates coming"}</div>
         </div>
         <div className="carwars-right small">
           {launched ? <><strong>{live}</strong> of {rows.length} live</> : <span className="faint">{rows.length} people come on at launch</span>}

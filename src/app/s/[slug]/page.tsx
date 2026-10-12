@@ -142,7 +142,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       <Model compact />
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} />}
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
       {(() => {
         const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
         const bdcStore = stores.find((s) => s.is_bdc);
