@@ -70,8 +70,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
           <div className="carwars-now">{nextIdx >= 0 ? `Next: ${store ? "" : (storeOf(dated[nextIdx])?.short_name || dated[nextIdx].store) + " "}${store && withBdc ? label(dated[nextIdx]) : label(dated[nextIdx]).toLowerCase()}, ${fmtDate(dated[nextIdx].when, { weekday: true })}` : "Dates coming"}</div>
         </div>
         <div className="carwars-right small">
-          {launched ? <><strong>{live}</strong> of {rows.length} live</> : <span className="faint">{rows.length} people come on at launch</span>}
-          {" · "}<Link href={`/i/${init.id}`}>open</Link>
+          {launched && <><strong>{live}</strong> of {rows.length} live{" · "}</>}<Link href={`/i/${init.id}`}>open</Link>
         </div>
       </div>
       <Track stops={stops} />
