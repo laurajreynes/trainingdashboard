@@ -76,8 +76,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const activeInits = storeInits.filter((i) => i.status === "active" || i.status === "sustaining");
   // Resources: word tracks and scripts on this store's initiatives, plus files uploaded to them
   const resourceLists = await Promise.all(storeInits.map((i) => getResources(i.id)));
-  const resources = storeInits.flatMap((i, k) => resourceLists[k].map((r) => ({ ...r, initName: i.name })));
-  const fileResources = bookmarksAll.filter((b) => b.kind === "doc" && b.initiative_id && storeInits.some((i) => i.id === b.initiative_id)).map((b) => ({ ...b, initName: storeInits.find((i) => i.id === b.initiative_id)!.name }));
+  // On the store's own page the store name in a title is noise: "Text Strategy, Gallatin Subaru" reads "Text Strategy".
+  const trimStore = (t: string) => t.replace(new RegExp(`\\s*[,(:·-]?\\s*\\(?(${[store.name, store.short_name].map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\)?\\s*$`, "i"), "").trim() || t;
+  const resources = storeInits.flatMap((i, k) => resourceLists[k].map((r) => ({ ...r, title: trimStore(r.title), initName: i.name })));
+  const fileResources = bookmarksAll.filter((b) => b.kind === "doc" && b.initiative_id && storeInits.some((i) => i.id === b.initiative_id)).map((b) => ({ ...b, title: trimStore(b.title), initName: storeInits.find((i) => i.id === b.initiative_id)!.name }));
   const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
   const trainedPct = rosterHere.length ? Math.round((rosterHere.filter((r) => r.status === "trained" || r.status === "solid").length / rosterHere.length) * 100) : 0;
   const since30 = addDays(today(), -29);
