@@ -303,9 +303,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <section className="card">
             <div className="cardhead"><h2>Wins and examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>Examples library</Link></div>
             <WinList wins={wins} editor={editor} people={people} />
-            {exHere.length > 0 && (
+            {exHere.some((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)) && (
               <ul className="list" style={{ marginTop: 6 }}>
-                {exHere.slice(0, 6).map((e) => {
+                {exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).slice(0, 6).map((e) => {
                   const who = e.person_ids.map((pid) => people.find((p) => p.id === pid)?.name).filter(Boolean).join(", ");
                   return (
                     <li key={e.id}>
