@@ -750,3 +750,5 @@ details.accordion > summary h2 { margin: 0; }
 
 .focusblock { border-left: 4px solid var(--accent, var(--forest)); }
 .focusblock .desc p { font-size: 15px; line-height: 1.5; }
+.list li.grouphead { border-bottom: 0; padding: 12px 0 2px; }
+.list li.grouphead:first-child { padding-top: 0; }
