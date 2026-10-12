@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
-import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, getWins, getExamples, getExampleThemes, signExamples, getPeople } from "@/lib/data";
+import { getPerson, getStores, getInitiatives, getRoster, getVisits, getTodos, getWins, getExamples, getExampleThemes, signExamples, getPeople, getGroupNotes } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
 import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROLES, ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, storeAccent } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
-import { updatePerson, deletePerson, setRosterStatus, addTodo, addWin } from "@/app/actions";
+import { updatePerson, deletePerson, setRosterStatus, addTodo, addWin, saveGroupNote } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [person, stores, initiatives, roster, editor] = await Promise.all([getPerson(id), getStores(), getInitiatives(), getRoster(undefined, id), isEditor()]);
+  const [person, stores, initiatives, roster, editor, gnotes] = await Promise.all([getPerson(id), getStores(), getInitiatives(), getRoster(undefined, id), isEditor(), getGroupNotes()]);
+  const collection = gnotes.find((n) => n.key === `collection:${id}`)?.body || null;
   if (!person) notFound();
   const store = stores.find((s) => s.id === person.store_id)!;
   const [visitsAll, todos, wins] = await Promise.all([getVisits({ limit: 300 }), getTodos({ personId: id, includeDone: true }), getWins({ personId: id })]);
@@ -156,6 +157,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </form>
             )}
           </section>
+          {editor && (
+            <section className="card" style={{ borderLeft: "4px solid var(--sun)" }}>
+              <div className="cardhead"><h2>Collection</h2><span className="faint small">just for you</span></div>
+              {collection ? <div className="pre small" style={{ whiteSpace: "pre-wrap" }}>{collection}</div> : <p className="empty">Nothing collected yet.</p>}
+              <details className="quiet" style={{ marginTop: 8 }}>
+                <summary className="small">Edit</summary>
+                <form action={saveGroupNote} style={{ marginTop: 6 }}>
+                  <input type="hidden" name="key" value={`collection:${id}`} />
+                  <textarea name="body" defaultValue={collection || ""} placeholder="One per line. Dated if you like." style={{ minHeight: 90 }} />
+                  <button className="btn sm ghost" style={{ marginTop: 4 }}>Save</button>
+                </form>
+              </details>
+            </section>
+          )}
         </div>
       </div>
     </div>
