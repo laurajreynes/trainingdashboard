@@ -220,7 +220,7 @@ export async function getAreas(): Promise<Record<string, string>> {
   for (const row of (r.data || []) as { key: string; body: string | null }[]) if (row.body) out[row.key.slice(5)] = row.body;
   return out;
 }
-/** Stage per initiative. The stored pick moves itself forward with the roster: anyone trained means at least Training,
+/** Stage per initiative. The stored pick moves itself forward with the roster: anyone trained means at least Rolling out,
  *  everyone trained means at least Coaching execution. A later stage set by hand always wins. */
 export async function getStages(): Promise<Record<string, string>> {
   const [r, roster] = await Promise.all([db().from("group_notes").select("key, body").like("key", "stage:%"), getAllRoster()]);
@@ -234,7 +234,7 @@ export async function getStages(): Promise<Record<string, string>> {
   }
   const idx = (st: string) => (STAGES as readonly string[]).indexOf(st);
   for (const [id, c] of byInit) {
-    const floor = c.n > 0 && c.t >= c.n ? "Coaching execution" : c.t > 0 ? "Training" : null;
+    const floor = c.n > 0 && c.t >= c.n ? "Coaching execution" : c.t > 0 ? "Rolling out" : null;
     if (floor && idx(out[id] || "Planning") < idx(floor)) out[id] = floor;
   }
   return out;
