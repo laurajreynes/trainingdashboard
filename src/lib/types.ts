@@ -271,3 +271,16 @@ export function shortInitName(name: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 export type Stage = (typeof STAGES)[number];
+
+/** Which step of the model an initiative is pushing on, from its name and area. */
+export function stepFor(name: string, area?: string | null): string | null {
+  const n = name.toLowerCase();
+  if (/carwars/.test(n)) return null;
+  if (/appointment/.test(n)) return "Appointment";
+  if (/reasons to come in|come in|visit/.test(n)) return "Visit";
+  if (/calls over|call first|phone conversation|voicemail/.test(n)) return "Phone convo";
+  if (/text/.test(n)) return "Text";
+  if (/bdc|first response|lead response|templates|lead handling|flexibility/.test(n)) return "Call first";
+  if (area && /phone/i.test(area) && !/internet/i.test(area)) return "Phone convo";
+  return null;
+}

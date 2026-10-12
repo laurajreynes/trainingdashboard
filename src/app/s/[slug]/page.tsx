@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EXAMPLE_KIND_LABEL, shortInitName } from "@/lib/types";
+import { EXAMPLE_KIND_LABEL, shortInitName, stepFor } from "@/lib/types";
 import type { Initiative } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
@@ -28,7 +28,7 @@ import { InitiativeCard } from "@/components/InitiativeCard";
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
-import { Model, stepFor } from "@/components/Model";
+import { Model } from "@/components/Model";
 import { splitTime } from "@/components/WeekCalendar";
 import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin } from "@/app/actions";
 import { StoreGoals } from "@/components/StoreGoals";
