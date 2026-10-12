@@ -139,10 +139,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
       <div data-keep><WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} /></div>
 
-      <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}</div>
 
-      <section style={{ marginBottom: 18 }}>
+      <section style={{ marginBottom: 18 }} data-keep="root">
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
+      <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}</div>
         {active.length ? (
           <div className="grid cols-3">
             {active.map((i) => <InitiativeCard key={i.id} init={i} stage={stages[i.id]} area={areas[i.id]} roster={roster.filter((r) => r.initiative_id === i.id)} stores={stores} />)}

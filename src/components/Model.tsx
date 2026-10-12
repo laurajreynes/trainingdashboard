@@ -26,7 +26,7 @@ export function Model({ compact, marks = [] }: { compact?: boolean; marks?: Mode
           <span key={s} className="model-step">
             <span className="model-word" data-step={s}>{s}
               {marks.some((m) => m.step === s) && (
-                <span className="model-dots" aria-hidden="true">{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label} />)}</span>
+                <span className="model-marks">{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label}>{m.label}</i>)}</span>
               )}
             </span>
             {i < STEPS.length - 1 && <span className="model-arrow" aria-hidden="true">→</span>}

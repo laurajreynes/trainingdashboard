@@ -138,15 +138,16 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const locStack = (l: string) => stackFor(metricRows.filter((x) => x.location === l));
   const soldByMonth = monthsBack(6).map((m) => ({ label: monthName(m).slice(0, 3), value: metricRows.filter((x) => x.period === m).reduce((a, x) => a + x.sold, 0), hint: monthName(m) }));
   const touched = new Set(loggedHere.filter((v) => v.date >= mi.monthStart).flatMap((v) => v.people_ids));
+  const isMgr = (role: string) => /manager|^gm$|general manager/i.test(role);
   const reachGroups = (store.locations.length ? [null, ...store.locations] : [null]).map((l) => ({
     label: l || (store.locations.length ? "Main" : store.short_name), color: storeAccent(store),
-    people: peopleHere.filter((p) => (l ? p.location === l : !p.location || !store.locations.includes(p.location))).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })),
+    people: peopleHere.filter((p) => !isMgr(p.role) && (l ? p.location === l : !p.location || !store.locations.includes(p.location))).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })),
   })).filter((g) => g.people.length);
   const apptRow = thisMonthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsRow = thisMonthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
 
   return (
-    <div style={{ ["--accent" as string]: storeAccent(store) }}>
+    <div style={{ ["--accent" as string]: storeAccent(store) }} data-keep="root">
       <div className="pagehead" data-keep>
         <div>
           <div className="accentbar" />

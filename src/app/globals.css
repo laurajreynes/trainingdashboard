@@ -798,10 +798,10 @@ details.accordion > summary h2 { margin: 0; }
 .cwstop.now .cwdot { box-shadow: none; }
 /* Model strip: dots under a step for the initiatives pushing on it */
 .model-word { position: relative; display: inline-block; }
-.model-dots { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 1px; display: flex; gap: 3px; }
-.model-dots i { width: 7px; height: 7px; border-radius: 50%; display: block; border: 1.5px solid rgba(255,255,255,.85); }
-.model.compact .model-dots i { width: 6px; height: 6px; }
-.model { padding-bottom: 14px; }
+.model-marks { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 3px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.model-marks i { display: block; font-style: normal; font-family: var(--font-body); font-weight: 600; font-size: 10px; line-height: 1; padding: 3px 7px; border-radius: 999px; color: #fff; white-space: nowrap; border: 1px solid rgba(255,255,255,.5); }
+.model:has(.model-marks) { padding-bottom: 30px; }
+.model:has(.model-marks .model-marks i:nth-child(2)) { padding-bottom: 46px; }
 /* Week calendar: sessions already behind us */
 .weekcal .sess.past { opacity: .62; }
 .weekcal .sess.past .who::after { content: " ✓"; color: var(--good); font-weight: 700; }
@@ -821,8 +821,8 @@ details.accordion > summary h2 { margin: 0; }
 .quiet-toggle:hover { opacity: 1; }
 .quiet-toggle span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--forest); background: transparent; transition: background .15s; }
 .quiet-toggle.on span { background: var(--forest); }
-body.calm main.page > *:not([data-keep]):not(.notice), body.calm main.page > div:not([data-keep]) > *:not([data-keep]) { display: none; }
-body.calm main.page > div:not([data-keep]) { display: block; }
+body.calm main.page > *:not([data-keep]):not(.notice) { display: none; }
+body.calm [data-keep="root"] > *:not([data-keep]) { display: none; }
 body.calm .adder, body.calm details.quiet, body.calm .btn.gold, body.calm .cardhead .more, body.calm .mobilenav { display: none !important; }
 body.calm .pagehead { margin-bottom: 10px; }
 
