@@ -145,17 +145,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       <StoreFocus storeId={store.id} body={focusText} editor={editor} />
-      <Model compact />
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
-      {(() => {
-        const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
-        const bdcStore = stores.find((s) => s.is_bdc);
-        if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
-        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
-      })()}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
-        <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
+        <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcomingHere.length ? (
           <div className="nextrow">
             {upcomingHere.map((v) => {
@@ -165,6 +157,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`} style={v.store_id !== store.id ? { ["--accent" as string]: storeAccent(stores.find((s) => s.id === v.store_id)) } : undefined}>
                   <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}{v.store_id !== store.id ? ` · ${stores.find((s) => s.id === v.store_id)?.short_name || ""}` : ""}</span>
                   <span className="what">{text || v.focus || "Visit"}</span>
+                  {v.initiative_ids.length > 0 && <span className="tags">{v.initiative_ids.map((iid) => initiatives.find((i) => i.id === iid)).filter(Boolean).map((i) => <span key={i!.id} className="tag area">{i!.name}</span>)}</span>}
                 </Link>
               );
             })}
@@ -185,6 +178,14 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </form>
         )}
       </section>
+      {(() => {
+        const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
+        const bdcStore = stores.find((s) => s.is_bdc);
+        if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
+        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
+      })()}
+
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
 
       <section style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
@@ -198,28 +199,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
       </section>
 
-      <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
-
-      <div className="kpis">
-        {!(reflecting && trainedPct === 0) && <div className="kpi"><Ring pct={trainedPct} size={54} color={storeAccent(store)} /><div><div className="v" style={{ fontSize: 15 }}>Trained</div><div className="l">on active initiatives</div></div></div>}
-        <div className="kpi"><div><div className="v">{peopleHere.length}</div><div className="l">active people</div></div></div>
-        <div className="kpi"><div><div className="v">{visits30}</div><div className="l">visits this week</div></div></div>
-        <div className="kpi"><div><div className="v">{todos.filter((t) => t.store_id === store.id).length}</div><div className="l">open to-dos</div></div></div>
-        <div className="kpi"><div><div className="v">{posts.filter((p) => p.status === "open").length}</div><div className="l">store notes open</div></div></div>
-        {soldMtd > 0 && <div className="kpi"><div><div className="v">{soldMtd}</div><div className="l">sold in {monthName(curMonth)}{!reflecting && soldProj && soldProj !== soldMtd ? ` · pacing ${soldProj}` : ""}</div></div></div>}
-      </div>
-
-      {(resources.length > 0 || fileResources.length > 0) && (
-        <section className="card" style={{ marginBottom: 20 }}>
-          <div className="cardhead"><h2>Resources</h2></div>
-          <div className="grid-chips rsrc">
-            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="k">doc</span><span className="t">{b.title}</span></a>)}
-            {resources.map((r) => r.url
-              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></a>
-              : <Link key={r.id} className="chipr" href={`/i/${r.initiative_id}`} title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></Link>)}
-          </div>
-        </section>
-      )}
+      <Model compact />
 
       <div style={{ marginBottom: 20 }}>
         <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor}>
@@ -252,25 +232,21 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         )}
       </div>
 
-      {!(reflecting && trainedPct === 0 && visits30 === 0) && (
-      <div className="grid cols-3" style={{ marginBottom: 20 }}>
-        <section className="card">
-          <div className="cardhead"><h2>Coverage by initiative</h2></div>
-          <HBars rows={initBars} unit="%" max={100} />
+      {(resources.length > 0 || fileResources.length > 0) && (
+        <section className="card" style={{ marginBottom: 20 }}>
+          <div className="cardhead"><h2>Resources</h2></div>
+          <div className="grid-chips rsrc">
+            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="k">doc</span><span className="t">{b.title}</span></a>)}
+            {resources.map((r) => r.url
+              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></a>
+              : <Link key={r.id} className="chipr" href={`/i/${r.initiative_id}`} title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></Link>)}
+          </div>
         </section>
-        <section className="card">
-          <div className="cardhead"><h2>Roster status</h2></div>
-          <Stacked parts={rosterParts} />
-        </section>
-        <section className="card">
-          <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
-          <ReachBars rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color }))} />
-        </section>
-      </div>
       )}
 
-      {(soldMtd > 0 || soldByMonth.some((m) => m.value > 0)) && (
-        <div className="grid cols-3" style={{ marginBottom: 20 }}>
+      <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
+
+      <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20 }}>
           <section className="card">
             <div className="cardhead"><h2>Sold by month</h2></div>
             <StackedColumns points={soldStack} colors={[storeAccent(store), "var(--sage)"]} />
@@ -288,8 +264,21 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </details>
             )}
           </section>
+        <section className="card">
+          <div className="cardhead"><h2>Coverage by initiative</h2></div>
+          <HBars rows={initBars} unit="%" max={100} />
+        </section>
+        <section className="card">
+          <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
+          <ReachBars rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color }))} />
+        </section>
+      </div>
+
+      {(board || goals.some((g) => g.kind === "rate")) && (
+        <div className="grid cols-3" style={{ marginBottom: 20 }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
-          {board ? <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" /> : (
+          {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
+          {goals.some((g) => g.kind === "rate") && (
           <section className="card">
             <div className="cardhead"><h2>Set rates, {monthName(curMonth)}</h2></div>
             {goals.filter((g) => g.kind === "rate").length ? (
@@ -307,13 +296,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 { label: "Web", value: upsRow.web, color: storeAccent(store) },
               ]} />
             ) : <p className="empty">Source traffic report coming from DriveCentric</p>}
-          </section>)}
+          </section>
+          )}
         </div>
       )}
 
-      <div className="grid main-side">
+      <div className="grid cols-3" style={{ alignItems: "start" }}>
         <div className="stack">
-
+          <section className="card">
+            <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
+            <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
+          </section>
           {(examples.length > 0 || editor) && (
             <section className="card">
               <div className="cardhead"><h2>Recent examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>{editor ? "Library and upload" : "All examples"}</Link></div>
@@ -321,12 +314,48 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 stores={stores.map((s) => ({ id: s.id, name: s.short_name }))} editor={editor} emptyText="No screenshots from this store yet. Add them in the Examples library." />
             </section>
           )}
-
+        </div>
+        <div className="stack">
           <section className="card">
-            <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
-            <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
+            <div className="cardhead"><h2>To-dos</h2></div>
+            <TodoList todos={todos.filter((t) => t.store_id === store.id)} editor={editor} people={people} />
+            {editor && (
+              <form action={addTodo} className="inline" style={{ marginTop: 10 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <input type="text" name="text" placeholder="Add a to-do" required style={{ flex: 1, minWidth: 140 }} />
+                <input type="date" name="due" style={{ width: 140 }} />
+                <button className="btn sm">Add</button>
+              </form>
+            )}
           </section>
-
+          <section className="card">
+            <div className="cardhead"><h2>Wins</h2></div>
+            <WinList wins={wins} editor={editor} people={people} />
+            {editor && (
+              <form action={addWin} style={{ marginTop: 10 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <div className="frow wide"><input type="text" name="text" placeholder="What happened" required /></div>
+                <div className="frow">
+                  <select name="person_id"><option value="">Who (optional)</option>{peopleHere.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+                  <select name="initiative_id"><option value="">Initiative (optional)</option>{storeInits.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
+                </div>
+                <button className="btn sm">Log win</button>
+              </form>
+            )}
+          </section>
+        </div>
+        <div className="stack">
+          <Bulletin items={bulletin} stores={stores} store={store} initiatives={initiatives} />
+          <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
+            back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
+          {bdcCards.map(({ b, folks, ros, lastVisit }) => (
+            <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
+              <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>
+              <p className="small muted">Shared with {b.shows_under.filter((x) => x !== store.slug).map((x) => stores.find((y) => y.slug === x)?.short_name).join(", ")} · {folks.length} agent{folks.length === 1 ? "" : "s"}</p>
+              <RosterBar roster={ros} />
+              {lastVisit && <p className="faint small" style={{ marginTop: 8 }}>Last BDC visit <Link href={`/v/${lastVisit.id}`}>{fmtDate(lastVisit.date)}</Link></p>}
+            </section>
+          ))}
           {(goals.length > 0 || editor) && (
             <section className="card">
               <div className="cardhead"><h2>Store goals</h2></div>
@@ -383,50 +412,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                   <button className="btn sm">Add</button>
                 </form>
               </details>
-            )}
-          </section>
-        </div>
-
-        <div className="stack">
-          <Bulletin items={bulletin} stores={stores} store={store} initiatives={initiatives} />
-          <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
-            back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
-          {bdcCards.map(({ b, folks, ros, lastVisit }) => (
-            <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
-              <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>
-              <p className="small muted">Shared with {b.shows_under.filter((x) => x !== store.slug).map((x) => stores.find((y) => y.slug === x)?.short_name).join(", ")} · {folks.length} agent{folks.length === 1 ? "" : "s"}</p>
-              <RosterBar roster={ros} />
-              {lastVisit && <p className="faint small" style={{ marginTop: 8 }}>Last BDC visit <Link href={`/v/${lastVisit.id}`}>{fmtDate(lastVisit.date)}</Link></p>}
-            </section>
-          ))}
-
-
-          <section className="card">
-            <div className="cardhead"><h2>To-dos</h2></div>
-            <TodoList todos={todos.filter((t) => t.store_id === store.id)} editor={editor} people={people} />
-            {editor && (
-              <form action={addTodo} className="inline" style={{ marginTop: 10 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <input type="text" name="text" placeholder="Add a to-do" required style={{ flex: 1, minWidth: 140 }} />
-                <input type="date" name="due" style={{ width: 140 }} />
-                <button className="btn sm">Add</button>
-              </form>
-            )}
-          </section>
-
-          <section className="card">
-            <div className="cardhead"><h2>Wins</h2></div>
-            <WinList wins={wins} editor={editor} people={people} />
-            {editor && (
-              <form action={addWin} style={{ marginTop: 10 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <div className="frow wide"><input type="text" name="text" placeholder="What happened" required /></div>
-                <div className="frow">
-                  <select name="person_id"><option value="">Who (optional)</option>{peopleHere.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-                  <select name="initiative_id"><option value="">Initiative (optional)</option>{storeInits.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
-                </div>
-                <button className="btn sm">Log win</button>
-              </form>
             )}
           </section>
         </div>

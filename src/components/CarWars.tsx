@@ -74,10 +74,6 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
         </div>
       </div>
       <Track stops={stops} />
-      {(store || location) && (() => {
-        const others = all.filter((m) => isLaunch(m) && !mine.includes(m));
-        return others.length ? <div className="small faint" style={{ marginTop: 8 }}>Everyone else: {others.map((m) => `${m.store} ${isDate(m.when) ? short(m.when) : m.when}`).join(" · ")}</div> : null;
-      })()}
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

@@ -756,3 +756,5 @@ details.accordion > summary h2 { margin: 0; }
 .focusblock details.quiet { margin-top: 6px; }
 .list li.grouphead { border-bottom: 0; padding: 12px 0 2px; }
 .list li.grouphead:first-child { padding-top: 0; }
+.nextitem .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.nextitem .tags .tag { font-size: 11px; }
