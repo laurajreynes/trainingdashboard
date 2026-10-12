@@ -147,6 +147,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       <StoreFocus storeId={store.id} body={focusText} editor={editor} />
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
 
       <div className="grid topband">
       <section className="card nextstrip">
@@ -243,7 +244,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
         return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
       })()}
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
 
 
 
@@ -257,6 +257,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
 
       <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20 }}>
+          {!store.is_bdc && (
           <section className="card">
             <div className="cardhead"><h2>Sold by month</h2></div>
             <StackedColumns points={soldStack} colors={[storeAccent(store), "var(--sage)"]} />
@@ -274,6 +275,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </details>
             )}
           </section>
+          )}
         <section className="card">
           <div className="cardhead"><h2>Coverage by initiative</h2></div>
           <HBars rows={initBars} unit="%" max={100} />
