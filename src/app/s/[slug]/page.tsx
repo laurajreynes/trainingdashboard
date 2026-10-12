@@ -13,7 +13,7 @@ import { PeoplePopup } from "@/components/PeoplePopup";
 import { getBoard, boardUrl } from "@/lib/board";
 import { ApptBoardCard, ApptPeopleCard } from "@/components/ApptBoard";
 import { getGroupNotes } from "@/lib/data";
-import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
+import { HBars, StackedColumns } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
 import { StoreNotes } from "@/components/StoreNotes";
@@ -78,7 +78,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   // Resources: word tracks and scripts on this store's initiatives, plus files uploaded to them
   const resourceLists = await Promise.all(storeInits.map((i) => getResources(i.id)));
   // On the store's own page the store name in a title is noise: "Text Strategy, Gallatin Subaru" reads "Text Strategy".
-  const trimStore = (t: string) => t.replace(new RegExp(`\\s*[,(:·-]?\\s*\\(?(${[store.name, store.short_name].map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\)?\\s*$`, "i"), "").trim() || t;
+  const trimStore = (t: string) => t.replace(new RegExp(`^(${[store.name, store.short_name].map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*[:,-]\\s*`, "i"), "").replace(new RegExp(`\\s*[,(:·-]?\\s*\\(?(${[store.name, store.short_name].map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\)?\\s*$`, "i"), "").trim() || t;
   const resources = storeInits.flatMap((i, k) => resourceLists[k].map((r) => ({ ...r, title: trimStore(r.title), initName: i.name })));
   const fileResources = bookmarksAll.filter((b) => b.kind === "doc" && b.initiative_id && storeInits.some((i) => i.id === b.initiative_id)).map((b) => ({ ...b, title: trimStore(b.title), initName: storeInits.find((i) => i.id === b.initiative_id)!.name }));
   const rosterHere = roster.filter((r) => peopleIds.has(r.person_id) && activeInits.some((i) => i.id === r.initiative_id));
@@ -162,7 +162,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               return (
                 <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`} style={v.store_id !== store.id ? { ["--accent" as string]: storeAccent(stores.find((s) => s.id === v.store_id)) } : undefined}>
                   <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}{v.store_id !== store.id ? ` · ${stores.find((s) => s.id === v.store_id)?.short_name || ""}` : ""}</span>
-                  <span className="what">{text || v.focus || "Visit"}</span>
+                  <span className="what">{trimStore(text || v.focus || "Visit").replace(/,?\s*until .*$/i, "") || "Visit"}</span>
                   {v.initiative_ids.length > 0 && <span className="tags">{v.initiative_ids.map((iid) => initiatives.find((i) => i.id === iid)).filter(Boolean).map((i) => <span key={i!.id} className="tag area">{i!.name}</span>)}</span>}
                 </Link>
               );
@@ -289,10 +289,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <section className="card">
           <div className="cardhead"><h2>Coverage by initiative</h2></div>
           <HBars rows={initBars} unit="%" max={100} />
-        </section>
-        <section className="card">
-          <div className="cardhead"><h2>Reached in {monthName(mi.month)}</h2></div>
-          <ReachBars rows={reachGroups.map((g) => ({ label: g.label, reached: g.people.filter((p) => p.on).length, total: g.people.length, color: g.color }))} />
+          <p className="small muted" style={{ marginTop: 10 }}>
+            {reachGroups.map((g, i) => <span key={g.label}>{i ? " · " : ""}{reachGroups.length > 1 ? `${g.label} ` : ""}{g.people.filter((p) => p.on).length} of {g.people.length} worked with in {monthName(mi.month)}</span>)}
+          </p>
         </section>
       </div>
 

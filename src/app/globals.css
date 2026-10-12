@@ -176,7 +176,7 @@ p:last-child { margin-bottom: 0; }
 .bookmark .k { font-size: 11px; color: var(--ink-faint); font-weight: 600; }
 
 /* ---------- initiatives ---------- */
-.initcard { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+.initcard { display: block; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--stage, var(--line)); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
 .initcard:hover { text-decoration: none; border-color: var(--line-strong); }
 .initcard h3 { margin-bottom: 4px; }
 .progress { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; display: flex; margin-top: 10px; }
@@ -510,6 +510,7 @@ a.plain:hover { text-decoration: underline; }
   .bookmark, .sess, .kpi, .chip { transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
   .bookmark:hover, .sess:hover, .kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(31,77,58,.12); }
   .hbar-fill { transform-origin: left center; animation: growx .7s cubic-bezier(.2,.8,.2,1) both; }
+  .progress span, .cwfill { transform-origin: left center; animation: growx .45s ease-out both; }
   .col-fill { transform-origin: bottom center; animation: growy .7s cubic-bezier(.2,.8,.2,1) both; }
   .hbars .hbar:nth-child(2) .hbar-fill, .cols .col:nth-child(2) .col-fill { animation-delay: .06s; }
   .hbars .hbar:nth-child(3) .hbar-fill, .cols .col:nth-child(3) .col-fill { animation-delay: .12s; }
@@ -657,8 +658,8 @@ h1 .tag.stage { font-size: 12px; vertical-align: middle; }
 .stagesteps { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: 0 0 auto; }
 .stagesteps-bar { display: inline-flex; gap: 2px; }
 .stagesteps-bar i { width: 11px; height: 6px; border-radius: 2px; background: var(--line); display: inline-block; }
-.stagesteps-bar i.on { background: var(--brand); }
-.stagesteps-label { font-size: 11px; font-weight: 600; color: var(--forest); white-space: nowrap; }
+.stagesteps-bar i.on { background: var(--stage, var(--brand)); }
+.stagesteps-label { font-size: 11px; font-weight: 700; color: var(--stage, var(--forest)); white-space: nowrap; }
 
 /* The model strip */
 .model { padding: 12px 18px 10px; margin-bottom: 18px; border-radius: 12px; background: linear-gradient(135deg, var(--forest), var(--brand)); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; text-align: center; }

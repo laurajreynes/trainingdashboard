@@ -153,11 +153,13 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
       )}
 
       {mi.phase === "track" && (
-        <div className="grid cols-3" style={{ marginTop: 14 }}>
+        <div className={`grid ${scoped ? "cols-2" : "cols-3"}`} style={{ marginTop: 14 }}>
+          {!scoped && (
           <div>
             <h4 className="minihead">{mName} focus</h4>
-            <FocusLine plan={plan} groupPlan={scoped ? groupPlan : undefined} month={mi.month} storeId={store?.id || null} editor={editor} />
+            <FocusLine plan={plan} groupPlan={undefined} month={mi.month} storeId={null} editor={editor} />
           </div>
+          )}
           <div>
             <h4 className="minihead">Pace to goal</h4>
             <PaceList paces={paces} mode="track" where={whereOf} />

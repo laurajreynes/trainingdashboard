@@ -258,4 +258,16 @@ export type StoreMetric = {
 export const AREAS = ["Internet and phone", "Internet", "Phone"] as const;
 export const AREA_DEFAULT = AREAS[0];
 export const STAGES = ["Planning", "Rolling out", "Training", "Coaching execution", "Measuring", "Sustaining"] as const;
+/** Monochrome green by stage: the darker, the earlier. */
+export const STAGE_SHADE: Record<string, string> = {
+  "Planning": "#143427", "Rolling out": "#1f4d3a", "Training": "#2a6b4c", "Coaching execution": "#2f8a5c", "Measuring": "#5aa37f", "Sustaining": "#8fc5a3",
+};
+export const stageShade = (stage?: string | null) => STAGE_SHADE[stage || "Planning"] || STAGE_SHADE.Planning;
+/** "Chevrolet October: lead response" reads as "Lead response" when the store is already on the card. */
+export function shortInitName(name: string): string {
+  const m = name.match(/^(?:Ressler\s+)?[A-Za-z/]+(?:\s+[A-Z][a-z]+)?(?:\s+October|\s+November|\s+September)?\s*:\s*(.+)$/);
+  if (!m) return name;
+  const t = m[1].trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 export type Stage = (typeof STAGES)[number];

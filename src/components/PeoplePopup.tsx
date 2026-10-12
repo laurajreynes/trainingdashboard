@@ -28,7 +28,7 @@ export function PeoplePopup({ rows, label, title, groups }: { rows: PersonRow[];
               <li>
                 <div className="grow">
                   <div><Link href={`/p/${r.id}`}><strong>{r.name}</strong></Link> <span className="faint small">{r.role}</span></div>
-                  {(r.lastLabel || r.total || rank(r.role) < 2) && <div className="small muted">{r.lastLabel ? `Last worked with ${r.lastLabel}` : rank(r.role) < 2 ? "Not worked with yet" : ""}{r.total ? `${r.lastLabel || rank(r.role) < 2 ? " · " : ""}${r.trained} of ${r.total} initiatives trained` : ""}</div>}
+                  {(r.lastLabel || r.trained > 0) && <div className="small muted">{[r.lastLabel ? `Last worked with ${r.lastLabel}` : "", r.trained > 0 ? `${r.trained} of ${r.total} trained` : ""].filter(Boolean).join(" · ")}</div>}
                   {r.total > 0 && <div className="progress" style={{ marginTop: 4, maxWidth: 220 }}><span className="trained" style={{ width: `${(r.trained / r.total) * 100}%` }} /></div>}
                 </div>
               </li>
