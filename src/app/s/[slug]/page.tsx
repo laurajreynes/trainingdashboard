@@ -8,6 +8,7 @@ import { getTargets } from "@/lib/tracking";
 import { getStorePosts, getExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { StoreFocus } from "@/components/StoreFocus";
+import { TextResource } from "@/components/TextResource";
 import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { CarWarsBanner } from "@/components/CarWars";
 import { BdcFirst } from "@/components/BdcFirst";
@@ -254,7 +255,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="t">{b.title}</span></a>)}
             {resources.map((r) => r.url
               ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}>{r.kind !== "doc" && <span className="k">{r.kind.replace("_", " ")}</span>}<span className="t">{r.title}</span></a>
-              : <Link key={r.id} className="chipr" href={`/i/${r.initiative_id}`} title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></Link>)}
+              : <TextResource key={r.id} kind={r.kind.replace("_", " ")} title={r.title} body={r.body} initName={r.initName} />)}
           </div>
         </section>
       )}
