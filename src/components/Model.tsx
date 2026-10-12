@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 /** The internet model, the thing everything else hangs off. Call first; text is the launchpad to a phone conversation. */
 const STEPS = ["Lead", "Call first", "Text", "Phone convo", "Appointment", "Visit", "Sale"];
 export type ModelMark = { step: string; label: string; color: string };
-export function Model({ compact, marks = [] }: { compact?: boolean; marks?: ModelMark[] }) {
+export function Model({ compact, marks = [], labels = false }: { compact?: boolean; marks?: ModelMark[]; labels?: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   const [span, setSpan] = useState<{ left: number; width: number } | null>(null);
   useEffect(() => {
@@ -20,19 +20,22 @@ export function Model({ compact, marks = [] }: { compact?: boolean; marks?: Mode
     return () => window.removeEventListener("resize", measure);
   }, []);
   return (
-    <div className={`model${compact ? " compact" : ""}`} aria-label="Internet model" ref={box}>
+    <div className={`model${compact ? " compact" : ""}${marks.length ? (labels ? " has-labels" : " has-dots") : ""}`} aria-label="Internet model" ref={box}>
       <div className="model-row">
         {STEPS.map((s, i) => (
           <span key={s} className="model-step">
             <span className="model-word" data-step={s}>{s}
               {marks.some((m) => m.step === s) && (
-                <span className="model-marks">{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label}>{m.label}</i>)}</span>
+                <span className={labels ? "model-marks" : "model-dots"}>{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label}>{labels ? m.label : ""}</i>)}</span>
               )}
             </span>
             {i < STEPS.length - 1 && <span className="model-arrow" aria-hidden="true">→</span>}
           </span>
         ))}
       </div>
+      {!labels && marks.length > 0 && (
+        <div className="model-legend">{marks.map((m, k) => <span key={k}><i style={{ background: m.color }} />{m.label}</span>)}</div>
+      )}
       {!compact && span && (
         <div className="model-note" aria-hidden="true" style={{ paddingLeft: span.left }}>
           <span className="model-bracket" style={{ width: span.width }} />
