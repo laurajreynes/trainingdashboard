@@ -300,7 +300,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="grid fit" style={{ marginBottom: 20, alignItems: "start" }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
-          <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
         </div>
       )}
 
@@ -384,7 +383,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <Bulletin items={bulletin} stores={stores} store={store} initiatives={initiatives} />
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
-          {!board && <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />}
+          <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
           {bdcCards.map(({ b, folks, ros, lastVisit }) => (
             <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
               <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>
