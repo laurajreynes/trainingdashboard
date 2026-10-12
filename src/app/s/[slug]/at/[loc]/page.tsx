@@ -12,6 +12,7 @@ import { VisitList } from "@/components/ui";
 import { PeoplePopup } from "@/components/PeoplePopup";
 import { CarWarsBanner } from "@/components/CarWars";
 import { StoreFocus } from "@/components/StoreFocus";
+import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { getGroupNotes } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +49,8 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   const groupNotes = await getGroupNotes();
   const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
   const focusText = groupNotes.find((n) => n.key === `focus:${store.id}:${location.toLowerCase()}`)?.body || null;
+  const activity = (() => { try { const b = groupNotes.find((n) => n.key === `activity:${location.toLowerCase()}`)?.body; return b ? (JSON.parse(b) as Activity) : null; } catch { return null; } })();
+  const activityInit = initsHere.find((i) => /text|lead response|calls over|phone|reasons/i.test(i.name)) || null;
   const trainingIds = new Set(initiatives.filter((i) => i.status !== "done" && !/carwars/i.test(i.name) && i.store_ids.includes(store.id)).map((i) => i.id));
   const lastWith = (pid: string) => visits.filter((v) => v.date <= today() && v.people_ids.includes(pid)).map((v) => v.date).sort().pop() || null;
   const popRows = here.map((p) => { const rs = roster.filter((r) => r.person_id === p.id && trainingIds.has(r.initiative_id)); const last = lastWith(p.id); return { id: p.id, name: p.name, role: p.role, last, lastLabel: last ? fmtDate(last, { weekday: true }) : null, trained: rs.filter((r) => r.status === "trained" || r.status === "solid").length, total: rs.length }; }).sort((a, b) => a.name.localeCompare(b.name));
@@ -73,6 +76,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
 
       <StoreFocus storeId={`${store.id}:${location.toLowerCase()}`} body={focusText} editor={editor} />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} />}
+      {activity && <ActivityCard data={activity} people={here} initiative={activityInit} color={storeAccent(store)} />}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>

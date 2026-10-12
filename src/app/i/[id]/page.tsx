@@ -7,7 +7,7 @@ import { Desc } from "@/components/Desc";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import {
-  getInitiative, getStores, getPeople, getRoster, getResources, getGoals, getGoalEntries, getVisits, getTodos, getWins, getBookmarks, getBulletin,
+  getInitiative, getStores, getPeople, getRoster, getResources, getGoals, getGoalEntries, getVisits, getTodos, getWins, getBookmarks, getBulletin, getGroupNotes,
   getExamples, getExampleThemes, signExamples,
 } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
@@ -16,6 +16,7 @@ import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { Bulletin } from "@/components/Bulletin";
+import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
@@ -34,6 +35,17 @@ export default async function InitiativePage({ params, searchParams }: { params:
     getPeople(), getRoster(id), getResources(id), getGoals({ initiativeId: id }), getVisits({ limit: 300 }), getTodos({ initiativeId: id }), getWins({ initiativeId: id, limit: 8 }), getBookmarks(),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
+  // Calls vs texts from the activity report, when this initiative is about the phone and its store has one loaded
+  const activity = await (async () => {
+    if (!/text|lead response|calls over|phone|reasons/i.test(init.name)) return null;
+    const notes = await getGroupNotes();
+    const loc = init.name.match(/^(Belgrade|Danhof)/i)?.[1]?.toLowerCase();
+    const st = stores.find((s) => init.store_ids.includes(s.id) && !s.is_bdc) || stores.find((s) => init.store_ids.includes(s.id));
+    if (!st) return null;
+    const key = `activity:${loc || st.slug}`;
+    const b = notes.find((n) => n.key === key)?.body; if (!b) return null;
+    try { return { store: st, data: JSON.parse(b) as Activity }; } catch { return null; }
+  })();
   const initVisits = visitsAll.filter((v) => v.initiative_ids.includes(id) && v.date <= today());
   const visits = initVisits.slice(0, 8);
   // Last time each person was tagged on a visit for this initiative (visits are newest first).
@@ -246,6 +258,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
             )}
           </section>
 
+          {activity && <ActivityCard data={activity.data} people={people} initiative={init} color={storeAccent(activity.store)} />}
           <Bulletin items={bulletin} stores={stores} initiative={init} />
 
           <section className="card">

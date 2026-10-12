@@ -8,6 +8,7 @@ import { getTargets } from "@/lib/tracking";
 import { getStorePosts, getExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { StoreFocus } from "@/components/StoreFocus";
+import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { CarWarsBanner } from "@/components/CarWars";
 import { BdcFirst } from "@/components/BdcFirst";
 import { PeoplePopup } from "@/components/PeoplePopup";
@@ -57,10 +58,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const groupNotes = await getGroupNotes();
   const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
   const focusText = groupNotes.find((n) => n.key === `focus:${store.id}`)?.body || null;
+  const activity = (() => { try { const b = groupNotes.find((n) => n.key === `activity:${store.slug}`)?.body; return b ? (JSON.parse(b) as Activity) : null; } catch { return null; } })();
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
   const storeInits = initiatives.filter((i) => i.store_ids.some((sid) => ids.includes(sid)) && i.status !== "done" && !/carwars/i.test(i.name));   // this store plus the shared BDC: the BDC is part of the dealership
+  const activityInit = storeInits.find((i) => /text|lead response|calls over|phone|reasons/i.test(i.name) && i.store_ids.includes(store.id)) || null;
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
@@ -269,6 +272,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
 
 
+      {activity && <ActivityCard data={activity} people={people} initiative={activityInit} color={storeAccent(store)} />}
       <Model compact marks={storeInits.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: shortInitName(i.name), color: storeAccent(stores.find((x) => i.store_ids.includes(x.id)) || store) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
 
 

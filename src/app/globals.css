@@ -825,3 +825,16 @@ body.calm main.page > *:not([data-keep]):not(.notice), body.calm main.page > div
 body.calm main.page > div:not([data-keep]) { display: block; }
 body.calm .adder, body.calm details.quiet, body.calm .btn.gold, body.calm .cardhead .more, body.calm .mobilenav { display: none !important; }
 body.calm .pagehead { margin-bottom: 10px; }
+
+/* Activity: calls vs texts */
+.actsummary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.actsummary .bignum { font-family: var(--font-display); font-size: 30px; color: var(--accent, var(--forest)); line-height: 1; }
+.actlist { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.actrow { display: grid; grid-template-columns: minmax(120px, 1.1fr) minmax(0, 2fr) auto; gap: 10px; align-items: center; font-size: 13px; }
+.actname a { font-weight: 600; }
+.actbars { display: grid; gap: 3px; }
+.actbar { position: relative; height: 12px; background: var(--panel-2); border-radius: 4px; overflow: hidden; }
+.actbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; display: block; }
+.actbar b { position: absolute; left: 6px; top: -1px; font-size: 10px; font-weight: 700; color: var(--ink); mix-blend-mode: multiply; }
+.actratio { text-align: right; white-space: nowrap; }
+.actratio strong { font-size: 16px; }
