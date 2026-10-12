@@ -1,16 +1,17 @@
 import type { Goal, GoalEntry, Store } from "@/lib/types";
 import { Sparkline } from "@/components/ui";
-import { addGoal, addGoalEntry } from "@/app/actions";
+import { addGoal, addGoalEntry, deleteGoal } from "@/app/actions";
 import { today } from "@/lib/fmt";
 
 /** Store goals in one place: the current rates up top, the trend for each below, logging and adding for the editor. */
 export function StoreGoals({ store, goals, entries, editor }: { store: Store; goals: Goal[]; entries: GoalEntry[]; editor: boolean }) {
   if (!goals.length && !editor) return null;
+  const bare = !goals.length;   // editor with nothing yet: just the adder, no empty card
   const rates = goals.filter((g) => g.kind === "rate");
   const latest = (g: Goal) => entries.filter((e) => e.goal_id === g.id).sort((a, b) => a.date.localeCompare(b.date)).pop();
   return (
-    <section className="card">
-      <div className="cardhead"><h2>Store goals</h2></div>
+    <section className={bare ? "" : "card"}>
+      {!bare && <div className="cardhead"><h2>Store goals</h2></div>}
       {rates.length > 0 && (
         <ul className="list" style={{ marginBottom: 10 }}>
           {rates.map((g) => { const last = latest(g); return (
@@ -22,7 +23,10 @@ export function StoreGoals({ store, goals, entries, editor }: { store: Store; go
         <div className="goalgrid">
           {goals.map((g) => (
             <div key={g.id} className="card flat">
-              <strong className="small">{g.name}</strong>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <strong className="small">{g.name}</strong>
+                {editor && <form action={deleteGoal}><input type="hidden" name="id" value={g.id} /><button className="iconbtn" title="Remove goal">×</button></form>}
+              </div>
               <Sparkline goal={g} entries={entries} />
               {editor && (
                 <form action={addGoalEntry} className="inline" style={{ marginTop: 6 }}>
@@ -35,7 +39,7 @@ export function StoreGoals({ store, goals, entries, editor }: { store: Store; go
             </div>
           ))}
         </div>
-      ) : <p className="empty">No store-level goals yet.</p>}
+      ) : null}
       {editor && (
         <details className="adder" style={{ marginTop: 12 }}>
           <summary>Store goal</summary>

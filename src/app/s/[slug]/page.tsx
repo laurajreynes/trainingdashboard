@@ -108,6 +108,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   // Store results from the PR import
   const mi = monthPhase(sp.phase);
+  const lateMonth = mi.day > 10;   // after the 10th last month's reports are old news: they move to the bottom
   const reflecting = mi.phase === "reflect";
   const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
   const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(9) });
@@ -205,6 +206,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         ) : <p className="empty">No initiatives assigned to this store yet</p>}
       </section>
         <div className="stack">
+      {!lateMonth && (
       <div>
         <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor} compact>
           {editor && (
@@ -235,6 +237,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </div>
         )}
       </div>
+      )}
       {(resources.length > 0 || fileResources.length > 0) && (
         <section className="card">
           <div className="cardhead"><h2>Resources</h2></div>
@@ -267,7 +270,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
 
-      <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20 }}>
+      <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20, alignItems: "start" }}>
           {!store.is_bdc && (
           <section className="card">
             <div className="cardhead"><h2>Sold by month</h2></div>
@@ -298,7 +301,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       {board && (
-        <div className="grid cols-3" style={{ marginBottom: 20 }}>
+        <div className="grid cols-3" style={{ marginBottom: 20, alignItems: "start" }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
           <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
@@ -311,6 +314,38 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
             <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
           </section>
+          {lateMonth && (
+      <div>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor} compact>
+          {editor && (
+            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
+              <summary style={{ padding: "4px 0" }}>Add</summary>
+              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <div className="frow">
+                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
+                  <input type="url" name="url" placeholder="https://" required />
+                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
+                  <button className="btn sm">Add</button>
+                </div>
+              </form>
+              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
+              <FileUploader storeId={store.id} />
+            </details>
+          )}
+        </ReportsCard>
+        {bookmarks.some((b) => b.kind !== "report") && (
+          <div className="bookmarks" style={{ marginTop: 10 }}>
+            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
+              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
+                <a className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span>{b.title}</a>
+                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+          )}
         </div>
         <div className="stack">
           <section className="card">
