@@ -276,8 +276,8 @@ export type Stage = (typeof STAGES)[number];
 export function stepFor(name: string, area?: string | null): string | null {
   const n = name.toLowerCase();
   if (/carwars/.test(n)) return null;
-  if (/appointment/.test(n)) return "Appointment";
-  if (/reasons to come in|come in|visit/.test(n)) return "Visit";
+  if (/appointment|reasons to come in|come in/.test(n)) return "Appointment";
+  if (/visit/.test(n)) return "Visit";
   if (/calls over|call first|phone conversation|voicemail/.test(n)) return "Phone convo";
   if (/text/.test(n)) return "Text";
   if (/bdc|first response|lead response|templates|lead handling|flexibility/.test(n)) return "Call first";
