@@ -3,7 +3,7 @@ import { isEditor } from "@/lib/auth";
 import { getHubSnapshot, getStorePosts, getMetrics, getMeetings, getGroupNotes } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, today } from "@/lib/fmt";
-import { shortInitName, stepFor } from "@/lib/types";
+import { shortInitName } from "@/lib/types";
 import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
@@ -141,7 +141,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
 
       <section style={{ marginBottom: 18 }} data-keep="root">
-        <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
       <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}</div>
         {active.length ? (
           <div className="grid cols-3">
@@ -153,7 +152,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       </section>
 
 
-      <Model marks={active.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: `${stores.find((x) => i.store_ids.includes(x.id))?.short_name || ""}: ${shortInitName(i.name)}`, color: storeAccent(stores.find((x) => i.store_ids.includes(x.id))) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
+      <Model />
 
       <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (

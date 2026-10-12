@@ -18,7 +18,18 @@ export function ReportsCard({ reports, stores, children, editor, compact }: { re
   const group = reports.filter((b) => !b.store_id && !isShop(b));
   const byStore = reports.filter((b) => b.store_id && !isShop(b));
   const months = Array.from(new Set(reports.map((b) => parseTitle(b.title).month).filter(Boolean)));
+  const shopLinks = shops.map((b) => {
+    const s = stores.find((x) => x.id === b.store_id);
+    return <span key={b.id} className="rwrap"><a className="rlink" href={b.url} target="_blank" rel="noreferrer" style={{ color: storeAccent(s) }}>{parseTitle(b.title).short.replace(/^Competitive Mystery Shop,?\s*/i, "")}</a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
+  });
+  const shopsCol = shops.length > 0 ? (
+    <div className="storecol" style={{ ["--accent" as string]: "var(--forest)" }}>
+      <div className="storecol-h">Mystery shops</div>
+      {shopLinks}
+    </div>
+  ) : null;
   return (
+    <>
     <section className="card">
       <div className="cardhead"><h2>{months.length === 1 && !compact ? `${months[0]} reports` : "Reports"}</h2>{children}</div>
       <div className="reports">
@@ -38,17 +49,16 @@ export function ReportsCard({ reports, stores, children, editor, compact }: { re
               })}
             </div>
           ))}
-          {shops.length > 0 && (
-            <div className="storecol" style={{ ["--accent" as string]: "var(--forest)" }}>
-              <div className="storecol-h">Mystery shops</div>
-              {shops.map((b) => {
-                const s = stores.find((x) => x.id === b.store_id);
-                return <span key={b.id} className="rwrap"><a className="rlink" href={b.url} target="_blank" rel="noreferrer" style={{ color: storeAccent(s) }}>{parseTitle(b.title).short.replace(/^Competitive Mystery Shop,?\s*/i, "")}</a>{editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}</span>;
-              })}
-            </div>
-          )}
+          {!compact && shopsCol}
         </div>
       </div>
     </section>
+    {compact && shops.length > 0 && (
+      <section className="card">
+        <div className="cardhead"><h2>Mystery shops</h2></div>
+        <div className="grid-chips" style={{ display: "grid", gap: 6 }}>{shopLinks}</div>
+      </section>
+    )}
+    </>
   );
 }

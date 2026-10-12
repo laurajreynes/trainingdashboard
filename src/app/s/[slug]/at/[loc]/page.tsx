@@ -76,7 +76,6 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
 
       <StoreFocus storeId={`${store.id}:${location.toLowerCase()}`} body={focusText} editor={editor} />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} />}
-      {activity && <ActivityCard data={activity} people={here} initiative={activityInit} color={storeAccent(store)} />}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
