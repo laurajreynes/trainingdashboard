@@ -128,7 +128,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
   return (
     <>
-      <div className="pagehead">
+      <div className="pagehead" data-keep>
         <div>
           <div className="eyebrow">All stores</div>
           <h1>{monthName(phase.month)}</h1>
@@ -137,9 +137,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
-      <WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} />
+      <div data-keep><WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} /></div>
 
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}
+      <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}</div>
 
       <section style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>

@@ -106,10 +106,11 @@ export function Ring({ pct, size = 64, color = "var(--brand)", label }: { pct: n
 
 /** Columns split into stacked parts (new on top of used). Hover any column for the breakdown. */
 export type StackPoint = { label: string; hint?: string; parts: { label: string; value: number }[] };
-export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"], height = 96 }: { points: StackPoint[]; colors?: string[]; height?: number }) {
+export type ColumnMark = { label: string; value: number; kind?: "goal" | "pace" | "ref" };
+export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"], height = 96, marks = [] }: { points: StackPoint[]; colors?: string[]; height?: number; marks?: ColumnMark[] }) {
   if (!points.length) return <p className="empty">No data yet</p>;
   const total = (p: StackPoint) => p.parts.reduce((a, x) => a + x.value, 0);
-  const max = Math.max(1, ...points.map(total));
+  const max = Math.max(1, ...points.map(total), ...marks.map((m) => m.value));
   return (
     <div>
       <div className="cols stackcols" style={{ height }} role="img" aria-label="Stacked column chart">
@@ -121,6 +122,9 @@ export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"
             <div className="col" key={p.label} title={tip} style={{ opacity: last ? 1 : 0.8 }}>
               <div className="col-val">{t > 0 ? t : ""}</div>
               <div className="col-track">
+                {last && marks.map((m) => (
+                  <span key={m.label} className={`colmark ${m.kind || "ref"}`} style={{ bottom: `${(m.value / max) * 100}%` }} title={`${m.label}: ${m.value}`}><b>{m.value}</b></span>
+                ))}
                 <div className="col-fill stack" style={{ height: `${(t / max) * 100}%` }}>
                   {p.parts.map((x, k) => (
                     <div key={x.label} className="stackpart" style={{ height: `${t ? (x.value / t) * 100 : 0}%`, background: colors[k % colors.length] }} title={`${p.hint || p.label}: ${x.label} ${x.value}`} />
@@ -132,7 +136,7 @@ export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"
           );
         })}
       </div>
-      <div className="legend small">{points[0].parts.map((x, k) => <span key={x.label}><i style={{ background: colors[k % colors.length] }} />{x.label}</span>)}</div>
+      <div className="legend small">{points[0].parts.map((x, k) => <span key={x.label}><i style={{ background: colors[k % colors.length] }} />{x.label}</span>)}{marks.map((m) => <span key={m.label} className={`legmark ${m.kind || "ref"}`}><i />{m.label} {m.value}</span>)}</div>
       <details className="quiet charttable">
         <summary>Table</summary>
         <table className="tbl small" style={{ marginTop: 6 }}>

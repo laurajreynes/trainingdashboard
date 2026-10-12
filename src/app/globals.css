@@ -805,3 +805,23 @@ details.accordion > summary h2 { margin: 0; }
 /* Week calendar: sessions already behind us */
 .weekcal .sess.past { opacity: .62; }
 .weekcal .sess.past .who::after { content: " ✓"; color: var(--good); font-weight: 700; }
+
+/* Marks on the current month's column: goal, pace, last year */
+.col-track { position: relative; }
+.colmark { position: absolute; left: -6px; right: -6px; height: 0; border-top: 2px dashed var(--ink-faint); z-index: 2; pointer-events: none; }
+.colmark b { position: absolute; right: -4px; top: -16px; font-size: 9px; font-weight: 700; color: var(--ink-dim); background: var(--panel); padding: 0 2px; border-radius: 3px; }
+.colmark.goal { border-top: 2px solid var(--forest); }
+.colmark.pace { border-top: 2px dotted var(--sun, #c9a24a); }
+.legmark i { width: 12px; height: 0; border-top: 2px dashed var(--ink-faint); border-radius: 0; }
+.legmark.goal i { border-top: 2px solid var(--forest); }
+.legmark.pace i { border-top: 2px dotted var(--sun, #c9a24a); }
+
+/* Quiet view */
+.quiet-toggle { position: fixed; right: 18px; bottom: 18px; z-index: 50; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--panel); box-shadow: var(--shadow); cursor: pointer; display: grid; place-items: center; opacity: .75; }
+.quiet-toggle:hover { opacity: 1; }
+.quiet-toggle span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--forest); background: transparent; transition: background .15s; }
+.quiet-toggle.on span { background: var(--forest); }
+body.calm main.page > *:not([data-keep]):not(.notice), body.calm main.page > div:not([data-keep]) > *:not([data-keep]) { display: none; }
+body.calm main.page > div:not([data-keep]) { display: block; }
+body.calm .adder, body.calm details.quiet, body.calm .btn.gold, body.calm .cardhead .more, body.calm .mobilenav { display: none !important; }
+body.calm .pagehead { margin-bottom: 10px; }

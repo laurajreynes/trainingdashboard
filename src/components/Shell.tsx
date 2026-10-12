@@ -1,3 +1,4 @@
+import { QuietToggle } from "@/components/QuietToggle";
 import Link from "next/link";
 import { configured } from "@/lib/supabase";
 import { isEditor } from "@/lib/auth";
@@ -36,6 +37,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           )}
         </nav>
       </header>
+      <QuietToggle />
       <main className="page">
         {!ready ? (
           <div className="notice bad">

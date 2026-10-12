@@ -4,6 +4,7 @@ import type { Initiative } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
+import { getTargets } from "@/lib/tracking";
 import { getStorePosts, getExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { StoreFocus } from "@/components/StoreFocus";
@@ -111,7 +112,15 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const lateMonth = mi.day > 10;   // after the 10th last month's reports are old news: they move to the bottom
   const reflecting = mi.phase === "reflect";
   const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
-  const metricRows = await getMetrics({ storeIds: [store.id], periods: monthsBack(9) });
+  const lastYearPeriod = `${Number(curMonth.slice(0, 4)) - 1}${curMonth.slice(4)}`;
+  const [metricRows, lyRows, targets] = await Promise.all([
+    getMetrics({ storeIds: [store.id], periods: monthsBack(9) }),
+    getMetrics({ storeIds: [store.id], periods: [lastYearPeriod] }),
+    getTargets(curMonth),
+  ]);
+  const lyTotal = lyRows.reduce((a, m) => a + m.sold, 0);
+  const tgt = targets[store.id];
+  const goalTotal = tgt && (tgt.new || tgt.used) ? (tgt.new || 0) + (tgt.used || 0) : null;
   const thisMonthRows = metricRows.filter((m) => m.period === curMonth);
   const soldMtd = thisMonthRows.reduce((a, m) => a + m.sold, 0);
   const soldAsOf = thisMonthRows.map((m) => m.as_of).sort().pop();
@@ -135,7 +144,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   return (
     <div style={{ ["--accent" as string]: storeAccent(store) }}>
-      <div className="pagehead">
+      <div className="pagehead" data-keep>
         <div>
           <div className="accentbar" />
           <h1>{store.name}</h1>
@@ -148,8 +157,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
 
-      <StoreFocus storeId={store.id} body={focusText} editor={editor} />
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
+      <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
+      <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
 
       <div className="flow topband">
       <section className="card nextstrip">
@@ -264,13 +273,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
 
 
-      <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
+      <div data-keep><MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} /></div>
 
       <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20, alignItems: "start" }}>
           {!store.is_bdc && (
           <section className="card">
             <div className="cardhead"><h2>Sold by month</h2></div>
-            <StackedColumns points={soldStack} colors={[storeAccent(store), "var(--sage)"]} />
+            <StackedColumns points={soldStack} colors={[storeAccent(store), "var(--sage)"]} marks={[
+              ...(goalTotal ? [{ label: "Goal", value: goalTotal, kind: "goal" as const }] : []),
+              ...(!reflecting && soldProj && soldProj !== soldMtd ? [{ label: "Pace", value: soldProj, kind: "pace" as const }] : []),
+              ...(lyTotal && !goalTotal ? [{ label: "Last year", value: lyTotal, kind: "ref" as const }] : []),
+            ]} />
             {store.locations.length > 0 && (
               <details className="quiet" style={{ marginTop: 10 }}>
                 <summary>{store.locations.join(" and ")}</summary>
@@ -296,7 +309,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       {board && (
-        <div className="grid fit" style={{ marginBottom: 20, alignItems: "start" }}>
+        <div className="grid fit" data-keep style={{ marginBottom: 20, alignItems: "start" }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Top appointment setters" url={boardUrl(store.slug)} />}
         </div>
