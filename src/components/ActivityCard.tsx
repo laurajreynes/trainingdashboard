@@ -49,7 +49,7 @@ export function ActivityCard({ data, people, initiative, title = "Calls vs texts
         <ul className="actlist">{best.map((r) => <Row key={r.name} r={r} />)}</ul>
       </>}
       {worst.length > 0 && <>
-        <div className="eyebrow" style={{ color: "var(--warn)", marginTop: 10 }}>Hiding behind texts</div>
+        <div className="eyebrow" style={{ color: "var(--warn)", marginTop: 10 }}>Leaning on texts</div>
         <ul className="actlist">{worst.map((r) => <Row key={r.name} r={r} />)}</ul>
       </>}
       <details className="quiet" style={{ marginTop: 8 }}>
