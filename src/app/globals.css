@@ -760,7 +760,7 @@ details.accordion > summary h2 { margin: 0; }
 .nextitem .tags .tag { font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
 
 /* Store page top band: next visit, initiatives, reports side by side so the first screen is dense */
-.topband { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; margin-bottom: 18px; }
+
 .topband .nextrow { flex-direction: column; overflow: visible; flex-wrap: nowrap; }
 .topband .nextitem { max-width: none; flex: none; }
 .topband .initstack { display: grid; gap: 10px; }
@@ -772,10 +772,20 @@ details.accordion > summary h2 { margin: 0; }
 .topband .reports .bystore { grid-template-columns: 1fr; gap: 8px; }
 .topband .rsrc .chipr { min-width: 0; padding: 6px 10px; }
 .topband .card { padding: 14px 16px; }
-@media (max-width: 1000px) { .topband { grid-template-columns: 1fr; } }
+
 .seq { margin-bottom: 14px; }
 .goalgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
 .initgroup { display: grid; gap: 10px; }
 .initgroup + .initgroup { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .bshot { display: block; margin: 6px 0 4px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; max-height: 150px; background: var(--panel-2); }
 .bshot img { display: block; width: 100%; height: auto; object-fit: cover; object-position: top; max-height: 150px; }
+
+/* Flow layout: cards fill three columns top to bottom, so no column is left with a hole under it */
+.flow { columns: 3; column-gap: 16px; margin-bottom: 18px; }
+.flow .stack { display: contents; }
+.flow > *, .flow .stack > * { break-inside: avoid; page-break-inside: avoid; margin: 0 0 16px; display: block; width: 100%; }
+.flow > *:last-child { margin-bottom: 0; }
+@media (max-width: 1100px) { .flow { columns: 2; } }
+@media (max-width: 760px) { .flow { columns: 1; } }
+.grid.fit { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.rsrc .chipr.tool { border-left-color: var(--sun, #e3c27a); }

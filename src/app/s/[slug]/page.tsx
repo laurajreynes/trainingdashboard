@@ -151,7 +151,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       <StoreFocus storeId={store.id} body={focusText} editor={editor} />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
 
-      <div className="grid topband">
+      <div className="flow topband">
       <section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcomingHere.length ? (
@@ -226,22 +226,18 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             </details>
           )}
         </ReportsCard>
-        {bookmarks.some((b) => b.kind !== "report") && (
-          <div className="bookmarks" style={{ marginTop: 10 }}>
-            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
-              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
-                <a className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span>{b.title}</a>
-                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
       )}
-      {(resources.length > 0 || fileResources.length > 0) && (
+      {(resources.length > 0 || fileResources.length > 0 || bookmarks.some((b) => b.kind !== "report")) && (
         <section className="card">
           <div className="cardhead"><h2>Resources</h2></div>
           <div className="grid-chips rsrc">
+            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
+              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
+                <a className="chipr tool" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span><span className="t">{b.title}</span></a>
+                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
+              </span>
+            ))}
             {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="t">{b.title}</span></a>)}
             {resources.map((r) => r.url
               ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}>{r.kind !== "doc" && <span className="k">{r.kind.replace("_", " ")}</span>}<span className="t">{r.title}</span></a>
@@ -301,14 +297,14 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </div>
 
       {board && (
-        <div className="grid cols-3" style={{ marginBottom: 20, alignItems: "start" }}>
+        <div className="grid fit" style={{ marginBottom: 20, alignItems: "start" }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
           <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
         </div>
       )}
 
-      <div className="grid cols-3" style={{ alignItems: "start" }}>
+      <div className="flow">
         <div className="stack">
           <section className="card">
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
@@ -334,16 +330,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             </details>
           )}
         </ReportsCard>
-        {bookmarks.some((b) => b.kind !== "report") && (
-          <div className="bookmarks" style={{ marginTop: 10 }}>
-            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
-              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
-                <a className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span>{b.title}</a>
-                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
           )}
         </div>
