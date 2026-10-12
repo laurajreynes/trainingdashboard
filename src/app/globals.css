@@ -803,7 +803,8 @@ details.accordion > summary h2 { margin: 0; }
 .model.has-labels { padding-bottom: 32px; }
 .model.has-labels:has(.model-marks i:nth-child(2)) { padding-bottom: 48px; }
 .model-dots { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 2px; display: flex; gap: 3px; }
-.model-dots i { width: 8px; height: 8px; border-radius: 50%; display: block; border: 1.5px solid rgba(255,255,255,.9); }
+.model-dots i { width: 9px; height: 9px; border-radius: 50%; display: block; border: 1.5px solid rgba(255,255,255,.9); cursor: help; transition: transform .12s; }
+.model-dots i:hover { transform: scale(1.4); }
 .model.has-dots .model-row { margin-bottom: 10px; }
 .model.has-dots .model-note { margin-top: 6px; }
 .model-legend { margin-top: 8px; font-family: var(--font-body); font-weight: 500; font-size: 11px; color: rgba(255,255,255,.8); display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center; }

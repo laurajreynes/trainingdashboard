@@ -3,7 +3,7 @@ import { isEditor } from "@/lib/auth";
 import { getHubSnapshot, getStorePosts, getMetrics, getMeetings, getGroupNotes } from "@/lib/data";
 import { OpenPosts } from "@/components/StoreNotes";
 import { fmtDate, today } from "@/lib/fmt";
-import { shortInitName } from "@/lib/types";
+import { shortInitName, stepFor } from "@/lib/types";
 import { monthPhase } from "@/lib/month";
 import { monthName } from "@/lib/fmt";
 import { TodoList, VisitList, WinList } from "@/components/ui";
@@ -152,7 +152,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       </section>
 
 
-      <Model />
+      <Model marks={active.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: `${stores.find((x) => i.store_ids.includes(x.id))?.short_name || ""}: ${shortInitName(i.name)}`, color: storeAccent(stores.find((x) => i.store_ids.includes(x.id))) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
 
       <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (

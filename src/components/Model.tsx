@@ -33,9 +33,6 @@ export function Model({ compact, marks = [], labels = false }: { compact?: boole
           </span>
         ))}
       </div>
-      {!labels && marks.length > 0 && (
-        <div className="model-legend">{marks.map((m, k) => <span key={k}><i style={{ background: m.color }} />{m.label}</span>)}</div>
-      )}
       {!compact && span && (
         <div className="model-note" aria-hidden="true" style={{ paddingLeft: span.left }}>
           <span className="model-bracket" style={{ width: span.width }} />

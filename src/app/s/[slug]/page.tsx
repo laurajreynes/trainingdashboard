@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EXAMPLE_KIND_LABEL, shortInitName } from "@/lib/types";
+import { EXAMPLE_KIND_LABEL, shortInitName, stepFor } from "@/lib/types";
 import type { Initiative } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
@@ -273,7 +273,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
 
 
-      <Model compact />
+      <Model compact marks={storeInits.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: shortInitName(i.name), color: storeAccent(stores.find((x) => i.store_ids.includes(x.id)) || store) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
 
 
 
