@@ -747,3 +747,6 @@ details.accordion > summary h2 { margin: 0; }
 .seq-step.now .n { background: var(--forest); color: #fff; }
 .seq-step.done .n { background: var(--good); color: #fff; }
 .seq-arrow { color: var(--ink-faint); font-size: 20px; }
+
+.focusblock { border-left: 4px solid var(--accent, var(--forest)); }
+.focusblock .desc p { font-size: 15px; line-height: 1.5; }

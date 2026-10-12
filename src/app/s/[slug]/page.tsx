@@ -4,6 +4,7 @@ import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
+import { StoreFocus } from "@/components/StoreFocus";
 import { CarWarsBanner } from "@/components/CarWars";
 import { BdcFirst } from "@/components/BdcFirst";
 import { PeoplePopup } from "@/components/PeoplePopup";
@@ -50,7 +51,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const bulletin = await getBulletin();
   const board = await getBoard(store.slug);
   const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
-  const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
+  const groupNotes = await getGroupNotes();
+  const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
+  const focusText = groupNotes.find((n) => n.key === `focus:${store.id}`)?.body || null;
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
@@ -141,6 +144,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
 
+      <StoreFocus storeId={store.id} body={focusText} editor={editor} />
       <Model compact />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
       {(() => {
