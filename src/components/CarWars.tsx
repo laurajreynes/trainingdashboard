@@ -69,7 +69,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
           <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}</h2>
         </div>
         <div className="carwars-right small">
-          {launched && <><strong>{live}</strong> of {rows.length} live{" · "}</>}<Link href={`/i/${init.id}`}>open</Link>
+          {launched && <><strong>{live}</strong> of {rows.length} live{" · "}<Link href={`/i/${init.id}`}>open</Link></>}
         </div>
       </div>
       <Track stops={stops} />

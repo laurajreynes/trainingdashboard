@@ -299,7 +299,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       {board && (
         <div className="grid fit" style={{ marginBottom: 20, alignItems: "start" }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
-          {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
+          {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Top appointment setters" url={boardUrl(store.slug)} />}
         </div>
       )}
 

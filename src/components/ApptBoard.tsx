@@ -19,13 +19,20 @@ export function ApptBoardCard({ board, url, color, title }: { board: Board; url:
   );
 }
 
-export function ApptPeopleCard({ board, color, title }: { board: Board; color: string; title: string }) {
+export function ApptPeopleCard({ board, color, title, url }: { board: Board; color: string; title: string; url?: string | null }) {
   const rows = [...board.mtd.rows].sort((a, b) => b.set - a.set || b.shown - a.shown);
   const top = Math.max(1, ...rows.map((r) => r.set));
+  const bar = (r: typeof rows[number]) => ({ label: r.name, value: r.set, color, sub: r.set ? `${r.shown} shown` : "" });
   return (
     <section className="card">
-      <div className="cardhead"><h2>{title}</h2></div>
-      <HBars rows={rows.map((r) => ({ label: r.name, value: r.set, color, sub: r.set ? `${r.shown} shown` : "" }))} max={top} />
+      <div className="cardhead"><h2>{title}</h2>{url && <a className="more" href={url} target="_blank" rel="noreferrer">Board</a>}</div>
+      <HBars rows={rows.slice(0, 3).map(bar)} max={top} />
+      {rows.length > 3 && (
+        <details className="quiet" style={{ marginTop: 8 }}>
+          <summary className="small">Everyone ({rows.length})</summary>
+          <div style={{ marginTop: 8 }}><HBars rows={rows.slice(3).map(bar)} max={top} /></div>
+        </details>
+      )}
     </section>
   );
 }
