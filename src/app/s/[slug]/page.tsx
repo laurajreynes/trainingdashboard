@@ -273,7 +273,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
 
 
-      <Model compact marks={storeInits.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: shortInitName(i.name), color: storeAccent(stores.find((x) => i.store_ids.includes(x.id)) || store) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
+      <Model compact marks={storeInits.map((i) => ({ step: stepFor(i.name, areas[i.id]), href: `/i/${i.id}`, label: shortInitName(i.name), color: storeAccent(stores.find((x) => i.store_ids.includes(x.id)) || store) })).filter((m): m is { step: string; href: string; label: string; color: string } => !!m.step)} />
 
 
 

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 /** The internet model, the thing everything else hangs off. Call first; text is the launchpad to a phone conversation. */
 const STEPS = ["Lead", "Call first", "Text", "Phone convo", "Appointment", "Visit", "Sale"];
-export type ModelMark = { step: string; label: string; color: string };
+export type ModelMark = { step: string; label: string; color: string; href?: string };
 export function Model({ compact, marks = [], labels = false }: { compact?: boolean; marks?: ModelMark[]; labels?: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   const [span, setSpan] = useState<{ left: number; width: number } | null>(null);
@@ -26,7 +26,11 @@ export function Model({ compact, marks = [], labels = false }: { compact?: boole
           <span key={s} className="model-step">
             <span className="model-word" data-step={s}>{s}
               {marks.some((m) => m.step === s) && (
-                <span className={labels ? "model-marks" : "model-dots"}>{marks.filter((m) => m.step === s).map((m, k) => <i key={k} style={{ background: m.color }} title={m.label}>{labels ? m.label : ""}</i>)}</span>
+                <span className={labels ? "model-marks" : "model-dots"}>{marks.filter((m) => m.step === s).map((m, k) => (
+                  m.href
+                    ? <a key={k} href={m.href} className="mdot" style={{ background: m.color }} data-label={m.label} aria-label={m.label} />
+                    : <i key={k} className="mdot" style={{ background: m.color }} data-label={m.label} tabIndex={0}>{labels ? m.label : ""}</i>
+                ))}</span>
               )}
             </span>
             {i < STEPS.length - 1 && <span className="model-arrow" aria-hidden="true">→</span>}

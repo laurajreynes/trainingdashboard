@@ -153,7 +153,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       </section>
 
 
-      <Model marks={active.map((i) => ({ step: stepFor(i.name, areas[i.id]), label: `${stores.find((x) => i.store_ids.includes(x.id))?.short_name || ""}: ${shortInitName(i.name)}`, color: storeAccent(stores.find((x) => i.store_ids.includes(x.id))) })).filter((m): m is { step: string; label: string; color: string } => !!m.step)} />
+      <Model marks={active.map((i) => ({ step: stepFor(i.name, areas[i.id]), href: `/i/${i.id}`, label: `${stores.find((x) => i.store_ids.includes(x.id))?.short_name || ""}: ${shortInitName(i.name)}`, color: storeAccent(stores.find((x) => i.store_ids.includes(x.id))) })).filter((m): m is { step: string; href: string; label: string; color: string } => !!m.step)} />
 
       <ReportsCard reports={reports} stores={stores} editor={editor}>
         {editor && (
