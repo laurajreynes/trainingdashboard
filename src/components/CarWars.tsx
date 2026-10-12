@@ -47,7 +47,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
     : store ? all.filter((m) => forStore(m, store) || (withBdc && isBdc(m)))
     : all;
   // On a store page, name the two launches so both dates read clearly.
-  const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? "BDC launch" : "Sales launch") : m.label;
+  const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? "BDC launch" : /service/i.test(m.store) ? "Service launch" : "Sales launch") : m.label;
   const dated = mine.filter((m) => isDate(m.when)).sort((a, b) => a.when.localeCompare(b.when));
   const tbd = mine.filter((m) => !isDate(m.when));
   const nextIdx = dated.findIndex((m) => m.when >= t);
@@ -59,7 +59,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
       title: store ? label(m) : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when),
       state: m.when < t ? "done" : i === nextIdx ? "next" : "later", color: storeOf(m) ? storeAccent(storeOf(m)!) : undefined, launch: isLaunch(m),
     })),
-    ...tbd.map((m): Stop => ({ title: store ? label(m) : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later", launch: isLaunch(m) })),
+    ...tbd.map((m): Stop => ({ title: store ? label(m) : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later" })),
   ];
   const launched = dated.some((m) => isLaunch(m) && m.when < t) || live > 0;
   return (
