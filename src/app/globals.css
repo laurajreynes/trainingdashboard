@@ -758,3 +758,19 @@ details.accordion > summary h2 { margin: 0; }
 .list li.grouphead:first-child { padding-top: 0; }
 .nextitem .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .nextitem .tags .tag { font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+
+/* Store page top band: next visit, initiatives, reports side by side so the first screen is dense */
+.topband { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; margin-bottom: 18px; }
+.topband .nextrow { flex-direction: column; overflow: visible; flex-wrap: nowrap; }
+.topband .nextitem { max-width: none; flex: none; }
+.topband .initstack { display: grid; gap: 10px; }
+.topband .initcard { padding: 12px 14px; }
+.topband .initcard h3 { font-size: 15px; }
+.topband .reports { grid-template-columns: 1fr; gap: 10px; }
+.topband .reports .feature { padding: 10px 14px; }
+.topband .reports .feature .t { font-size: 16px; }
+.topband .reports .bystore { grid-template-columns: 1fr; gap: 8px; }
+.topband .rsrc .chipr { min-width: 0; padding: 6px 10px; }
+.topband .card { padding: 14px 16px; }
+@media (max-width: 1000px) { .topband { grid-template-columns: 1fr; } }
+.seq { margin-bottom: 14px; }

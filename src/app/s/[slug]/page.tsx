@@ -148,7 +148,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
       <StoreFocus storeId={store.id} body={focusText} editor={editor} />
 
-      <section className="card nextstrip" style={{ marginBottom: 18 }}>
+      <div className="grid topband">
+      <section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcomingHere.length ? (
           <div className="nextrow">
@@ -180,30 +181,19 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </form>
         )}
       </section>
-      {(() => {
-        const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
-        const bdcStore = stores.find((s) => s.is_bdc);
-        if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
-        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
-      })()}
-
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
-
-      <section style={{ marginBottom: 18 }}>
+      <section className="card">
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
         {storeInits.length ? (
-          <div className="grid cols-3">
+          <div className="initstack">
             {storeInits.map((i) => (
               <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]} area={areas[i.id]} hideStore={store.slug}
                 roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
             ))}
           </div>
-        ) : <div className="card"><p className="empty">No initiatives assigned to this store yet</p></div>}
+        ) : <p className="empty">No initiatives assigned to this store yet</p>}
       </section>
-
-      <Model compact />
-
-      <div style={{ marginBottom: 20 }}>
+        <div className="stack">
+      <div>
         <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor}>
           {editor && (
             <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
@@ -233,9 +223,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </div>
         )}
       </div>
-
       {(resources.length > 0 || fileResources.length > 0) && (
-        <section className="card" style={{ marginBottom: 20 }}>
+        <section className="card">
           <div className="cardhead"><h2>Resources</h2></div>
           <div className="grid-chips rsrc">
             {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="k">doc</span><span className="t">{b.title}</span></a>)}
@@ -245,6 +234,25 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </div>
         </section>
       )}
+        </div>
+      </div>
+
+      {(() => {
+        const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
+        const bdcStore = stores.find((s) => s.is_bdc);
+        if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
+        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits.filter((i) => !i.store_ids.includes(bdcStore?.id || ""))} roster={roster} bdcStore={bdcStore} />;
+      })()}
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}
+
+
+
+
+
+
+      <Model compact />
+
+
 
       <MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} />
 
