@@ -774,3 +774,4 @@ details.accordion > summary h2 { margin: 0; }
 .topband .card { padding: 14px 16px; }
 @media (max-width: 1000px) { .topband { grid-template-columns: 1fr; } }
 .seq { margin-bottom: 14px; }
+.goalgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }

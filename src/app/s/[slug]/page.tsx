@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { EXAMPLE_KIND_LABEL } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
-import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
+import { getStorePosts, getExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { StoreFocus } from "@/components/StoreFocus";
 import { CarWarsBanner } from "@/components/CarWars";
@@ -11,7 +12,6 @@ import { PeoplePopup } from "@/components/PeoplePopup";
 import { getBoard, boardUrl } from "@/lib/board";
 import { ApptBoardCard, ApptPeopleCard } from "@/components/ApptBoard";
 import { getGroupNotes } from "@/lib/data";
-import { ExampleGallery } from "@/components/ExampleGallery";
 import { HBars, Ring, Stacked, StackedColumns, ReachBars } from "@/components/charts";
 import { addDays, monthName, monthsBack, projectToMonthEnd, weeksBack } from "@/lib/fmt";
 import { RosterBar } from "@/components/ui";
@@ -21,14 +21,15 @@ import {
   getWins, getPeople, getBookmarks, getCommitments, getGoals, getGoalEntries,
 } from "@/lib/data";
 import { fmtDate, relDay, today, storeAccent } from "@/lib/fmt";
-import { TodoList, VisitList, WinList, CommitmentList, Sparkline } from "@/components/ui";
+import { TodoList, VisitList, WinList } from "@/components/ui";
 import { InitiativeCard } from "@/components/InitiativeCard";
 import { MonthPanel } from "@/components/MonthPanel";
 import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
 import { Model } from "@/components/Model";
 import { splitTime } from "@/components/WeekCalendar";
-import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin, addCommitment, addGoal, addGoalEntry } from "@/app/actions";
+import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin } from "@/app/actions";
+import { StoreGoals } from "@/components/StoreGoals";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
-  const examples = await signExamples(exHere);
   const storeInits = initiatives.filter((i) => i.store_ids.some((sid) => ids.includes(sid)) && i.status !== "done" && !/carwars/i.test(i.name));   // this store plus the shared BDC: the BDC is part of the dealership
   const peopleHere = people.filter((p) => p.active);
   const peopleIds = new Set(peopleHere.map((p) => p.id));
@@ -284,30 +284,11 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </section>
       </div>
 
-      {(board || goals.some((g) => g.kind === "rate")) && (
+      {board && (
         <div className="grid cols-3" style={{ marginBottom: 20 }}>
           {board && <ApptBoardCard board={board} url={boardUrl(store.slug)} color={storeAccent(store)} title={`Appointments, ${monthName(curMonth)}`} />}
           {board && <ApptPeopleCard board={board} color={storeAccent(store)} title="Appointments set by salesperson" />}
-          {goals.some((g) => g.kind === "rate") && (
-          <section className="card">
-            <div className="cardhead"><h2>Set rates, {monthName(curMonth)}</h2></div>
-            {goals.filter((g) => g.kind === "rate").length ? (
-              <ul className="list">
-                {goals.filter((g) => g.kind === "rate").map((g) => {
-                  const es = entries.filter((e) => e.goal_id === g.id).sort((a, b) => a.date.localeCompare(b.date));
-                  const last = es[es.length - 1];
-                  return <li key={g.id} className="small"><div className="grow">{g.name}</div><strong>{last ? `${last.value}${g.unit}` : "–"}</strong>{g.target !== null && <span className="faint"> / {g.target}{g.unit}</span>}</li>;
-                })}
-              </ul>
-            ) : upsRow.lot + upsRow.phone + upsRow.web > 0 ? (
-              <HBars rows={[
-                { label: "Lot", value: upsRow.lot, color: storeAccent(store) },
-                { label: "Phone", value: upsRow.phone, color: storeAccent(store) },
-                { label: "Web", value: upsRow.web, color: storeAccent(store) },
-              ]} />
-            ) : <p className="empty">Source traffic report coming from DriveCentric</p>}
-          </section>
-          )}
+          <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
         </div>
       )}
 
@@ -317,30 +298,27 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
             <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
           </section>
-          {(examples.length > 0 || editor) && (
-            <section className="card">
-              <div className="cardhead"><h2>Recent examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>{editor ? "Library and upload" : "All examples"}</Link></div>
-              <ExampleGallery items={examples} people={people.map((p) => ({ id: p.id, name: p.name }))} initiatives={initiatives.map((i) => ({ id: i.id, name: i.name }))}
-                stores={stores.map((s) => ({ id: s.id, name: s.short_name }))} editor={editor} emptyText="No screenshots from this store yet. Add them in the Examples library." />
-            </section>
-          )}
         </div>
         <div className="stack">
           <section className="card">
-            <div className="cardhead"><h2>To-dos</h2></div>
-            <TodoList todos={todos.filter((t) => t.store_id === store.id)} editor={editor} people={people} />
-            {editor && (
-              <form action={addTodo} className="inline" style={{ marginTop: 10 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <input type="text" name="text" placeholder="Add a to-do" required style={{ flex: 1, minWidth: 140 }} />
-                <input type="date" name="due" style={{ width: 140 }} />
-                <button className="btn sm">Add</button>
-              </form>
-            )}
-          </section>
-          <section className="card">
-            <div className="cardhead"><h2>Wins</h2></div>
+            <div className="cardhead"><h2>Wins and examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>Examples library</Link></div>
             <WinList wins={wins} editor={editor} people={people} />
+            {exHere.length > 0 && (
+              <ul className="list" style={{ marginTop: 6 }}>
+                {exHere.slice(0, 6).map((e) => {
+                  const who = e.person_ids.map((pid) => people.find((p) => p.id === pid)?.name).filter(Boolean).join(", ");
+                  return (
+                    <li key={e.id}>
+                      <span className={`tag ${e.kind === "good" ? "good" : e.kind === "opportunity" ? "warn" : "info"}`} style={{ flex: "none" }}>{EXAMPLE_KIND_LABEL[e.kind]}</span>
+                      <div className="grow small">
+                        <div><strong>{who || "Team"}</strong>{e.theme ? <span className="faint"> · {e.theme}</span> : null}<span className="faint"> · {fmtDate(e.taken_on)}</span></div>
+                        {e.caption && <div className="muted">{e.caption.length > 140 ? e.caption.slice(0, 140) + "…" : e.caption}</div>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             {editor && (
               <form action={addWin} style={{ marginTop: 10 }}>
                 <input type="hidden" name="store_id" value={store.id} />
@@ -353,11 +331,26 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               </form>
             )}
           </section>
+          {editor && (
+          <section className="card">
+            <div className="cardhead"><h2>To-dos</h2></div>
+            <TodoList todos={todos.filter((t) => t.store_id === store.id)} editor={editor} people={people} />
+            {editor && (
+              <form action={addTodo} className="inline" style={{ marginTop: 10 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <input type="text" name="text" placeholder="Add a to-do" required style={{ flex: 1, minWidth: 140 }} />
+                <input type="date" name="due" style={{ width: 140 }} />
+                <button className="btn sm">Add</button>
+              </form>
+            )}
+          </section>
+          )}
         </div>
         <div className="stack">
           <Bulletin items={bulletin} stores={stores} store={store} initiatives={initiatives} />
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
+          {!board && <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />}
           {bdcCards.map(({ b, folks, ros, lastVisit }) => (
             <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
               <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>
@@ -366,64 +359,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               {lastVisit && <p className="faint small" style={{ marginTop: 8 }}>Last BDC visit <Link href={`/v/${lastVisit.id}`}>{fmtDate(lastVisit.date)}</Link></p>}
             </section>
           ))}
-          {(goals.length > 0 || editor) && (
-            <section className="card">
-              <div className="cardhead"><h2>Store goals</h2></div>
-              {goals.length ? (
-                <div className="grid cols-2">
-                  {goals.map((g) => (
-                    <div key={g.id} className="card flat">
-                      <strong>{g.name}</strong>
-                      <Sparkline goal={g} entries={entries} />
-                      {editor && (
-                        <form action={addGoalEntry} className="inline" style={{ marginTop: 6 }}>
-                          <input type="hidden" name="goal_id" value={g.id} />
-                          <input type="date" name="date" defaultValue={today()} style={{ width: 140 }} />
-                          <input type="number" step="any" name="value" placeholder={g.unit} required style={{ width: 90 }} />
-                          <button className="btn sm ghost">Log</button>
-                        </form>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : <p className="empty">No store-level goals. Initiative goals live on each initiative.</p>}
-              {editor && (
-                <details className="adder" style={{ marginTop: 12 }}>
-                  <summary>Store goal</summary>
-                  <form action={addGoal} className="body">
-                    <input type="hidden" name="store_id" value={store.id} />
-                    <div className="frow">
-                      <input type="text" name="name" placeholder="Appointment set rate" required />
-                      <input type="number" step="any" name="target" placeholder="Target" />
-                      <input type="text" name="unit" placeholder="%" defaultValue="%" />
-                      <select name="direction"><option value="up">Higher is better</option><option value="down">Lower is better</option></select>
-                      <select name="kind"><option value="rate">Rate (%, per call)</option><option value="count">Count this month (appts, units)</option></select>
-                    </div>
-                    <button className="btn sm">Add goal</button>
-                  </form>
-                </details>
-              )}
-            </section>
-          )}
 
-          <section className="card">
-            <div className="cardhead"><h2>Manager commitments</h2></div>
-            <CommitmentList items={commitments} editor={editor} />
-            {editor && (
-              <details className="adder" style={{ marginTop: 12 }}>
-                <summary>Commitment</summary>
-                <form action={addCommitment} className="body">
-                  <input type="hidden" name="store_id" value={store.id} />
-                  <div className="frow">
-                    <input type="text" name="owner" placeholder="Manager" required />
-                    <input type="text" name="text" placeholder="Daily 9am huddle with appointment board up" required style={{ gridColumn: "span 2" }} />
-                    <select name="initiative_id"><option value="">No initiative</option>{storeInits.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
-                  </div>
-                  <button className="btn sm">Add</button>
-                </form>
-              </details>
-            )}
-          </section>
         </div>
       </div>
       {editor && (
