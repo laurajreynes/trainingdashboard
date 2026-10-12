@@ -49,12 +49,17 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                 // Sessions and the 1pm HR/GM meeting in time order
                 const items: { key: string; minutes: number; node: React.ReactNode }[] = sessions.map((v) => {
                   const s = store(v.store_id);
-                  const { time, text, minutes } = splitTime(v.focus);
+                  const { time, text: raw, minutes } = splitTime(v.focus);
+                  // "Belgrade: calls over texts" reads as a Belgrade session; a focus that just repeats the store name says nothing twice
+                  const loc = s?.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(raw));
+                  const who = loc || s?.short_name || "Visit";
+                  const text = (loc ? raw.replace(new RegExp(`^${loc}\\s*[:,-]?\\s*`, "i"), "") : raw).replace(/,?\s*until .*$/i, "");
+                  const same = text.trim().toLowerCase() === who.toLowerCase() || text.trim().toLowerCase() === (s?.name || "").toLowerCase();
                   return { key: v.id, minutes, node: (
-                    <Link key={v.id} href={s ? `/s/${s.slug}` : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
+                    <Link key={v.id} href={s ? (loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`) : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
                       {time && <span className="when">{time}</span>}
-                      <span className="who">{s?.short_name || "Visit"}</span>
-                      {text && <span className="what">{text}</span>}
+                      <span className="who">{who}</span>
+                      {text && !same && <span className="what">{text}</span>}
                     </Link>
                   ) };
                 });
