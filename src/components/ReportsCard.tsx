@@ -11,7 +11,7 @@ function parseTitle(t: string) {
   return { short, month };
 }
 
-export function ReportsCard({ reports, stores, children, editor }: { reports: Bookmark[]; stores: Store[]; children?: React.ReactNode; editor?: boolean }) {
+export function ReportsCard({ reports, stores, children, editor, compact }: { reports: Bookmark[]; stores: Store[]; children?: React.ReactNode; editor?: boolean; compact?: boolean }) {
   if (!reports.length && !children) return null;
   const isShop = (b: Bookmark) => /mystery shop/i.test(b.title);
   const shops = reports.filter(isShop);
@@ -20,7 +20,7 @@ export function ReportsCard({ reports, stores, children, editor }: { reports: Bo
   const months = Array.from(new Set(reports.map((b) => parseTitle(b.title).month).filter(Boolean)));
   return (
     <section className="card">
-      <div className="cardhead"><h2>{months.length === 1 ? `${months[0]} reports` : "Reports"}</h2>{children}</div>
+      <div className="cardhead"><h2>{months.length === 1 && !compact ? `${months[0]} reports` : "Reports"}</h2>{children}</div>
       <div className="reports">
         <div>
           {group.map((b) => {

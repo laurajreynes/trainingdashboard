@@ -194,10 +194,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       </section>
         <div className="stack">
       <div>
-        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor}>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor} compact>
           {editor && (
             <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
-              <summary style={{ padding: "4px 0" }}>Add a report or link</summary>
+              <summary style={{ padding: "4px 0" }}>Add</summary>
               <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
                 <input type="hidden" name="store_id" value={store.id} />
                 <div className="frow">
