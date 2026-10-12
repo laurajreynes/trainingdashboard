@@ -11,6 +11,7 @@ import { getStages } from "@/lib/data";
 import { VisitList } from "@/components/ui";
 import { PeoplePopup } from "@/components/PeoplePopup";
 import { CarWarsBanner } from "@/components/CarWars";
+import { StoreFocus } from "@/components/StoreFocus";
 import { getGroupNotes } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +45,9 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   const initsHere = initiatives.filter((i) => i.status !== "done" && i.store_ids.includes(store.id) && roster.some((r) => r.initiative_id === i.id && ids.has(r.person_id)));
   const active = new Set(initiatives.filter((i) => i.status === "active" && i.store_ids.includes(store.id)).map((i) => i.id));
   const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
-  const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
+  const groupNotes = await getGroupNotes();
+  const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
+  const focusText = groupNotes.find((n) => n.key === `focus:${store.id}:${location.toLowerCase()}`)?.body || null;
   const trainingIds = new Set(initiatives.filter((i) => i.status !== "done" && !/carwars/i.test(i.name) && i.store_ids.includes(store.id)).map((i) => i.id));
   const lastWith = (pid: string) => visits.filter((v) => v.date <= today() && v.people_ids.includes(pid)).map((v) => v.date).sort().pop() || null;
   const popRows = here.map((p) => { const rs = roster.filter((r) => r.person_id === p.id && trainingIds.has(r.initiative_id)); const last = lastWith(p.id); return { id: p.id, name: p.name, role: p.role, last, lastLabel: last ? fmtDate(last, { weekday: true }) : null, trained: rs.filter((r) => r.status === "trained" || r.status === "solid").length, total: rs.length }; }).sort((a, b) => a.name.localeCompare(b.name));
@@ -68,6 +71,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
         {trained > 0 && <div className="kpi"><div><div className="v">{trained}</div><div className="l">trained on active initiatives</div></div></div>}
       </div>
 
+      <StoreFocus storeId={`${store.id}:${location.toLowerCase()}`} body={focusText} editor={editor} />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} />}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
