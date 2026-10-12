@@ -1,3 +1,4 @@
+import { Wide } from "@/components/Wide";
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
 import { getStores, getMetrics } from "@/lib/data";
@@ -41,6 +42,7 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
+      <Wide />
       <div className="pagehead">
         <div>
           <div className="eyebrow">Tracking</div>

@@ -29,8 +29,6 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           <Link href="/people">People</Link>
           <Link href="/todos">To-dos</Link>
           <Link href="/examples">Examples</Link>
-          <Link href="/chat">Ask</Link>
-          <Link href="/recap">Recap</Link>
           {editor ? (
             <form action={logout}><button type="submit" className="pill" title="You can edit. Click to sign out.">Editing</button></form>
           ) : (

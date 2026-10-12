@@ -7,7 +7,7 @@ import { Desc } from "@/components/Desc";
 import { notFound } from "next/navigation";
 import { isEditor } from "@/lib/auth";
 import {
-  getInitiative, getStores, getPeople, getRoster, getResources, getGoals, getGoalEntries, getVisits, getTodos, getWins, getBookmarks,
+  getInitiative, getStores, getPeople, getRoster, getResources, getGoals, getGoalEntries, getVisits, getTodos, getWins, getBookmarks, getBulletin,
   getExamples, getExampleThemes, signExamples,
 } from "@/lib/data";
 import { ExampleGallery } from "@/components/ExampleGallery";
@@ -15,6 +15,7 @@ import { HBars } from "@/components/charts";
 import { ExampleUploader } from "@/components/ExampleUploader";
 import { ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, today, storeAccent } from "@/lib/fmt";
+import { Bulletin } from "@/components/Bulletin";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
 export default async function InitiativePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ store?: string }> }) {
   const { id } = await params;
   const sp = await searchParams;
-  const [init, stores, editor, stages, areas] = await Promise.all([getInitiative(id), getStores(), isEditor(), getStages(), getAreas()]);
+  const [init, stores, editor, stages, areas, bulletin] = await Promise.all([getInitiative(id), getStores(), isEditor(), getStages(), getAreas(), getBulletin()]);
   const stage = stages[id] || "";
   const area = areas[id] || AREA_DEFAULT;
   if (!init) notFound();
@@ -33,7 +34,11 @@ export default async function InitiativePage({ params, searchParams }: { params:
     getPeople(), getRoster(id), getResources(id), getGoals({ initiativeId: id }), getVisits({ limit: 300 }), getTodos({ initiativeId: id }), getWins({ initiativeId: id, limit: 8 }), getBookmarks(),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
-  const visits = visitsAll.filter((v) => v.initiative_ids.includes(id)).slice(0, 8);
+  const initVisits = visitsAll.filter((v) => v.initiative_ids.includes(id) && v.date <= today());
+  const visits = initVisits.slice(0, 8);
+  // Last time each person was tagged on a visit for this initiative (visits are newest first).
+  const lastSeen = (pid: string) => initVisits.find((v) => v.people_ids.includes(pid))?.date || null;
+  const latest = (a: string | null, b: string | null) => (!a ? b : !b ? a : a > b ? a : b);
   const bookmarksHere = bookmarksAll.filter((b) => b.initiative_id === id);
   const fileResources = bookmarksHere.filter((b) => b.kind === "doc");
   const bookmarks = bookmarksHere.filter((b) => b.kind !== "doc");
@@ -136,6 +141,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
                                   {ROSTER_STATUSES.map((k) => <option key={k} value={k}>{ROSTER_LABEL[k]}</option>)}
                                 </select>
                                 <input type="date" name="trained_on" defaultValue={r.trained_on || ""} style={{ width: 140, padding: "3px 6px", fontSize: 13 }} />
+                                {lastSeen(p.id) && lastSeen(p.id)! > (r.trained_on || "") && <span className="faint small" title="Last visit they were tagged on">last {fmtDate(lastSeen(p.id)!)}</span>}
                                 <input type="text" name="notes" defaultValue={r.notes || ""} placeholder="note" style={{ flex: 1, minWidth: 120, padding: "3px 6px", fontSize: 13 }} />
                                 <button className="btn sm ghost">Save</button>
                               </form>
@@ -143,7 +149,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
                           ) : (
                             <>
                               <td><span className={`tag ${cls}`}>{ROSTER_LABEL[r.status]}</span></td>
-                              <td className="muted small">{r.trained_on ? fmtDate(r.trained_on) : ""}</td>
+                              <td className="muted small">{latest(r.trained_on, lastSeen(p.id)) ? fmtDate(latest(r.trained_on, lastSeen(p.id))!) : ""}</td>
                               <td className="muted small">{r.notes || ""}</td>
                             </>
                           )}
@@ -239,6 +245,8 @@ export default async function InitiativePage({ params, searchParams }: { params:
               </details>
             )}
           </section>
+
+          <Bulletin items={bulletin} stores={stores} initiative={init} />
 
           <section className="card">
             <div className="cardhead"><h2>Visits that covered this</h2></div>

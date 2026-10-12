@@ -595,7 +595,9 @@ a.plain:hover { text-decoration: underline; }
 .daysbox { display: flex; gap: 18px; align-items: flex-end; }
 .daysbox .v { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--forest); line-height: 1; }
 .daysbox .l { font-size: 11px; color: var(--ink-faint); }
-.trackgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.trackgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+@media (min-width: 1200px) { .trackgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.page.wide { max-width: 1800px; }
 .trackcard { border-top: 3px solid var(--accent); }
 .tbl.track th, .tbl.track td { padding: 5px 6px; text-align: right; }
 .tbl.track th:first-child, .tbl.track td:first-child { text-align: left; }

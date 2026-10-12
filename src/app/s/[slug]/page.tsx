@@ -394,7 +394,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
 
         <div className="stack">
-          <Bulletin items={bulletin} stores={stores} store={store} />
+          <Bulletin items={bulletin} stores={stores} store={store} initiatives={initiatives} />
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
           {bdcCards.map(({ b, folks, ros, lastVisit }) => (

@@ -21,7 +21,6 @@ export function MobileNav() {
       <Link href="/initiatives" className={on("/initiatives") || on("/i/") ? "on" : ""}>{I.init}Initiatives</Link>
       <Link href="/people" className={on("/people") || on("/p/") ? "on" : ""}>{I.people}People</Link>
       <Link href="/examples" className={on("/examples") ? "on" : ""}>{I.ex}Examples</Link>
-      <Link href="/chat" className={on("/chat") ? "on" : ""}>{I.ask}Ask</Link>
       <Link href="/todos" className={on("/todos") || on("/recap") ? "on" : ""}>{I.more}To-dos</Link>
     </nav>
   );

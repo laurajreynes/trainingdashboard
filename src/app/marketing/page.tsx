@@ -27,7 +27,7 @@ export default async function MarketingPage() {
         </div>
       </div>
       <p className="muted" style={{ maxWidth: 640, marginBottom: 18 }}>
-        Caroline and team: this is the page for you. Where CarWars stands, what each store is being trained on right now, and the lead-handling catches you've sent over.
+        Where CarWars stands, what each store is being trained on right now, and the lead-handling catches you've sent over.
       </p>
 
       {carwars && (
@@ -69,7 +69,7 @@ export default async function MarketingPage() {
         </div>
       </section>
 
-      <Bulletin items={bulletin} stores={stores} limit={12} />
+      <Bulletin items={bulletin} stores={stores} initiatives={initiatives} limit={12} />
       {!bulletin.length && <p className="faint small">Nothing from marketing on the bulletin yet.</p>}
     </>
   );

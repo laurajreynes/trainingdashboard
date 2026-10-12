@@ -210,7 +210,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
           )}
           <section className="card">
             <div className="cardhead"><h2>Recent visits</h2></div>
-            <VisitList visits={visits.slice(0, 6)} stores={stores} people={people} showStore />
+            <VisitList visits={visits.filter((v) => v.date < today()).slice(0, 6)} stores={stores} people={people} showStore />
           </section>
         </div>
         <div className="stack">
@@ -231,7 +231,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
             <div className="small"><span className="eyebrow">Next HR/GM meeting · 1pm</span> <strong>{fmtDate(gmNext, { weekday: true })}</strong> <span className="faint">{relDay(gmNext)}</span></div>
             {gmAgenda && <p className="pre small muted" style={{ marginTop: 4 }}>{gmAgenda}</p>}
           </section>
-          <Bulletin items={bulletin} stores={stores} limit={4} />
+          <Bulletin items={bulletin} stores={stores} initiatives={initiatives} limit={4} />
           <OpenPosts posts={posts} stores={stores} editor={editor} />
         </div>
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Filters } from "@/components/Filters";
 import { isEditor } from "@/lib/auth";
 import { getStores, getPeople, getInitiatives, getExamples, getExampleThemes, signExamples } from "@/lib/data";
 import { EXAMPLE_KIND_LABEL, type Example } from "@/lib/types";
@@ -123,31 +124,16 @@ export default async function Examples({ searchParams }: { searchParams: Promise
         </div>
       ) : (
         <>
-          <div className="filters">
-            <select name="kind" defaultValue={sp.kind || ""} data-nav>
-              <option value="">Any kind</option>
-              {(Object.keys(EXAMPLE_KIND_LABEL) as Example["kind"][]).map((k) => <option key={k} value={k}>{EXAMPLE_KIND_LABEL[k]}</option>)}
-            </select>
-            <select name="theme" defaultValue={sp.theme || ""} data-nav>
-              <option value="">Any theme</option>
-              {themes.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select name="person" defaultValue={sp.person || ""} data-nav>
-              <option value="">Anyone</option>
-              {people.filter((p) => all.some((e) => e.person_ids.includes(p.id))).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <select name="store" defaultValue={sp.store || ""} data-nav>
-              <option value="">Any store</option>
-              {stores.map((s) => <option key={s.id} value={s.slug}>{s.short_name}</option>)}
-            </select>
-            <select name="initiative" defaultValue={sp.initiative || ""} data-nav>
-              <option value="">Any initiative</option>
-              {initiatives.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
-            </select>
+          <Filters fields={[
+            { name: "kind", value: sp.kind || "", empty: "Any kind", options: (Object.keys(EXAMPLE_KIND_LABEL) as Example["kind"][]).map((k) => ({ value: k, label: EXAMPLE_KIND_LABEL[k] })) },
+            { name: "theme", value: sp.theme || "", empty: "Any theme", options: themes.map((t) => ({ value: t, label: t })) },
+            { name: "person", value: sp.person || "", empty: "Anyone", options: people.filter((p) => all.some((e) => e.person_ids.includes(p.id))).map((p) => ({ value: p.id, label: p.name })) },
+            { name: "store", value: sp.store || "", empty: "Any store", options: stores.map((s) => ({ value: s.slug, label: s.short_name })) },
+            { name: "initiative", value: sp.initiative || "", empty: "Any initiative", options: initiatives.map((i) => ({ value: i.id, label: i.name })) },
+          ]}>
             {active > 0 && <Link href="/examples" className="small">Clear</Link>}
             <span className="faint small" style={{ marginLeft: "auto" }}>{filtered.length} of {all.length}</span>
-          </div>
-          <FilterNav />
+          </Filters>
           <ExampleGallery items={views} people={galleryPeople} initiatives={initOpts} stores={storeOpts} themes={themes} editor={editor}
             emptyText={all.length ? "Nothing matches those filters" : "No examples yet. Add the first screenshot above."} />
         </>
@@ -156,8 +142,3 @@ export default async function Examples({ searchParams }: { searchParams: Promise
   );
 }
 
-/** Tiny script so the filter selects navigate without a submit button. */
-function FilterNav() {
-  const js = `document.querySelectorAll('.filters select[data-nav]').forEach(function(s){s.addEventListener('change',function(){var u=new URL(location.href);document.querySelectorAll('.filters select[data-nav]').forEach(function(x){x.value?u.searchParams.set(x.name,x.value):u.searchParams.delete(x.name)});u.searchParams.delete('view');location.href=u.toString();});});`;
-  return <script dangerouslySetInnerHTML={{ __html: js }} />;
-}

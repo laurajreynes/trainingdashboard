@@ -1,10 +1,13 @@
 import { fmtDate, storeAccent } from "@/lib/fmt";
-import type { Store } from "@/lib/types";
+import Link from "next/link";
+import type { Store, Initiative } from "@/lib/types";
 import type { BulletinItem } from "@/app/api/bulletin/route";
 
 /** What marketing has flagged lately: lead handling catches, with a note on what the customer wanted. */
-export function Bulletin({ items, stores, store, limit = 6 }: { items: BulletinItem[]; stores: Store[]; store?: Store; limit?: number }) {
-  const list = (store ? items.filter((i) => i.store === store.short_name) : items).slice(0, limit);
+export function Bulletin({ items, stores, store, initiative, initiatives, limit = 6 }: {
+  items: BulletinItem[]; stores: Store[]; store?: Store; initiative?: Initiative; initiatives?: Initiative[]; limit?: number;
+}) {
+  const list = (initiative ? items.filter((i) => i.initiative === initiative.id) : store ? items.filter((i) => i.store === store.short_name) : items).slice(0, limit);
   if (!list.length) return null;
   return (
     <section className="card bulletin">
@@ -19,7 +22,10 @@ export function Bulletin({ items, stores, store, limit = 6 }: { items: BulletinI
                 <div><strong>{i.person || i.store || i.from}</strong> <span className="faint">· {fmtDate(i.date)}{i.person && i.store ? ` · ${i.store}` : ""}</span></div>
                 <div>{i.note}</div>
                 {i.interest && <div className="muted">Customer wanted: {i.interest}</div>}
-                {i.url && <a href={i.url} target="_blank" rel="noreferrer" className="faint">Open the email</a>}
+                <div className="faint">
+                  {i.url && <a href={i.url} target="_blank" rel="noreferrer">Open the email</a>}
+                  {!initiative && i.initiative && initiatives?.find((x) => x.id === i.initiative) && <> · <Link href={`/i/${i.initiative}`}>{initiatives.find((x) => x.id === i.initiative)!.name}</Link></>}
+                </div>
               </div>
             </li>
           );
