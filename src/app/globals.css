@@ -25,11 +25,11 @@
   --bad-soft: rgba(194, 59, 49, 0.13);
   --info: #3a6fd8;
   --info-soft: rgba(58, 111, 216, 0.13);
-  --store-chevrolet: #C98A12;
-  --store-toyota: #C7433A;
-  --store-subaru: #3A6FD8;
-  --store-sales-bdc: #1F9A93;
-  --store-livingston: #8A5BC9;
+  --store-chevrolet: #1a4a36;   /* deep forest */
+  --store-toyota: #2f8a5c;      /* brand green */
+  --store-subaru: #3A6FD8;      /* the one blue */
+  --store-sales-bdc: #5aa37f;   /* soft green */
+  --store-livingston: #3f6b55;  /* muted pine */
   --radius: 10px;
   --shadow: 0 1px 2px rgba(31, 77, 58, 0.05), 0 6px 18px rgba(31, 77, 58, 0.07);
   color-scheme: light;
@@ -52,11 +52,11 @@
     --warn: #d1a03a;
     --bad: #e06a60;
     --info: #6b9bf0;
-    --store-chevrolet: #BD8830;
-    --store-toyota: #D65A50;
+    --store-chevrolet: #4e8f70;
+    --store-toyota: #4fb382;
     --store-subaru: #5A8CE0;
-    --store-sales-bdc: #2FA89E;
-    --store-livingston: #9A78D8;
+    --store-sales-bdc: #7cc39d;
+    --store-livingston: #6f9f86;
     --shadow: none;
     color-scheme: dark;
   }

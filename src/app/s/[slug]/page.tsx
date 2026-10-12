@@ -228,9 +228,9 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <section className="card">
           <div className="cardhead"><h2>Resources</h2></div>
           <div className="grid-chips rsrc">
-            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="k">doc</span><span className="t">{b.title}</span></a>)}
+            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="t">{b.title}</span></a>)}
             {resources.map((r) => r.url
-              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></a>
+              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}>{r.kind !== "doc" && <span className="k">{r.kind.replace("_", " ")}</span>}<span className="t">{r.title}</span></a>
               : <Link key={r.id} className="chipr" href={`/i/${r.initiative_id}`} title={r.initName}><span className="k">{r.kind.replace("_", " ")}</span><span className="t">{r.title}</span></Link>)}
           </div>
         </section>
