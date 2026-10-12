@@ -775,3 +775,5 @@ details.accordion > summary h2 { margin: 0; }
 @media (max-width: 1000px) { .topband { grid-template-columns: 1fr; } }
 .seq { margin-bottom: 14px; }
 .goalgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.initgroup { display: grid; gap: 10px; }
+.initgroup + .initgroup { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--line); }

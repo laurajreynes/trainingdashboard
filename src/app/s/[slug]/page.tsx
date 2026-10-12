@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EXAMPLE_KIND_LABEL } from "@/lib/types";
+import type { Initiative } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { monthPhase } from "@/lib/month";
 import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
@@ -186,10 +187,20 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
         {storeInits.length ? (
           <div className="initstack">
-            {storeInits.map((i) => (
-              <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]} area={areas[i.id]} hideStore={store.slug}
-                roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
-            ))}
+            {(() => {
+              // Main store first, then each location's own initiatives under a small heading
+              const locOf = (i: Initiative) => store.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(i.name)) || "";
+              const groups = ["", ...[...store.locations].sort()].map((l) => ({ l, items: storeInits.filter((i) => locOf(i) === l) })).filter((g) => g.items.length);
+              return groups.map((g) => (
+                <div key={g.l || "main"} className="initgroup">
+                  {g.l && <div className="eyebrow" style={{ margin: "6px 0 2px" }}>{g.l}</div>}
+                  {g.items.map((i) => (
+                    <InitiativeCard key={i.id} init={i} stores={stores} stage={stages[i.id]} area={areas[i.id]} hideStore={store.slug}
+                      roster={roster.filter((r) => r.initiative_id === i.id && peopleIds.has(r.person_id))} />
+                  ))}
+                </div>
+              ));
+            })()}
           </div>
         ) : <p className="empty">No initiatives assigned to this store yet</p>}
       </section>
