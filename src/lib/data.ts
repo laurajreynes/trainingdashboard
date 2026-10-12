@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./supabase";
+import { STAGES } from "./types";
 import type {
   Store, Person, Initiative, InitiativePerson, Visit, Todo, Bookmark,
   Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost, Example, ExampleView, GroupNote, Meeting, StoreMetric,
@@ -219,9 +220,22 @@ export async function getAreas(): Promise<Record<string, string>> {
   for (const row of (r.data || []) as { key: string; body: string | null }[]) if (row.body) out[row.key.slice(5)] = row.body;
   return out;
 }
+/** Stage per initiative. The stored pick moves itself forward with the roster: anyone trained means at least Training,
+ *  everyone trained means at least Coaching execution. A later stage set by hand always wins. */
 export async function getStages(): Promise<Record<string, string>> {
-  const r = await db().from("group_notes").select("key, body").like("key", "stage:%");
+  const [r, roster] = await Promise.all([db().from("group_notes").select("key, body").like("key", "stage:%"), getAllRoster()]);
   const out: Record<string, string> = {};
   for (const row of (r.data || []) as { key: string; body: string | null }[]) if (row.body) out[row.key.slice(6)] = row.body;
+  const byInit = new Map<string, { t: number; n: number }>();
+  for (const rp of roster) {
+    const c = byInit.get(rp.initiative_id) || { t: 0, n: 0 };
+    c.n++; if (rp.status === "trained" || rp.status === "solid") c.t++;
+    byInit.set(rp.initiative_id, c);
+  }
+  const idx = (st: string) => (STAGES as readonly string[]).indexOf(st);
+  for (const [id, c] of byInit) {
+    const floor = c.n > 0 && c.t >= c.n ? "Coaching execution" : c.t > 0 ? "Training" : null;
+    if (floor && idx(out[id] || "Planning") < idx(floor)) out[id] = floor;
+  }
   return out;
 }
