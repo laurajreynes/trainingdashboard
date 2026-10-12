@@ -15,7 +15,7 @@ const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
 const forStore = (m: Milestone, s: Store) => new RegExp(s.short_name.split(" ")[0], "i").test(m.store);
 const short = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-type Stop = { title: string; sub?: string; when: string; state: "done" | "now" | "next" | "later"; color?: string };
+type Stop = { title: string; sub?: string; when: string; state: "done" | "now" | "next" | "later"; color?: string; launch?: boolean };
 
 /** One horizontal track: what's done, what's now, what's coming, in date order. */
 function Track({ stops }: { stops: Stop[] }) {
@@ -24,7 +24,7 @@ function Track({ stops }: { stops: Stop[] }) {
       {stops.map((s, i) => (
         <li key={i} className={`cwstop ${s.state}`} style={{ ["--accent" as string]: s.color || "var(--forest)" }}>
           <span className="cwwhen">{s.when}</span>
-          <span className="cwdot" />
+          <span className={`cwdot${s.launch ? " launch" : ""}`}>{s.launch ? "★" : ""}</span>
           <span className="cwtitle">{s.title}</span>
           {s.sub && <span className="cwsub">{s.sub}</span>}
         </li>
@@ -33,33 +33,33 @@ function Track({ stops }: { stops: Stop[] }) {
   );
 }
 
-export function CarWarsBanner({ init, roster, stores, store, peopleIds, launches, editor }: {
-  init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
+export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor }: {
+  init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; location?: string; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
 }) {
   const t = today();
   const all = parseLaunches(launches);
   const rows = roster.filter((r) => r.initiative_id === init.id && (!peopleIds || peopleIds.has(r.person_id)));
   const live = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
-  const mine = store ? all.filter((m) => forStore(m, store)) : all;
+  const mine = location ? all.filter((m) => new RegExp(location, "i").test(m.store)) : store ? all.filter((m) => forStore(m, store)) : all;
   const dated = mine.filter((m) => isDate(m.when)).sort((a, b) => a.when.localeCompare(b.when));
   const tbd = mine.filter((m) => !isDate(m.when));
   const nextIdx = dated.findIndex((m) => m.when >= t);
   const storeOf = (m: Milestone) => stores.find((s) => forStore(m, s));
+  const isLaunch = (m: Milestone) => /launch/i.test(m.label);
   const stops: Stop[] = [
-    { title: "Initial call", when: "done", state: "done" },
     { title: "Setup", when: "now", state: nextIdx === 0 || dated.length === 0 ? "now" : "done" },
     ...dated.map((m, i): Stop => ({
       title: store ? m.label : `${storeOf(m)?.short_name || m.store}`, sub: store ? undefined : m.label, when: short(m.when),
-      state: m.when < t ? "done" : i === nextIdx ? "next" : "later", color: storeOf(m) ? storeAccent(storeOf(m)!) : undefined,
+      state: m.when < t ? "done" : i === nextIdx ? "next" : "later", color: storeOf(m) ? storeAccent(storeOf(m)!) : undefined, launch: isLaunch(m),
     })),
-    ...tbd.map((m): Stop => ({ title: store ? m.label : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later" })),
+    ...tbd.map((m): Stop => ({ title: store ? m.label : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later", launch: isLaunch(m) })),
   ];
   const launched = dated.some((m) => m.when < t) || live > 0;
   return (
     <section className="card carwars" style={{ ["--accent" as string]: store ? storeAccent(store) : "var(--sun)" }}>
       <div className="carwars-head">
         <div>
-          <div className="eyebrow">CarWars launch{store ? ` · ${store.short_name}` : ""}</div>
+          <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}</h2>
           <div className="carwars-now">{nextIdx >= 0 ? `Next: ${store ? "" : (storeOf(dated[nextIdx])?.short_name || dated[nextIdx].store) + " "}${dated[nextIdx].label.toLowerCase()}, ${fmtDate(dated[nextIdx].when, { weekday: true })}` : "Dates coming"}</div>
         </div>
         <div className="carwars-right small">
@@ -68,6 +68,10 @@ export function CarWarsBanner({ init, roster, stores, store, peopleIds, launches
         </div>
       </div>
       <Track stops={stops} />
+      {(store || location) && (() => {
+        const others = all.filter((m) => isLaunch(m) && !mine.includes(m));
+        return others.length ? <div className="small faint" style={{ marginTop: 8 }}>Everyone else: {others.map((m) => `${m.store} ${isDate(m.when) ? short(m.when) : m.when}`).join(" · ")}</div> : null;
+      })()}
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

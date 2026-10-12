@@ -9,6 +9,9 @@ import { InitiativeCard } from "@/components/InitiativeCard";
 import { splitTime } from "@/components/WeekCalendar";
 import { getStages } from "@/lib/data";
 import { VisitList } from "@/components/ui";
+import { PeoplePopup } from "@/components/PeoplePopup";
+import { CarWarsBanner } from "@/components/CarWars";
+import { getGroupNotes } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +43,11 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   const upcoming = [...visits.filter((v) => v.date === today() && mentions(v)), ...visits.filter((v) => v.date > today() && mentions(v)).sort((a, b) => a.date.localeCompare(b.date))].slice(0, 5);
   const initsHere = initiatives.filter((i) => i.status !== "done" && i.store_ids.includes(store.id) && roster.some((r) => r.initiative_id === i.id && ids.has(r.person_id)));
   const active = new Set(initiatives.filter((i) => i.status === "active" && i.store_ids.includes(store.id)).map((i) => i.id));
+  const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
+  const carwarsDates = (await getGroupNotes()).find((n) => n.key === "carwars")?.body || null;
+  const trainingIds = new Set(initiatives.filter((i) => i.status !== "done" && !/carwars/i.test(i.name) && i.store_ids.includes(store.id)).map((i) => i.id));
+  const lastWith = (pid: string) => visits.filter((v) => v.date <= today() && v.people_ids.includes(pid)).map((v) => v.date).sort().pop() || null;
+  const popRows = here.map((p) => { const rs = roster.filter((r) => r.person_id === p.id && trainingIds.has(r.initiative_id)); const last = lastWith(p.id); return { id: p.id, name: p.name, role: p.role, last, lastLabel: last ? fmtDate(last, { weekday: true }) : null, trained: rs.filter((r) => r.status === "trained" || r.status === "solid").length, total: rs.length }; }).sort((a, b) => a.name.localeCompare(b.name));
   const trained = here.filter((p) => roster.some((r) => r.person_id === p.id && active.has(r.initiative_id) && (r.status === "trained" || r.status === "solid"))).length;
 
   return (
@@ -49,7 +57,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
           <div className="accentbar" />
           <div className="eyebrow"><Link href={`/s/${store.slug}`}>{store.short_name}</Link> · location</div>
           <h1>{location}</h1>
-          <div className="sub small"><Link href={`/people?store=${store.slug}`}>{here.length} people</Link></div>
+          <div className="sub small"><PeoplePopup rows={popRows} label={`${here.length} people`} title={`${location}: who is here`} /></div>
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
@@ -59,6 +67,8 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
         <div className="kpi"><div><div className="v">{here.length}</div><div className="l">people</div></div></div>
         {trained > 0 && <div className="kpi"><div><div className="v">{trained}</div><div className="l">trained on active initiatives</div></div></div>}
       </div>
+
+      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} />}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>

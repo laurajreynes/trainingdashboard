@@ -711,11 +711,14 @@ details.accordion > summary h2 { margin: 0; }
 /* CarWars banner: one track */
 .carwars { margin-bottom: 18px; border-left: 4px solid var(--accent, var(--sun)); padding: 12px 18px 10px; }
 .carwars-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-.carwars-now { font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+.carwars-h { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin: 0 0 2px; color: var(--forest); }
+.carwars-now { font-size: 14px; font-weight: 600; color: var(--ink-dim); }
 .cwtrack { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; position: relative; }
 .cwtrack::before { content: ""; position: absolute; left: 0; right: 0; top: 27px; height: 3px; background: var(--line); border-radius: 2px; }
 .cwstop { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 4px; min-width: 0; }
 .cwwhen { font-size: 11px; font-weight: 700; color: var(--ink-faint); height: 16px; }
+.cwdot.launch { width: 22px; height: 22px; font-size: 13px; line-height: 16px; color: #fff; text-align: center; background: var(--accent, var(--forest)) !important; border-color: var(--accent, var(--forest)) !important; margin: 0 0 6px; }
+.cwstop.done .cwdot.launch { opacity: .55; }
 .cwdot { width: 14px; height: 14px; border-radius: 50%; background: var(--panel); border: 3px solid var(--line-strong); margin: 4px 0 6px; position: relative; z-index: 1; }
 .cwtitle { font-size: 13px; font-weight: 700; line-height: 1.2; }
 .cwsub { font-size: 11.5px; color: var(--ink-dim); line-height: 1.2; }
@@ -732,3 +735,13 @@ details.accordion > summary h2 { margin: 0; }
 .desc p { margin: 0 0 10px; }
 .desc.small p { font-size: 13px; }
 .desc .callout { background: var(--sun-soft, #fdf3d6); border-left: 4px solid var(--sun); padding: 10px 12px; border-radius: 0 8px 8px 0; color: var(--ink); font-weight: 600; }
+
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--forest); text-decoration: underline; cursor: pointer; }
+.seq { margin: 0 0 18px; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.seq-steps { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.seq-step { display: flex; gap: 10px; align-items: flex-start; opacity: .6; }
+.seq-step.now, .seq-step.done { opacity: 1; }
+.seq-step .n { width: 24px; height: 24px; border-radius: 50%; background: var(--panel-2); color: var(--ink-dim); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex: none; font-size: 13px; }
+.seq-step.now .n { background: var(--forest); color: #fff; }
+.seq-step.done .n { background: var(--good); color: #fff; }
+.seq-arrow { color: var(--ink-faint); font-size: 20px; }

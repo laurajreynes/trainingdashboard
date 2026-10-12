@@ -5,6 +5,8 @@ import { isEditor, canPost, managerCodeRequired } from "@/lib/auth";
 import { getStorePosts, getExamples, signExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
+import { BdcFirst } from "@/components/BdcFirst";
+import { PeoplePopup } from "@/components/PeoplePopup";
 import { getBoard, boardUrl } from "@/lib/board";
 import { ApptBoardCard, ApptPeopleCard } from "@/components/ApptBoard";
 import { getGroupNotes } from "@/lib/data";
@@ -133,7 +135,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <div className="sub small">
             {store.locations.length > 0 && <span>{store.locations.join(" and ")} · </span>}
             {servesStores.length > 0 && <span>{servesStores.map((x, i) => <span key={x.id}>{i ? " and " : ""}<Link href={`/s/${x.slug}`}>{x.short_name}</Link></span>)} · </span>}
-            <Link href={`/people?store=${store.slug}`}>{peopleHere.length} people</Link>
+            <PeoplePopup rows={peopleHere.map((p) => { const rs = roster.filter((r) => r.person_id === p.id && storeInits.some((i) => i.id === r.initiative_id)); const last = visits.filter((v) => v.date <= today() && v.people_ids.includes(p.id)).map((v) => v.date).sort().pop() || null; return { id: p.id, name: p.name, role: p.role, last, lastLabel: last ? fmtDate(last, { weekday: true }) : null, trained: rs.filter((r) => r.status === "trained" || r.status === "solid").length, total: rs.length }; }).sort((a, b) => a.name.localeCompare(b.name))} label={`${peopleHere.length} people`} title={`${store.short_name}: who is here`} />
           </div>
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
@@ -141,6 +143,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
       <Model compact />
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} />}
+      {(() => {
+        const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
+        const bdcStore = stores.find((s) => s.is_bdc);
+        if (!bdcInit || store.is_bdc || !/toyota|chevrolet/i.test(store.short_name)) return null;
+        return <BdcFirst store={store} bdcInit={bdcInit} storeInits={storeInits} roster={roster} bdcStore={bdcStore} />;
+      })()}
 
       <section className="card nextstrip" style={{ marginBottom: 18 }}>
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
