@@ -12,7 +12,7 @@ export function splitTime(focus: string | null): { time: string | null; text: st
     const w = focus.match(/^\s*(AM|PM|Late morning|Early afternoon|Midday|Morning|Afternoon)\s*[-–:,]?\s*(.*)$/i);
     if (!w) return { time: null, text: focus, minutes: 9999 };
     const k = w[1].toLowerCase();
-    const minutes = k === "am" || k === "morning" ? 8 * 60 : k === "late morning" ? 11 * 60 : k === "midday" ? 12 * 60 : k === "early afternoon" ? 13 * 60 : 14 * 60;
+    const minutes = k === "am" || k === "morning" ? 9 * 60 : k === "late morning" ? 11 * 60 : k === "midday" ? 12 * 60 : k === "early afternoon" ? 13 * 60 : 14 * 60;
     return { time: w[1].toUpperCase() === w[1] ? w[1] : w[1].toLowerCase(), text: w[2], minutes };
   }
   const h = (Number(m[1]) % 12) + (m[3].toLowerCase() === "pm" ? 12 : 0);
@@ -53,7 +53,9 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                   // "Belgrade: calls over texts" reads as a Belgrade session; a focus that just repeats the store name says nothing twice
                   const loc = s?.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(raw));
                   const who = loc || s?.short_name || "Visit";
-                  const text = (loc ? raw.replace(new RegExp(`^${loc}\\s*[:,-]?\\s*`, "i"), "") : raw).replace(/,?\s*until .*$/i, "");
+                  const text = (loc ? raw.replace(new RegExp(`^${loc}\\s*[:,-]?\\s*`, "i"), "") : raw)
+                    .replace(new RegExp(`^(${[s?.short_name, s?.name].filter(Boolean).join("|")})\\s*[:,-]\\s*`, "i"), "")
+                    .replace(/,?\s*until .*$/i, "");
                   const same = text.trim().toLowerCase() === who.toLowerCase() || text.trim().toLowerCase() === (s?.name || "").toLowerCase();
                   return { key: v.id, minutes, node: (
                     <Link key={v.id} href={s ? (loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`) : `/v/${v.id}`} className="sess" style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
