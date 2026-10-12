@@ -141,6 +141,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
 
 
       <section style={{ marginBottom: 18 }} data-keep="root">
+        <div className="cardhead"><h2>Initiatives</h2><Link className="more" href="/initiatives">All</Link></div>
       <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} editor={editor} />}</div>
         {active.length ? (
           <div className="grid cols-3">
