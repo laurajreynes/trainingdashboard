@@ -146,6 +146,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   })).filter((g) => g.people.length);
   const apptRow = thisMonthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsRow = thisMonthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
+  // Where ups came from: the PR import if it has them, otherwise the DriveCentric activity report (per salesperson, so a shared customer can count twice)
+  const ups = upsRow.lot + upsRow.phone + upsRow.web > 0
+    ? { ...upsRow, note: `${monthName(curMonth)}, from the PR report` }
+    : activity ? { lot: activity.rows.reduce((a, r) => a + (r.showroom || 0), 0), phone: activity.rows.reduce((a, r) => a + (r.phone || 0), 0), web: activity.rows.reduce((a, r) => a + (r.internet || 0), 0), note: `${fmtDate(activity.from)} to ${fmtDate(activity.to)}, per salesperson from DriveCentric` } : null;
 
   return (
     <div style={{ ["--accent" as string]: storeAccent(store) }} data-keep="root">
@@ -401,6 +405,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <StoreNotes store={store} posts={posts} editor={editor} canPost={poster} codeRequired={managerCodeRequired()}
             back={`/s/${store.slug}`} flash={sp.posted ? "posted" : sp.code === "bad" ? "badcode" : undefined} />
           <StoreGoals store={store} goals={goals} entries={entries} editor={editor} />
+          {ups && ups.lot + ups.phone + ups.web > 0 && (
+            <section className="card">
+              <div className="cardhead"><h2>Where ups came from</h2></div>
+              <HBars rows={[
+                { label: "Showroom", value: ups.lot, color: storeAccent(store) },
+                { label: "Phone", value: ups.phone, color: storeAccent(store) },
+                { label: "Internet", value: ups.web, color: storeAccent(store) },
+              ]} />
+              <p className="faint small" style={{ marginTop: 6 }}>{ups.note}</p>
+            </section>
+          )}
           {bdcCards.map(({ b, folks, ros, lastVisit }) => (
             <section key={b.id} className="card" style={{ borderLeft: `4px solid ${storeAccent(b)}` }}>
               <div className="cardhead"><h2>{b.name}</h2><Link className="more" href={`/s/${b.slug}`}>Open</Link></div>

@@ -3,7 +3,7 @@ import { fmtDate } from "@/lib/fmt";
 import type { Initiative, Person } from "@/lib/types";
 import { shortInitName } from "@/lib/types";
 
-export type ActivityRow = { name: string; opps: number; calls: number; texts: number; contacted?: number; apptCreated: number; shown: number; sold: number };
+export type ActivityRow = { name: string; opps: number; calls: number; texts: number; contacted?: number; apptCreated: number; shown: number; sold: number; showroom?: number; phone?: number; internet?: number };
 export type Activity = { from: string; to: string; source?: string; rows: ActivityRow[] };
 
 const tpc = (r: ActivityRow) => (r.calls ? r.texts / r.calls : r.texts ? 99 : 0);
