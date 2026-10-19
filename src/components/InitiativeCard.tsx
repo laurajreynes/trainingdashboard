@@ -64,7 +64,7 @@ export function InitiativeCard({ init, roster, stores, stage, area, hideStore }:
         </div>
         <div className="initcard-meta">
           <span className="tag area">{areaLabel}</span>
-          {mine.length > 0 && <span className="faint small">{mine.map((s) => s.short_name).join(" · ")}</span>}
+          {mine.length > 0 && <span className="faint small">{mine.map((s) => s.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(init.name)) || s.short_name).join(" · ")}</span>}
         </div>
         <div className="progress"><span className="trained" style={{ width: `${c.total ? (c.trained / c.total) * 100 : 0}%` }} /><span className="needs" style={{ width: `${c.total ? (c.needs / c.total) * 100 : 0}%` }} /></div>
         <div className="legend"><span>{c.trained} of {c.total} trained</span></div>
@@ -84,9 +84,11 @@ export function InitiativeCard({ init, roster, stores, stage, area, hideStore }:
           {init.description && <div style={{ marginBottom: 12 }}><Desc text={init.description} small /></div>}
           <Bar roster={roster} legend />
           <div className="initdialog-actions">
-            {mine.filter((s) => s.slug !== hideStore).map((s) => (
-              <Link key={s.id} href={`/s/${s.slug}`} className="btn big" style={{ background: "var(--forest)" }}>View on the {s.short_name} page</Link>
-            ))}
+            {mine.filter((s) => s.slug !== hideStore).map((s) => {
+              // "Belgrade: Calls Over Texts" belongs to the Belgrade page, not the Chevrolet one
+              const loc = s.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(init.name));
+              return <Link key={s.id} href={loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`} className="btn big" style={{ background: "var(--forest)" }}>View on the {loc || s.short_name} page</Link>;
+            })}
             <Link href={`/i/${init.id}`} className="btn ghost">Open the initiative</Link>
           </div>
         </div>

@@ -14,11 +14,12 @@ export default async function MarketingPage() {
   const [stores, initiatives, roster, stages, areas, bulletin, visits, notes, editor] = await Promise.all([getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas(), getBulletin(), getVisits({ limit: 400 }), getGroupNotes(), isEditor()]);
   const note = notes.find((n) => n.key === "marketing")?.body || "";
   const carwarsDates = notes.find((n) => n.key === "carwars")?.body || null;
-  // The CarWars description holds the next steps, one per line (done items start with ✓ and stay off the page; the track shows those).
-  const nextSteps = (carwars?.description || "").split(/\r?\n/).map((l) => l.replace(/^[✓●○•\-\s]+/, "").trim()).filter((l) => l && !/^progress$/i.test(l) && !/^✓/.test(l.trim()));
+
   const live = initiatives.filter((i) => i.status !== "done");
   const carwars = live.find((i) => /carwars/i.test(i.name));
   const rest = live.filter((i) => i !== carwars);
+  // The CarWars description holds the next steps, one per line (done items start with ✓ and stay off the page; the track shows those).
+  const nextSteps = (carwars?.description || "").split(/\r?\n/).map((l) => l.replace(/^[✓●○•\-\s]+/, "").trim()).filter((l) => l && !/^progress$/i.test(l) && !/^✓/.test(l.trim()));
   const trained = (id: string) => { const r = roster.filter((x) => x.initiative_id === id); return { t: r.filter((x) => x.status === "trained" || x.status === "solid").length, n: r.length }; };
   // Livingston first, then the rest in nav order
   const order = [...stores].sort((a, b) => (/livingston/i.test(a.name) ? -1 : /livingston/i.test(b.name) ? 1 : a.sort_order - b.sort_order));

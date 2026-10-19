@@ -59,8 +59,6 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
 }) {
   const t = today();
   const all = parseLaunches(launches);
-  const rows = roster.filter((r) => r.initiative_id === init.id && (!peopleIds || peopleIds.has(r.person_id)));
-  const live = rows.filter((r) => r.status === "trained" || r.status === "solid").length;
   const isBdc = (m: Milestone) => /bdc/i.test(m.store);
   const mine = location ? all.filter((m) => new RegExp(location, "i").test(m.store))
     : store ? all.filter((m) => forStore(m, store) || (withBdc && isBdc(m)))
@@ -80,7 +78,6 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
     })),
     ...tbd.map((m): Stop => ({ title: store ? label(m) : m.store || m.label, sub: store ? undefined : m.label, when: m.when || "TBD", state: "later" })),
   ];
-  const launched = dated.some((m) => isLaunch(m) && m.when < t) || live > 0;
   return (
     <section className="card carwars" style={{ ["--accent" as string]: store ? storeAccent(store) : "var(--sun)" }}>
       <div className="carwars-head">
@@ -88,7 +85,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
           <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}</h2>
         </div>
         <div className="carwars-right small">
-          {launched && <><strong>{live}</strong> of {rows.length} live{" · "}<Link href={`/i/${init.id}`}>open</Link></>}
+          {editor && <Link href={`/i/${init.id}`}>open</Link>}
         </div>
       </div>
       <Track stops={stops} t={t} />
