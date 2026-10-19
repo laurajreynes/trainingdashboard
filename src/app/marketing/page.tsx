@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { getStores, getInitiatives, getAllRoster, getStages, getAreas, getBulletin, getVisits } from "@/lib/data";
+import { getStores, getInitiatives, getAllRoster, getStages, getAreas, getBulletin, getVisits, getGroupNotes } from "@/lib/data";
+import { saveGroupNote } from "@/app/actions";
+import { isEditor } from "@/lib/auth";
 import { storeAccent, fmtDate, today } from "@/lib/fmt";
 import { Bulletin } from "@/components/Bulletin";
 import { AREA_DEFAULT } from "@/lib/types";
@@ -8,7 +10,8 @@ export const dynamic = "force-dynamic";
 
 /** For marketing: what training is doing that touches their world. CarWars, the initiatives by store, and what they've flagged. */
 export default async function MarketingPage() {
-  const [stores, initiatives, roster, stages, areas, bulletin, visits] = await Promise.all([getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas(), getBulletin(), getVisits({ limit: 400 })]);
+  const [stores, initiatives, roster, stages, areas, bulletin, visits, notes, editor] = await Promise.all([getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas(), getBulletin(), getVisits({ limit: 400 }), getGroupNotes(), isEditor()]);
+  const note = notes.find((n) => n.key === "marketing")?.body || "";
   const live = initiatives.filter((i) => i.status !== "done");
   const carwars = live.find((i) => /carwars/i.test(i.name));
   const rest = live.filter((i) => i !== carwars);
@@ -29,6 +32,23 @@ export default async function MarketingPage() {
       <p className="muted" style={{ maxWidth: 640, marginBottom: 18 }}>
         Where CarWars stands, what each store is being trained on right now, and the lead-handling catches you've sent over.
       </p>
+
+      {(note || editor) && (
+        <section className="card" style={{ marginBottom: 18, borderLeft: "3px solid var(--gold)" }}>
+          <div className="cardhead"><h2>Heads up</h2></div>
+          {note && <p className="pre">{note}</p>}
+          {editor && (
+            <details className="quiet" style={{ marginTop: 6 }}>
+              <summary className="small">Edit</summary>
+              <form action={saveGroupNote} style={{ marginTop: 6 }}>
+                <input type="hidden" name="key" value="marketing" />
+                <textarea name="body" defaultValue={note} placeholder="What marketing should know this week" style={{ minHeight: 80, fontSize: 13 }} />
+                <button className="btn sm ghost" style={{ marginTop: 4 }}>Save</button>
+              </form>
+            </details>
+          )}
+        </section>
+      )}
 
       {carwars && (
         <section className="card" style={{ marginBottom: 18, borderTop: "3px solid var(--forest)" }}>
