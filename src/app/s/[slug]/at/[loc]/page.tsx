@@ -14,6 +14,7 @@ import { CarWarsBanner } from "@/components/CarWars";
 import { StoreFocus } from "@/components/StoreFocus";
 import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { getGroupNotes } from "@/lib/data";
+import { addStorePost } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +86,21 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
               <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`}><span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}</span><span className="what">{text || v.focus || "Visit"}</span></Link>
             ); })}
           </div>
-        ) : <p className="empty">Nothing scheduled here yet</p>}
+        ) : (
+          <form action={addStorePost} className="reqvisit">
+            <input type="hidden" name="store_id" value={store.id} />
+            <input type="hidden" name="kind" value="question" />
+            <input type="hidden" name="back" value={`/s/${store.slug}/at/${loc.toLowerCase()}`} />
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999 }} aria-hidden="true" />
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Need me sooner? Request a visit</div>
+            <div className="frow">
+              <input type="text" name="author" placeholder="Your name" required />
+              <input type="text" name="topic" placeholder="What would help (optional)" />
+            </div>
+            <input type="hidden" name="body" value={`Visit requested (${location})`} />
+            <button className="btn sm">Send to Laura</button>
+          </form>
+        )}
       </section>
 
       {initsHere.length > 0 && (
