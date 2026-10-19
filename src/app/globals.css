@@ -564,6 +564,11 @@ a.plain:hover { text-decoration: underline; }
 .reports .chipr, .shops .chipr { display: inline-flex; flex-direction: column; padding: 8px 12px; border-radius: 10px; background: var(--panel-2); text-decoration: none; color: var(--ink); border-left: 3px solid var(--accent, var(--forest)); min-width: 120px; }
 .reports .chipr .k, .shops .chipr .k { font-size: 11px; font-weight: 800; color: var(--accent, var(--forest)); }
 .reports .chipr .t, .shops .chipr .t { font-size: 13px; }
+.reports.flat { grid-template-columns: minmax(150px, 0.8fr) 3fr; }
+.reports.flat .bystore { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.card .older { margin: 10px 0 0; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--ink-faint); }
+.card .older a { color: var(--ink-faint); text-decoration: none; }
+.card .older a:hover { color: var(--ink-dim); text-decoration: underline; }
 @media (max-width: 720px) { .reports { grid-template-columns: 1fr; } }
 
 /* Stacked columns */
