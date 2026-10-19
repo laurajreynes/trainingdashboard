@@ -4,6 +4,7 @@ import { saveGroupNote } from "@/app/actions";
 import { isEditor } from "@/lib/auth";
 import { storeAccent, fmtDate, today } from "@/lib/fmt";
 import { Bulletin } from "@/components/Bulletin";
+import { CarWarsBanner } from "@/components/CarWars";
 import { AREA_DEFAULT } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function MarketingPage() {
   const [stores, initiatives, roster, stages, areas, bulletin, visits, notes, editor] = await Promise.all([getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas(), getBulletin(), getVisits({ limit: 400 }), getGroupNotes(), isEditor()]);
   const note = notes.find((n) => n.key === "marketing")?.body || "";
+  const carwarsDates = notes.find((n) => n.key === "carwars")?.body || null;
   const live = initiatives.filter((i) => i.status !== "done");
   const carwars = live.find((i) => /carwars/i.test(i.name));
   const rest = live.filter((i) => i !== carwars);
@@ -51,12 +53,10 @@ export default async function MarketingPage() {
       )}
 
       {carwars && (
-        <section className="card" style={{ marginBottom: 18, borderTop: "3px solid var(--forest)" }}>
-          <div className="cardhead"><h2>{carwars.name}</h2>{stages[carwars.id] && <span className="tag stage">{stages[carwars.id]}</span>}</div>
-          {carwars.goal_text && <p style={{ fontWeight: 600 }}>{carwars.goal_text}</p>}
-          {carwars.description && <p className="pre small muted" style={{ marginTop: 6 }}>{carwars.description}</p>}
-          <p className="small faint" style={{ marginTop: 8 }}>{trained(carwars.id).t} of {trained(carwars.id).n} people live on it</p>
-        </section>
+        <div style={{ marginBottom: 18 }}>
+          <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} />
+          {carwars.description && <p className="pre small muted" style={{ margin: "8px 4px 0" }}>{carwars.description.replace(/^Progress\n/, "")}</p>}
+        </div>
       )}
 
       <section style={{ marginBottom: 18 }}>
