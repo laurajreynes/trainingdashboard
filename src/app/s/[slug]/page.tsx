@@ -226,7 +226,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="stack">
       {!lateMonth && (
       <div>
-        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor} compact>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report" && !(store.is_bdc && !b.store_id && /productivity|by salesperson/i.test(b.title)))} stores={stores} editor={editor} compact>
           {editor && (
             <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
               <summary style={{ padding: "4px 0" }}>Add</summary>
@@ -332,7 +332,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </section>
           {lateMonth && (
       <div>
-        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report")} stores={stores} editor={editor} compact>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report" && !(store.is_bdc && !b.store_id && /productivity|by salesperson/i.test(b.title)))} stores={stores} editor={editor} compact>
           {editor && (
             <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
               <summary style={{ padding: "4px 0" }}>Add</summary>

@@ -43,7 +43,12 @@ export function ReportsCard({ reports, stores, children, editor, compact }: { re
       {shopLinks}
     </div>
   ) : null;
-  const olderLabel = (b: Bookmark) => { const s = stores.find((x) => x.id === b.store_id); const { short } = parseTitle(b.title); return s ? `${s.short_name} ${short.toLowerCase()}` : short; };
+  const olderLabel = (b: Bookmark) => {
+    const s = stores.find((x) => x.id === b.store_id); const { short } = parseTitle(b.title);
+    if (!s || compact) return short;                      // on a store's own page the store name is a given
+    const first = s.short_name.split(" ").pop()!;          // "BDC Rep Report" already says BDC
+    return new RegExp(`\\b${first}\\b`, "i").test(short) ? short : `${s.short_name} ${short.charAt(0).toLowerCase()}${short.slice(1)}`;
+  };
   return (
     <>
     <section className="card">
