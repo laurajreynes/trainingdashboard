@@ -64,21 +64,16 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
           <div className="accentbar" />
           <div className="eyebrow"><Link href={`/s/${store.slug}`}>{store.short_name}</Link> · location</div>
           <h1>{location}</h1>
-          <div className="sub small"><PeoplePopup rows={popRows} label={`${here.length} people`} title={`${location}: who is here`} /></div>
+          <div className="sub small">{cur && <>{cur.sold} sold in {monthName(showMonth)} · </>}<PeoplePopup rows={popRows} label={`${here.length} people`} title={`${location}: who is here`} /></div>
         </div>
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
 
-      <div className="kpis">
-        {cur && <div className="kpi"><div><div className="v">{cur.sold}</div><div className="l">sold in {monthName(showMonth)}</div></div></div>}
-        <div className="kpi"><div><div className="v">{here.length}</div><div className="l">people</div></div></div>
-        {trained > 0 && <div className="kpi"><div><div className="v">{trained}</div><div className="l">trained on active initiatives</div></div></div>}
-      </div>
 
       <StoreFocus storeId={`${store.id}:${location.toLowerCase()}`} body={focusText} editor={editor} />
+      <div className="grid cols-2" style={{ marginBottom: 18, alignItems: "start" }}>
       {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} />}
-
-      <section className="card nextstrip" style={{ marginBottom: 18 }}>
+      <section className="card nextstrip">
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcoming.length ? (
           <div className="nextrow">
@@ -102,6 +97,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
           </form>
         )}
       </section>
+      </div>
 
       {initsHere.length > 0 && (
         <section style={{ marginBottom: 18 }}>

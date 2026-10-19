@@ -867,3 +867,4 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .flow.topband.two > * { break-inside: avoid; }
 .nextstrip { margin-bottom: 12px; }
 .cwnote { margin: 6px 0 0; padding-left: 4px; }
+.grid > .carwars { margin-bottom: 0; }
