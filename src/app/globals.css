@@ -770,8 +770,6 @@ details.accordion > summary h2 { margin: 0; }
 
 /* Store page top band: next visit, initiatives, reports side by side so the first screen is dense */
 
-.topband .nextrow { flex-direction: column; overflow: visible; flex-wrap: nowrap; }
-.topband .nextitem { max-width: none; flex: none; }
 .topband .initstack { display: grid; gap: 10px; }
 .topband .initcard { padding: 12px 14px; }
 .topband .initcard h3 { font-size: 15px; }
@@ -864,3 +862,7 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .nextsteps .pills { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .nextsteps .pill { display: block; padding: 7px 11px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); font-size: 13px; line-height: 1.3; color: var(--ink); }
 @media (max-width: 900px) { .cwrow { grid-template-columns: 1fr; } }
+
+.flow.topband.two { columns: 2; }
+.nextstrip { margin-bottom: 12px; }
+.cwnote { margin: 6px 0 0; padding-left: 4px; }

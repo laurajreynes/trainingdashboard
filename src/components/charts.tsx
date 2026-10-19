@@ -123,7 +123,7 @@ export function StackedColumns({ points, colors = ["var(--brand)", "var(--sage)"
               <div className="col-val">{t > 0 ? t : ""}</div>
               <div className="col-track">
                 {last && marks.map((m) => (
-                  <span key={m.label} className={`colmark ${m.kind || "ref"}`} style={{ bottom: `${(m.value / max) * 100}%` }} title={`${m.label}: ${m.value}`}><b>{m.value}</b></span>
+                  <span key={m.label} className={`colmark ${m.kind || "ref"}`} style={{ bottom: `${(m.value / max) * 100}%` }} title={`${m.label}: ${m.value}`}></span>
                 ))}
                 <div className="col-fill stack" style={{ height: `${(t / max) * 100}%` }}>
                   {p.parts.map((x, k) => (

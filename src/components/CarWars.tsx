@@ -65,8 +65,11 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
     : all;
   // On a store page, name the two launches so both dates read clearly.
   const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? "BDC launch" : /service/i.test(m.store) ? "Service launch" : "Sales launch") : m.label;
-  const dated = mine.filter((m) => isDate(m.when)).sort((a, b) => a.when.localeCompare(b.when));
-  const tbd = mine.filter((m) => !isDate(m.when));
+  // "Subaru | Note: awaiting phone programming" lines read as a note under the track, not a stop
+  const notes = mine.filter((m) => /^note$/i.test(m.label)).map((m) => m.when);
+  const stops0 = mine.filter((m) => !/^note$/i.test(m.label));
+  const dated = stops0.filter((m) => isDate(m.when)).sort((a, b) => a.when.localeCompare(b.when));
+  const tbd = stops0.filter((m) => !isDate(m.when));
   const nextIdx = dated.findIndex((m) => m.when >= t);
   const storeOf = (m: Milestone) => stores.find((s) => forStore(m, s));
   const isLaunch = (m: Milestone) => /launch/i.test(m.label);
@@ -89,6 +92,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
         </div>
       </div>
       <Track stops={stops} t={t} />
+      {notes.length > 0 && <p className="small muted cwnote">{notes.join(" · ")}</p>}
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

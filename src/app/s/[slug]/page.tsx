@@ -166,11 +166,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
       </div>
 
-      <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
-      <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
-
-      <div className="flow topband">
-      <section className="card nextstrip">
+      <div data-keep><section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcomingHere.length ? (
           <div className="nextrow">
@@ -201,12 +197,16 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <button className="btn sm">Send to Laura</button>
           </form>
         )}
-      </section>
+      </section></div>
+      <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
+
+      <div className="flow topband two">
       <section className="card">
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
         {storeInits.length ? (
           <div className="initstack">
-            {(() => {
+            <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
+      {(() => {
               // Main store first, then each location's own initiatives under a small heading
               const locOf = (i: Initiative) => store.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(i.name)) || "";
               const groups = ["", ...[...store.locations].sort()].map((l) => ({ l, items: storeInits.filter((i) => locOf(i) === l) })).filter((g) => g.items.length);

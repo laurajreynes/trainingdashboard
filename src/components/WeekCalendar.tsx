@@ -36,7 +36,9 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
       </div>
       <div className="weekrow" style={{ gridTemplateColumns: cols }}>
         {days.map((d) => {
-          const sessions = visits.filter((v) => v.date === d).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
+          // An untimed session (a launch day, say) is the day, so it sorts first; timed ones follow in order
+          const order = (v: Visit) => { const m = splitTime(v.focus).minutes; return m === 9999 ? 0 : m; };
+          const sessions = visits.filter((v) => v.date === d).sort((a, b) => order(a) - order(b));
           const dues = todos.filter((x) => !x.done && x.due === d);
           const isToday = d === t;
           return (
@@ -59,7 +61,7 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                     .replace(new RegExp(`^(${[s?.short_name, s?.name].filter(Boolean).join("|")})\\s*[:,-]\\s*`, "i"), "")
                     .replace(/,?\s*until .*$/i, "");
                   const same = text.trim().toLowerCase() === who.toLowerCase() || text.trim().toLowerCase() === (s?.name || "").toLowerCase();
-                  return { key: v.id, minutes, node: (
+                  return { key: v.id, minutes: minutes === 9999 ? 0 : minutes, node: (
                     <Link key={v.id} href={s ? (loc ? `/s/${s.slug}/at/${loc.toLowerCase()}` : `/s/${s.slug}`) : `/v/${v.id}`} className={`sess${v.date < today() || (v.date === today() && minutes < 9999 && minutes + 150 < nowMinutes()) ? " past" : ""}`} style={{ ["--accent" as string]: storeAccent(s) }} title={v.focus || ""}>
                       {time && <span className="when">{time}</span>}
                       <span className="who">{who}</span>
