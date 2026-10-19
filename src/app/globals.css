@@ -864,5 +864,6 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 @media (max-width: 900px) { .cwrow { grid-template-columns: 1fr; } }
 
 .flow.topband.two { columns: 2; }
+.flow.topband.two > * { break-inside: avoid; }
 .nextstrip { margin-bottom: 12px; }
 .cwnote { margin: 6px 0 0; padding-left: 4px; }

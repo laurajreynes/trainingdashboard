@@ -205,7 +205,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
         {storeInits.length ? (
           <div className="initstack">
-            <div data-keep>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
       {(() => {
               // Main store first, then each location's own initiatives under a small heading
               const locOf = (i: Initiative) => store.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(i.name)) || "";
@@ -265,6 +264,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       )}
         </div>
       </div>
+
+      <div data-keep style={{ marginTop: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
 
       {(() => {
         const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
