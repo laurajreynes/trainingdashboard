@@ -94,7 +94,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
     ] };
   });
   const touched = new Set(visits.filter((v) => v.date >= phase.monthStart).flatMap((v) => v.people_ids));
-  const reachGroups = navStores.map((s) => ({ label: s.short_name, color: storeAccent(s), href: `/s/${s.slug}`, people: activePeople.filter((p) => p.store_id === s.id).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) })).filter((g) => g.people.length);
+  const reachGroups = navStores.map((s) => ({ label: s.short_name, color: storeAccent(s), href: `/s/${s.slug}`, people: activePeople.filter((p) => p.store_id === s.id && !/manager|^gm$|general manager/i.test(p.role)).map((p) => ({ name: p.name, on: touched.has(p.id), href: `/p/${p.id}` })) })).filter((g) => g.people.length);
   const monthRows = metricsAll.filter((m) => m.period === curMonth);
   const apptAll = monthRows.reduce((acc, m) => ({ due: acc.due + (m.appts_due || 0), shown: acc.shown + (m.appts_shown || 0), sold: acc.sold + (m.appts_sold || 0) }), { due: 0, shown: 0, sold: 0 });
   const upsAll = monthRows.reduce((acc, m) => ({ lot: acc.lot + (m.lot_ups || 0), phone: acc.phone + (m.phone_ups || 0), web: acc.web + (m.web_ups || 0) }), { lot: 0, phone: 0, web: 0 });
