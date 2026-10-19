@@ -357,10 +357,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="stack">
           <section className="card">
             <div className="cardhead"><h2>Wins and examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>Examples library</Link></div>
-            <WinList wins={wins} editor={editor} people={people} />
+            <WinList wins={wins.slice(0, 3)} editor={editor} people={people} />
+            {wins.length > 3 && <details className="quiet accordion" style={{ marginTop: 4 }}><summary className="small">{wins.length - 3} more wins</summary><WinList wins={wins.slice(3)} editor={editor} people={people} /></details>}
             {exHere.some((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)) && (
+              <details className="quiet accordion" style={{ marginTop: 6 }}><summary className="small">Examples ({exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).length})</summary>
               <ul className="list" style={{ marginTop: 6 }}>
-                {exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).slice(0, 6).map((e) => {
+                {exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).slice(0, 8).map((e) => {
                   const who = e.person_ids.map((pid) => people.find((p) => p.id === pid)?.name).filter(Boolean).join(", ");
                   return (
                     <li key={e.id}>
@@ -373,6 +375,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                   );
                 })}
               </ul>
+              </details>
             )}
             {editor && (
               <form action={addWin} style={{ marginTop: 10 }}>
