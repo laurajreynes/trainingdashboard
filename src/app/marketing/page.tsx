@@ -14,6 +14,8 @@ export default async function MarketingPage() {
   const [stores, initiatives, roster, stages, areas, bulletin, visits, notes, editor] = await Promise.all([getStores(), getInitiatives(), getAllRoster(), getStages(), getAreas(), getBulletin(), getVisits({ limit: 400 }), getGroupNotes(), isEditor()]);
   const note = notes.find((n) => n.key === "marketing")?.body || "";
   const carwarsDates = notes.find((n) => n.key === "carwars")?.body || null;
+  // The CarWars description holds the next steps, one per line (done items start with ✓ and stay off the page; the track shows those).
+  const nextSteps = (carwars?.description || "").split(/\r?\n/).map((l) => l.replace(/^[✓●○•\-\s]+/, "").trim()).filter((l) => l && !/^progress$/i.test(l) && !/^✓/.test(l.trim()));
   const live = initiatives.filter((i) => i.status !== "done");
   const carwars = live.find((i) => /carwars/i.test(i.name));
   const rest = live.filter((i) => i !== carwars);
@@ -53,9 +55,14 @@ export default async function MarketingPage() {
       )}
 
       {carwars && (
-        <div style={{ marginBottom: 18 }}>
+        <div className="cwrow" style={{ marginBottom: 18 }}>
           <CarWarsBanner init={carwars} roster={roster} stores={stores} launches={carwarsDates} />
-          {carwars.description && <p className="pre small muted" style={{ margin: "8px 4px 0" }}>{carwars.description.replace(/^Progress\n/, "")}</p>}
+          {nextSteps.length > 0 && (
+            <section className="card nextsteps">
+              <div className="eyebrow">Next steps</div>
+              <ul className="pills">{nextSteps.map((t, i) => <li key={i} className="pill">{t}</li>)}</ul>
+            </section>
+          )}
         </div>
       )}
 
