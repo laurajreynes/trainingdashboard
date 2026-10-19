@@ -78,7 +78,7 @@ export function InitiativeCard({ init, roster, stores, stage, area, hideStore }:
           <div className="initcard-meta" style={{ marginBottom: 10 }}>
             {stage && <span className="tag stage">{stage}</span>}
             <span className="tag area">{areaLabel}</span>
-            {mine.map((s) => <span key={s.id} className="faint small">{s.short_name}</span>)}
+            {mine.map((s) => <span key={s.id} className="faint small">{s.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(init.name)) || s.short_name}</span>)}
           </div>
           {init.goal_text && <p style={{ fontWeight: 600, marginBottom: 8 }}>{init.goal_text}</p>}
           {init.description && <div style={{ marginBottom: 12 }}><Desc text={init.description} small /></div>}
