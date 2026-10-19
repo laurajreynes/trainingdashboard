@@ -79,7 +79,7 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
     return { s, days: last ? -daysFromToday(last.date) : null };
   }).filter((x) => x.days === null || x.days >= 10) : [];
 
-  const overdue = todos.filter((t) => t.due && t.due < mi.today);
+  const overdue = editor ? todos.filter((t) => t.due && t.due < mi.today) : [];   // my to-dos are mine, not the store's
   const reports = bookmarks.filter((b) => !b.initiative_id);
   const prevNotes = visits.filter((v) => v.private_notes && inRange(v.date, mi.prevStart, mi.prevEnd));
   const activeInits = initiatives.filter((i) => i.status === "active" && (!scoped || i.store_ids.some((x) => ids.includes(x))));
