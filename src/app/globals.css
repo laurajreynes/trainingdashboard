@@ -486,6 +486,9 @@ details.about > summary { font-weight: 600; cursor: pointer; }
 .weekcal .sess .who { font-weight: 600; display: inline; color: var(--accent, var(--forest)); }
 .weekcal .sess .what { display: block; color: var(--ink-dim); }
 .weekcal .day.today .sess .what { color: var(--ink); }
+/* Other days show only the store until you hover for a beat; today always shows the detail. */
+.weekcal .day:not(.today) .sess .what { max-height: 0; overflow: hidden; opacity: 0; transition: max-height .25s ease 1s, opacity .25s ease 1s; }
+.weekcal .day:not(.today) .sess:hover .what, .weekcal .day:not(.today) .sess:focus-visible .what { max-height: 120px; opacity: 1; }
 .weekcal .sess.gm { border-left-color: var(--gold); }
 .weekcal .sess.gm .who { color: var(--forest); }
 .weekcal .sess.due { border-left-style: dashed; }
