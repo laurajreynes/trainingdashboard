@@ -52,8 +52,10 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                   const { time, text: raw, minutes } = splitTime(v.focus);
                   // "Belgrade: calls over texts" reads as a Belgrade session; a focus that just repeats the store name says nothing twice
                   const loc = s?.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(raw));
-                  const who = loc || s?.short_name || "Visit";
-                  const text = (loc ? raw.replace(new RegExp(`^${loc}\\s*[:,-]?\\s*`, "i"), "") : raw)
+                  // "Toyota service: advisor meeting" is a service-department session, labeled as such
+                  const dept = !loc && s && new RegExp(`^${s.short_name}\\s+(service|parts|bdc)\\b`, "i").exec(raw)?.[1];
+                  const who = loc || (dept ? `${s!.short_name} ${dept[0].toUpperCase()}${dept.slice(1).toLowerCase()}` : s?.short_name) || "Visit";
+                  const text = (loc ? raw.replace(new RegExp(`^${loc}\\s*[:,-]?\\s*`, "i"), "") : dept ? raw.replace(new RegExp(`^${s!.short_name}\\s+${dept}\\s*[:,-]?\\s*`, "i"), "") : raw)
                     .replace(new RegExp(`^(${[s?.short_name, s?.name].filter(Boolean).join("|")})\\s*[:,-]\\s*`, "i"), "")
                     .replace(/,?\s*until .*$/i, "");
                   const same = text.trim().toLowerCase() === who.toLowerCase() || text.trim().toLowerCase() === (s?.name || "").toLowerCase();
