@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { WordTrack } from "./WordTrack";
 
 /** A word track or script kept as text: the chip opens it in a popup instead of sending you off to the initiative page. */
 export function TextResource({ kind, title, body, initName }: { kind: string; title: string; body: string | null; initName?: string }) {
@@ -13,7 +14,7 @@ export function TextResource({ kind, title, body, initName }: { kind: string; ti
         <div className="initdialog-body">
           <div className="initcard-top"><h2 style={{ marginRight: 12 }}>{title}</h2><button type="button" className="iconbtn" aria-label="Close" onClick={() => setOpen(false)}>×</button></div>
           {initName && <div className="faint small" style={{ marginBottom: 10 }}>{initName}</div>}
-          {body ? <div className="pre" style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{body}</div> : <p className="empty">Nothing written in this one yet.</p>}
+          {body ? <WordTrack body={body} /> : <p className="empty">Nothing written in this one yet.</p>}
         </div>
       </dialog>
     </>

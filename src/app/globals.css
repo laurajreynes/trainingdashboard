@@ -868,3 +868,20 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .nextstrip { margin-bottom: 12px; }
 .cwnote { margin: 6px 0 0; padding-left: 4px; }
 .grid > .carwars { margin-bottom: 0; }
+
+/* Word tracks: a script you can read at a glance */
+.wt { display: grid; gap: 14px; }
+.wt-h { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+.wt-h + .wt-chips, .wt-h + .wt-list, .wt-h + .wt-steps, .wt-h + .wt-p { margin-top: -6px; }
+.wt-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.wt-chip { display: inline-block; padding: 6px 11px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); font-size: 13.5px; color: var(--ink); }
+.wt-chip strong { color: var(--forest); }
+.wt-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.wt-p { margin: 0; font-size: 14.5px; line-height: 1.5; }
+.wt-p strong, .wt-list strong { color: var(--forest); }
+.wt-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.wt-step { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); border-left: 4px solid var(--brand); }
+.wt-n { width: 26px; height: 26px; border-radius: 50%; background: var(--forest); color: #fff; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; margin-top: 2px; }
+.wt-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 3px; }
+.wt-quote { margin: 0; font-family: var(--font-display); font-size: 17px; line-height: 1.4; color: var(--ink); }
+.wt-quote strong { color: var(--brand); }
