@@ -41,17 +41,17 @@ Wyatt Kubiak | |
 Angela Phanor | | | out
 Maddi Hart | | | out`,
   subaru: `# Name | agent line | done (L logged in, V voice recognition, C click to call, S email signature) | out
-Abie Benson | |
-Allison Bergen | |
-Catherine Long | |
-Dimitrios Imbrunetti | |
-Ethan Kilgore | |
-Ian Deroeck | |
-Mason Buck | |
-Mia Leandro | |
-Ryan Crum | |
-Ryan Ghormley | |
-Zachary Novak | |
+Abie Benson | | V
+Allison Bergen | | V
+Catherine Long | | V
+Dimitrios Imbrunetti | | V
+Ethan Kilgore | | V
+Ian Deroeck | | V
+Mason Buck | | V
+Mia Leandro | | V
+Ryan Crum | | V
+Ryan Ghormley | | V
+Zachary Novak | | V
 Halie Monroe | |
 Chris Froelich | |`,
 };
