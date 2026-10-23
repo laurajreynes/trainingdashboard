@@ -6,8 +6,8 @@
  */
 export const SETUP_STEPS = [
   { key: "L", label: "Logged in" },
-  { key: "V", label: "Voice recognition" },
   { key: "C", label: "Click to call" },
+  { key: "V", label: "Voice recognition" },
   { key: "S", label: "Email signature" },
 ] as const;
 
