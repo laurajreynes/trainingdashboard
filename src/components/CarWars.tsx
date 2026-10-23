@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Initiative, InitiativePerson, Store } from "@/lib/types";
 import { fmtDate, storeAccent, today } from "@/lib/fmt";
 import { saveGroupNote } from "@/app/actions";
+import { CarWarsSetup } from "@/components/CarWarsSetup";
+import { SETUP_SEED } from "@/lib/cwsetup";
 
 /** Milestones come from the `carwars` group note, one per line: "Chevrolet | Manager review: 2026-10-15" or "Service | Launch: TBD". */
 export type Milestone = { store: string; label: string; when: string };
@@ -52,10 +54,12 @@ function Track({ stops, t }: { stops: Stop[]; t: string }) {
   );
 }
 
-export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor, withBdc }: {
+export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor, withBdc, setup }: {
   init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; location?: string; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
   /** Store pages whose leads start in the Ressler BDC: show the BDC launch next to the store's own sales launch. */
   withBdc?: boolean;
+  /** Per-person setup progress for this store (the cwsetup:<slug> group note). */
+  setup?: string | null;
 }) {
   const t = today();
   const all = parseLaunches(launches);
@@ -93,6 +97,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
       </div>
       <Track stops={stops} t={t} />
       {notes.length > 0 && <p className="small muted cwnote">{notes.join(" · ")}</p>}
+      {store && !location && (setup || editor || SETUP_SEED[store.slug]) && <CarWarsSetup body={setup || SETUP_SEED[store.slug] || null} storeSlug={store.slug} editor={editor} />}
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

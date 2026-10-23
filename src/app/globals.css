@@ -743,6 +743,26 @@ details.accordion > summary h2 { margin: 0; }
 .cwstop.later .cwdot { border-color: var(--accent, var(--line-strong)); }
 @media (max-width: 800px) { .cwtrack { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); row-gap: 12px; } .cwtrack::before { display: none; } }
 @media (max-width: 800px) { .carwars { grid-template-columns: 1fr; } }
+
+/* CarWars setup progress: click for who's set and who still needs a step */
+.cwsetup { display: block; width: 100%; text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; margin-top: 12px; cursor: pointer; color: inherit; font: inherit; }
+.cwsetup:hover { border-color: var(--accent, var(--forest)); }
+.cwsetup-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.cwsetup-h { font-weight: 700; font-size: 13px; color: var(--forest); }
+.cwsetup-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.cwsetup-bar { display: flex; flex-direction: column; min-width: 0; }
+.cwsetup-bar .progress { margin-top: 5px; }
+.cwsetup-label { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--ink-dim); white-space: nowrap; }
+.cwsetup-label b { color: var(--ink); }
+.cwsetup-sec { margin-top: 12px; }
+.cwsetup-sec h3 { font-size: 13.5px; margin: 0 0 4px; color: var(--forest); }
+.cwsetup-names { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.cwsetup-names li { font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; display: inline-flex; gap: 8px; align-items: baseline; }
+.cwsetup-names.done li { background: var(--sage, #e3efe8); border-color: transparent; }
+.cwsetup-names li.fresh { border-style: dashed; }
+.cwsetup-names .line { font-size: 11.5px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+@media (max-width: 800px) { .cwsetup-bars { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
 .desc p { margin: 0 0 10px; }
 .desc.small p { font-size: 13px; }
 .desc .callout { background: var(--sun-soft, #fdf3d6); border-left: 4px solid var(--sun); padding: 10px 12px; border-radius: 0 8px 8px 0; color: var(--ink); font-weight: 600; }

@@ -58,6 +58,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const carwars = initiatives.find((i) => /carwars/i.test(i.name) && i.status !== "done" && i.store_ids.includes(store.id));
   const groupNotes = await getGroupNotes();
   const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
+  const carwarsSetup = groupNotes.find((n) => n.key === `cwsetup:${store.slug}`)?.body || null;
   const focusText = groupNotes.find((n) => n.key === `focus:${store.id}`)?.body || null;
   const activity = (() => { try { const b = groupNotes.find((n) => n.key === `activity:${store.slug}`)?.body; return b ? (JSON.parse(b) as Activity) : null; } catch { return null; } })();
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
@@ -265,7 +266,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
       </div>
 
-      <div data-keep style={{ marginTop: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} />}</div>
+      <div data-keep style={{ marginTop: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
 
       {(() => {
         const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");
