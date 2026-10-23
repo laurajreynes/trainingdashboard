@@ -52,8 +52,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const activePeople = people.filter((p) => p.active);
   const coverage = navStores.map((s) => {
     const folks = new Set(activePeople.filter((p) => p.store_id === s.id).map((p) => p.id));
-    // People on a training initiative here (CarWars is a tool launch, not training), trained if trained on any
-    const trainingIds = new Set(initiatives.filter((i) => activeIds.has(i.id) && !/carwars/i.test(i.name)).map((i) => i.id));
+    // People on any active initiative here, CarWars included; trained if trained on any
+    const trainingIds = new Set(initiatives.filter((i) => activeIds.has(i.id)).map((i) => i.id));
     const rows = roster.filter((r) => trainingIds.has(r.initiative_id) && folks.has(r.person_id));
     const people = new Set(rows.map((r) => r.person_id));
     const done = new Set(rows.filter((r) => r.status === "trained" || r.status === "solid").map((r) => r.person_id)).size;

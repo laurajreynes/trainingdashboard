@@ -200,6 +200,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </form>
         )}
       </section></div>
+      <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
       <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
 
       <div className="flow topband two">
@@ -267,7 +268,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </div>
       </div>
 
-      <div data-keep style={{ marginTop: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
 
       {(() => {
         const bdcInit = initiatives.find((i) => /BDC October/i.test(i.name) && i.status !== "done");

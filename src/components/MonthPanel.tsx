@@ -193,14 +193,6 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
           <div>
             <h4 className="minihead">Gap to goal</h4>
             <PaceList paces={paces} mode="close" />
-            {reports.length > 0 && (
-              <>
-                <h4 className="minihead" style={{ marginTop: 14 }}>Boards and reports</h4>
-                <div className="bookmarks">
-                  {reports.map((b) => <a key={b.id} className="bookmark" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.store_id ? storeLabel(b.store_id) : "all"}</span>{b.title}</a>)}
-                </div>
-              </>
-            )}
           </div>
           <div>
             <h4 className="minihead">Who needs a push</h4>
