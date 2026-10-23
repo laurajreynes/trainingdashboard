@@ -754,13 +754,18 @@ details.accordion > summary h2 { margin: 0; }
 .cwsetup-bar .progress { margin-top: 5px; }
 .cwsetup-label { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--ink-dim); white-space: nowrap; }
 .cwsetup-label b { color: var(--ink); }
-.cwsetup-sec { margin-top: 12px; }
-.cwsetup-sec h3 { font-size: 13.5px; margin: 0 0 4px; color: var(--forest); }
-.cwsetup-names { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; }
-.cwsetup-names li { font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; display: inline-flex; gap: 8px; align-items: baseline; }
-.cwsetup-names.done li { background: var(--sage, #e3efe8); border-color: transparent; }
-.cwsetup-names li.fresh { border-style: dashed; }
-.cwsetup-names .line { font-size: 11.5px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.cwgrid { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.cwgrid th { text-align: center; font-weight: 600; font-size: 12px; color: var(--ink-dim); padding: 0 4px 8px; vertical-align: bottom; line-height: 1.2; }
+.cwgrid th span { display: block; }
+.cwgrid th small { display: block; font-weight: 500; color: var(--ink-faint); font-size: 11px; margin-top: 2px; }
+.cwgrid td { padding: 5px 4px; border-top: 1px solid var(--line); text-align: center; }
+.cwgrid td:first-child { text-align: left; white-space: nowrap; }
+.cwgrid tr.set td:first-child { color: var(--forest); font-weight: 600; }
+.cwgrid tr.out td { color: var(--ink-faint); }
+.cwgrid td small { color: var(--ink-faint); margin-left: 6px; }
+.cwgrid i { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); vertical-align: middle; }
+.cwgrid i.on { background: var(--good); border-color: var(--good); position: relative; }
+.cwgrid i.on::after { content: ""; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 @media (max-width: 800px) { .cwsetup-bars { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 
 .desc p { margin: 0 0 10px; }

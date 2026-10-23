@@ -45,39 +45,30 @@ export function CarWarsSetup({ body, storeSlug, editor }: { body: string | null;
 
       <dialog ref={ref} className="initdialog" onClose={() => setOpen(false)} onClick={(e) => { if (e.target === ref.current) setOpen(false); }}>
         <div className="initdialog-body">
-          <div className="cardhead" style={{ marginBottom: 6 }}><h2 style={{ fontSize: 20 }}>CarWars setup</h2><span className="small muted">{allSet.length} of {total} all set</span></div>
+          <div className="cardhead" style={{ marginBottom: 10 }}><h2 style={{ fontSize: 20 }}>CarWars setup</h2><span className="small muted">{allSet.length} of {total} all set</span></div>
 
-          {allSet.length > 0 && (
-            <section className="cwsetup-sec">
-              <h3>All set</h3>
-              <ul className="cwsetup-names done">{allSet.map((p) => <li key={p.name}>{p.name}{p.line && <span className="line">{p.line}</span>}</li>)}</ul>
-            </section>
-          )}
-
-          {SETUP_STEPS.map((s) => {
-            const n = needs(s.key);
-            if (!n.length) return null;
-            return (
-              <section key={s.key} className="cwsetup-sec">
-                <h3>{s.label} <span className="muted">· {n.length} to go</span></h3>
-                <ul className="cwsetup-names">{n.map((p) => <li key={p.name} className={p.done.size === 0 ? "fresh" : ""}>{p.name}{p.line && <span className="line">{p.line}</span>}</li>)}</ul>
-              </section>
-            );
-          })}
-
-          {(started.length > 0 || untouched.length > 0) && (
-            <p className="small muted" style={{ marginTop: 10 }}>
-              {started.length > 0 && <>{started.length} partway through. </>}
-              {untouched.length > 0 && <>{untouched.length} haven&apos;t started: {untouched.map((p) => p.name.split(" ")[0]).join(", ")}.</>}
-            </p>
-          )}
-
-          {out.length > 0 && (
-            <section className="cwsetup-sec">
-              <h3>Out right now</h3>
-              <ul className="cwsetup-names muted">{out.map((p) => <li key={p.name}>{p.name}{p.line ? <span className="line">{p.line}</span> : <span className="line">no agent line yet</span>}</li>)}</ul>
-            </section>
-          )}
+          <table className="cwgrid">
+            <thead>
+              <tr>
+                <th />
+                {SETUP_STEPS.map((s) => <th key={s.key}><span>{s.label}</span><small>{needs(s.key).length ? `${needs(s.key).length} to go` : "all done"}</small></th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {[...allSet, ...started, ...untouched].map((p) => (
+                <tr key={p.name} className={p.done.size === 4 ? "set" : ""}>
+                  <td>{p.name}</td>
+                  {SETUP_STEPS.map((s) => <td key={s.key}><i className={p.done.has(s.key) ? "on" : ""} aria-label={p.done.has(s.key) ? "done" : "not yet"} /></td>)}
+                </tr>
+              ))}
+              {out.map((p) => (
+                <tr key={p.name} className="out">
+                  <td>{p.name} <small>out</small></td>
+                  {SETUP_STEPS.map((s) => <td key={s.key}><i className={p.done.has(s.key) ? "on" : ""} /></td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {editor && (
             <details className="quiet" style={{ marginTop: 14 }}>
