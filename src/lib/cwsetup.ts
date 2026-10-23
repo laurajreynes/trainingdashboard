@@ -27,6 +27,33 @@ Owen Shields | 406-536-8656 | L V C S
 Rob Burns | 406-536-8638 | L C
 TJ Fields | 406-548-9609 |
 Madelyn Nowak | | | out`,
+  "chevrolet-belgrade": `# Name | agent line | done (L logged in, V voice recognition, C click to call, S email signature) | out
+TC Antonsen | |
+Casey St. Clair | | V
+Alan Stradiotto | | V
+Shane Briese | |
+Erik McNeely | |`,
+  "sales-bdc": `# Name | agent line | done (L logged in, V voice recognition, C click to call, S email signature) | out
+Russ Stump | | V
+Shane Deavours | | V
+Justin Henzi | | V
+Wyatt Kubiak | |
+Angela Phanor | | | out
+Maddi Hart | | | out`,
+  subaru: `# Name | agent line | done (L logged in, V voice recognition, C click to call, S email signature) | out
+Abie Benson | |
+Allison Bergen | |
+Catherine Long | |
+Dimitrios Imbrunetti | |
+Ethan Kilgore | |
+Ian Deroeck | |
+Mason Buck | |
+Mia Leandro | |
+Ryan Crum | |
+Ryan Ghormley | |
+Zachary Novak | |
+Halie Monroe | |
+Chris Froelich | |`,
 };
 
 export type SetupPerson = { name: string; line: string; done: Set<string>; out: boolean };

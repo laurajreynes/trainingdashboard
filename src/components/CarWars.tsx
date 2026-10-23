@@ -97,7 +97,11 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
       </div>
       <Track stops={stops} t={t} />
       {notes.length > 0 && <p className="small muted cwnote">{notes.join(" · ")}</p>}
-      {store && !location && (setup || editor || SETUP_SEED[store.slug]) && <CarWarsSetup body={setup || SETUP_SEED[store.slug] || null} storeSlug={store.slug} editor={editor} />}
+      {store && (() => {
+        const key = location ? `${store.slug}-${location.toLowerCase()}` : store.slug;
+        const body = setup || SETUP_SEED[key] || null;
+        return (body || editor) ? <CarWarsSetup body={body} storeSlug={key} editor={editor} /> : null;
+      })()}
       {editor && !store && (
         <details className="quiet" style={{ marginTop: 8 }}>
           <summary className="small">Edit dates</summary>

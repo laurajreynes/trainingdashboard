@@ -13,7 +13,20 @@ export function CarWarsSetup({ body, storeSlug, editor }: { body: string | null;
   }, [open]);
 
   const people = parseSetup(body);
-  if (!people.length && !editor) return null;
+  if (!people.length) {
+    if (!editor) return null;
+    return (
+      <details className="quiet" style={{ marginTop: 10 }}>
+        <summary className="small">Add a setup list</summary>
+        <form action={saveGroupNote} style={{ marginTop: 6 }}>
+          <input type="hidden" name="key" value={`cwsetup:${storeSlug}`} />
+          <textarea name="body" placeholder={"Name | agent line | L V C S | out"} style={{ minHeight: 140, fontSize: 13, fontFamily: "ui-monospace, monospace" }} />
+          <p className="faint small" style={{ margin: "4px 0 6px" }}>One line per person. L logged in · V voice recognition · C click to call · S email signature.</p>
+          <button className="btn sm ghost">Save</button>
+        </form>
+      </details>
+    );
+  }
   const active = people.filter((p) => !p.out);
   const out = people.filter((p) => p.out);
   const total = active.length;
