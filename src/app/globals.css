@@ -763,6 +763,10 @@ details.accordion > summary h2 { margin: 0; }
 .cwgrid tr.set td:first-child { color: var(--forest); font-weight: 600; }
 .cwgrid tr.out td { color: var(--ink-faint); }
 .cwgrid td small { color: var(--ink-faint); margin-left: 6px; }
+.cwflip { background: none; border: 0; padding: 4px; margin: -4px; cursor: pointer; border-radius: 50%; line-height: 0; }
+.cwflip:hover i { border-color: var(--good); box-shadow: 0 0 0 3px var(--sage, #e3efe8); }
+.cwout { background: none; border: 0; padding: 0 6px; margin-left: 4px; cursor: pointer; font: inherit; font-size: 11.5px; color: var(--ink-faint); border-radius: 6px; }
+.cwout:hover { background: var(--panel-2); color: var(--ink); }
 .cwgrid i { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); vertical-align: middle; }
 .cwgrid i.on { background: var(--good); border-color: var(--good); position: relative; }
 .cwgrid i.on::after { content: ""; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }

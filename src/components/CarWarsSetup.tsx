@@ -1,7 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { saveGroupNote } from "@/app/actions";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { saveGroupNote, toggleSetupStep } from "@/app/actions";
 import { SETUP_STEPS, parseSetup } from "@/lib/cwsetup";
+
+function Flip({ slug, name, step, className, title, children }: { slug: string; name: string; step: string; className: string; title: string; children: ReactNode }) {
+  return (
+    <form action={toggleSetupStep} style={{ display: "inline" }}>
+      <input type="hidden" name="slug" value={slug} /><input type="hidden" name="name" value={name} /><input type="hidden" name="step" value={step} />
+      <button type="submit" className={className} title={title}>{children}</button>
+    </form>
+  );
+}
 
 export function CarWarsSetup({ body, storeSlug, editor }: { body: string | null; storeSlug: string; editor?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -68,16 +77,20 @@ export function CarWarsSetup({ body, storeSlug, editor }: { body: string | null;
               </tr>
             </thead>
             <tbody>
-              {[...allSet, ...started, ...untouched].map((p) => (
-                <tr key={p.name} className={p.done.size === 4 ? "set" : ""}>
-                  <td>{p.name}</td>
-                  {SETUP_STEPS.map((s) => <td key={s.key}><i className={p.done.has(s.key) ? "on" : ""} aria-label={p.done.has(s.key) ? "done" : "not yet"} /></td>)}
-                </tr>
-              ))}
-              {out.map((p) => (
-                <tr key={p.name} className="out">
-                  <td>{p.name} <small>out</small></td>
-                  {SETUP_STEPS.map((s) => <td key={s.key}><i className={p.done.has(s.key) ? "on" : ""} /></td>)}
+              {[...allSet, ...started, ...untouched, ...out].map((p) => (
+                <tr key={p.name} className={p.out ? "out" : p.done.size === 4 ? "set" : ""}>
+                  <td>
+                    {p.name}
+                    {p.out && !editor && <small>out</small>}
+                    {editor && <Flip slug={storeSlug} name={p.name} step="out" className="cwout" title={p.out ? "Mark back in" : "Mark out"}>{p.out ? "out" : "·"}</Flip>}
+                  </td>
+                  {SETUP_STEPS.map((s) => (
+                    <td key={s.key}>
+                      {editor
+                        ? <Flip slug={storeSlug} name={p.name} step={s.key} className="cwflip" title={p.done.has(s.key) ? `${s.label}: done, click to undo` : `${s.label}: click when done`}><i className={p.done.has(s.key) ? "on" : ""} /></Flip>
+                        : <i className={p.done.has(s.key) ? "on" : ""} aria-label={p.done.has(s.key) ? "done" : "not yet"} />}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -85,7 +98,7 @@ export function CarWarsSetup({ body, storeSlug, editor }: { body: string | null;
 
           {editor && (
             <details className="quiet" style={{ marginTop: 14 }}>
-              <summary className="small">Edit</summary>
+              <summary className="small">Edit as text</summary>
               <form action={saveGroupNote} style={{ marginTop: 6 }}>
                 <input type="hidden" name="key" value={`cwsetup:${storeSlug}`} />
                 <textarea name="body" defaultValue={body || ""} placeholder={"Name | agent line | L V C S | out"} style={{ minHeight: 220, fontSize: 13, fontFamily: "ui-monospace, monospace" }} />

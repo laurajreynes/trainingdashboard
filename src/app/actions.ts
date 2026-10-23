@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/supabase";
+import { SETUP_SEED } from "@/lib/cwsetup";
 import { requireEditor, setEditorCookie, clearEditorCookie, acceptManagerCode } from "@/lib/auth";
 
 function s(fd: FormData, key: string): string | null {
@@ -547,6 +548,29 @@ async function syncCarwarsRoster(body: string | null) {
   const day = new Date().toLocaleDateString("en-CA", { timeZone: "America/Denver" });
   const rows = ids.filter((id) => !live.has(id)).map((person_id) => ({ initiative_id: cw.id, person_id, status: "trained", trained_on: day, notes: "Live on CarWars (from setup)", updated_at: new Date().toISOString() }));
   if (rows.length) ok(await db().from("initiative_people").upsert(rows, { onConflict: "initiative_id,person_id" }));
+}
+
+/** One click on a circle in the CarWars setup popup: flip that step (L V C S) or the "out" flag for one person. */
+export async function toggleSetupStep(fd: FormData) {
+  await requireEditor();
+  const slug = must(fd, "slug"), name = must(fd, "name"), step = must(fd, "step");
+  if (!/^[LVCS]$|^out$/.test(step)) throw new Error("Unknown step");
+  const key = `cwsetup:${slug}`;
+  const cur = await db().from("group_notes").select("body").eq("key", key).maybeSingle();
+  const body = (cur.data as { body: string } | null)?.body || SETUP_SEED[slug] || "";
+  const lines = body.split(/\r?\n/).map((l) => {
+    if (l.trim().startsWith("#")) return l;
+    const f = l.split("|").map((x) => x.trim());
+    if ((f[0] || "") !== name) return l;
+    while (f.length < 4) f.push("");
+    if (step === "out") f[3] = /out/i.test(f[3]) ? "" : "out";
+    else { const done = new Set(f[2].toUpperCase().replace(/[^LVCS]/g, "").split("").filter(Boolean)); if (done.has(step)) done.delete(step); else done.add(step); f[2] = ["L","V","C","S"].filter((k) => done.has(k)).join(" "); }
+    return f.join(" | ").replace(/( \| )+$/, "");
+  });
+  const next = lines.join("\n");
+  ok(await db().from("group_notes").upsert({ key, body: next, updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  await syncCarwarsRoster(next);
+  refresh();
 }
 export async function addMeeting(fd: FormData) {
   await requireEditor();
