@@ -175,11 +175,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
               const { time, text } = splitTime(v.focus);
               const isToday = v.date === today();
               return (
-                <Link key={v.id} href={`/v/${v.id}`} className={`nextitem${isToday ? " today" : ""}`} style={v.store_id !== store.id ? { ["--accent" as string]: storeAccent(stores.find((s) => s.id === v.store_id)) } : undefined}>
+                <div key={v.id} className={`nextitem${isToday ? " today" : ""}`} style={v.store_id !== store.id ? { ["--accent" as string]: storeAccent(stores.find((s) => s.id === v.store_id)) } : undefined}>
+                  <Link href={`/v/${v.id}`} className="stretch" aria-label="Open visit" />
                   <span className="when">{isToday ? "Today" : fmtDate(v.date, { weekday: true })}{time ? ` · ${time}` : ""}{v.store_id !== store.id ? ` · ${stores.find((s) => s.id === v.store_id)?.short_name || ""}` : ""}</span>
                   <span className="what">{trimStore(text || v.focus || "Visit").replace(/,?\s*until .*$/i, "") || "Visit"}</span>
-                  {v.initiative_ids.length > 0 && <span className="tags">{v.initiative_ids.map((iid) => initiatives.find((i) => i.id === iid)).filter(Boolean).map((i) => <span key={i!.id} className="tag area">{i!.name}</span>)}</span>}
-                </Link>
+                  {v.initiative_ids.length > 0 && <span className="tags">{v.initiative_ids.map((iid) => initiatives.find((i) => i.id === iid)).filter(Boolean).map((i) => <Link key={i!.id} className="tag area" href={carwars && i!.id === carwars.id ? "#carwars" : `/i/${i!.id}`}>{i!.name}</Link>)}</span>}
+                </div>
               );
             })}
           </div>

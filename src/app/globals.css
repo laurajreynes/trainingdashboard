@@ -910,3 +910,11 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .wt-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 3px; }
 .wt-quote { margin: 0; font-family: var(--font-display); font-size: 17px; line-height: 1.4; color: var(--ink); }
 .wt-quote strong { color: var(--brand); }
+
+/* Next-visit card: whole card opens the visit, tags are their own links */
+.nextitem { position: relative; }
+.nextitem .stretch { position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+.nextitem .tags { position: relative; z-index: 1; }
+.nextitem .tags a.tag { text-decoration: none; color: inherit; }
+.nextitem .tags a.tag:hover { background: var(--sage); }
+#carwars { scroll-margin-top: 80px; }
