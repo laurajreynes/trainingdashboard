@@ -304,6 +304,11 @@ export async function addGoalEntry(fd: FormData) {
   }));
   refresh();
 }
+export async function setGoalTarget(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("goals").update({ target: num(fd, "target") }).eq("id", must(fd, "id")));
+  refresh();
+}
 export async function deleteGoal(fd: FormData) {
   await requireEditor();
   ok(await db().from("goals").delete().eq("id", must(fd, "id")));
@@ -517,7 +522,31 @@ export async function saveGroupNote(fd: FormData) {
   const key = must(fd, "key");
   if (!["mission", "vision", "values", "notes", "gm_skip", "carwars"].includes(key) && !key.startsWith("targets:") && !key.startsWith("cwsetup:") && !key.startsWith("stage:") && !key.startsWith("focus:") && !key.startsWith("activity:") && !key.startsWith("collection:") && key !== "marketing") throw new Error("Unknown section");
   ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  if (key.startsWith("cwsetup:")) await syncCarwarsRoster(s(fd, "body"));
   refresh();
+}
+
+/**
+ * The CarWars setup grid is the source of truth for who's launched: anyone with a step checked is live on the
+ * CarWars roster, so the setup checkmarks feed coverage without a second input. It only moves people up;
+ * someone marked live by hand stays live.
+ */
+async function syncCarwarsRoster(body: string | null) {
+  const { parseSetup } = await import("@/lib/cwsetup");
+  const setup = parseSetup(body).filter((x) => !x.out && x.done.size > 0);
+  if (!setup.length) return;
+  const inits = await db().from("initiatives").select("id,name,status");
+  const cw = (inits.data || []).find((i: { name: string; status: string }) => /carwars/i.test(i.name) && i.status !== "done");
+  if (!cw) return;
+  const people = await db().from("people").select("id,name,active");
+  const norm = (x: string) => x.toLowerCase().replace(/[^a-z]/g, "");
+  const ids = setup.map((x) => (people.data || []).find((pp: { name: string; active: boolean }) => pp.active && norm(pp.name) === norm(x.name))?.id).filter(Boolean) as string[];
+  if (!ids.length) return;
+  const cur = await db().from("initiative_people").select("person_id,status").eq("initiative_id", cw.id).in("person_id", ids);
+  const live = new Set((cur.data || []).filter((r: { status: string }) => r.status === "trained" || r.status === "solid").map((r: { person_id: string }) => r.person_id));
+  const day = new Date().toLocaleDateString("en-CA", { timeZone: "America/Denver" });
+  const rows = ids.filter((id) => !live.has(id)).map((person_id) => ({ initiative_id: cw.id, person_id, status: "trained", trained_on: day, notes: "Live on CarWars (from setup)", updated_at: new Date().toISOString() }));
+  if (rows.length) ok(await db().from("initiative_people").upsert(rows, { onConflict: "initiative_id,person_id" }));
 }
 export async function addMeeting(fd: FormData) {
   await requireEditor();

@@ -20,7 +20,7 @@ import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
-  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, addTodo, addBookmark, deleteBookmark, deleteGoalEntry } from "@/app/actions";
+  addResource, deleteResource, addGoal, addGoalEntry, deleteGoal, setGoalTarget, addTodo, addBookmark, deleteBookmark, deleteGoalEntry } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -326,6 +326,15 @@ export default async function InitiativePage({ params, searchParams }: { params:
                   {editor && <form action={deleteGoal}><input type="hidden" name="id" value={g.id} /><button className="iconbtn">×</button></form>}
                 </div>
                 <Sparkline goal={g} entries={entries} />
+                {editor && (
+                  <form action={setGoalTarget} className="inline goaltarget" style={{ marginTop: 2 }}>
+                    <input type="hidden" name="id" value={g.id} />
+                    <span className="faint small">Goal</span>
+                    <input type="text" inputMode="decimal" name="target" defaultValue={g.target ?? ""} style={{ width: 64 }} />
+                    <span className="faint small">{g.unit}</span>
+                    <button className="btn sm ghost">Set</button>
+                  </form>
+                )}
                 {editor && entries.some((e) => e.goal_id === g.id) && (
                   <details className="quiet" style={{ borderTop: 0, marginTop: 4, paddingTop: 0 }}>
                     <summary>Entries</summary>
