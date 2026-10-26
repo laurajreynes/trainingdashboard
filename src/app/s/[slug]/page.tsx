@@ -8,6 +8,7 @@ import { getTargets } from "@/lib/tracking";
 import { getStorePosts, getExamples, getMetrics, getStages, getAreas, getResources, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { StoreFocus } from "@/components/StoreFocus";
+import { PlaybookCard } from "@/components/Playbook";
 import { TextResource } from "@/components/TextResource";
 import { ActivityCard, type Activity } from "@/components/ActivityCard";
 import { CarWarsBanner } from "@/components/CarWars";
@@ -60,6 +61,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
   const carwarsSetup = groupNotes.find((n) => n.key === `cwsetup:${store.slug}`)?.body || null;
   const focusText = groupNotes.find((n) => n.key === `focus:${store.id}`)?.body || null;
+  const playbook = groupNotes.find((n) => n.key === `playbook:${store.slug}`)?.body || null;
   const activity = (() => { try { const b = groupNotes.find((n) => n.key === `activity:${store.slug}`)?.body; return b ? (JSON.parse(b) as Activity) : null; } catch { return null; } })();
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
@@ -200,6 +202,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </form>
         )}
       </section></div>
+      <div data-keep style={{ marginTop: 12 }}><PlaybookCard storeSlug={store.slug} body={playbook} editor={editor} /></div>
       <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
       <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
 

@@ -922,3 +922,19 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .nextitem .tags a.tag { text-decoration: none; color: inherit; }
 .nextitem .tags a.tag:hover { background: var(--sage); }
 #carwars { scroll-margin-top: 80px; }
+
+/* Playbook: where the store's playbook stands */
+.playbook { padding: 12px 16px; }
+.playbook .pbrow { display: flex; align-items: center; gap: 12px; }
+.playbook .pbtitle { font-weight: 600; font-size: 15px; }
+.playbook .pbtitle a { color: var(--ink); }
+.pblight { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; box-shadow: 0 0 0 3px rgba(0,0,0,0.04) inset; }
+.pblight.pb-draft { background: var(--ink-faint); }
+.pblight.pb-review { background: #e8b413; box-shadow: 0 0 0 4px rgba(232, 180, 19, 0.25); animation: pbpulse 2.4s ease-in-out infinite; }
+.pblight.pb-approved, .pblight.pb-shipped { background: var(--good); box-shadow: 0 0 0 4px var(--good-soft); }
+@keyframes pbpulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(232, 180, 19, 0.25); } 50% { box-shadow: 0 0 0 7px rgba(232, 180, 19, 0.12); } }
+.pbtag.pb-review { background: rgba(232, 180, 19, 0.18); color: #7a5a00; }
+.pbtag.pb-approved, .pbtag.pb-shipped { background: var(--good-soft); color: var(--good); }
+.pbtag.pb-draft { background: var(--panel-2); color: var(--ink-dim); }
+.playbook.pb-review { border-left: 4px solid #e8b413; }
+.playbook.pb-approved, .playbook.pb-shipped { border-left: 4px solid var(--good); }

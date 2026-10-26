@@ -17,6 +17,7 @@ import { ROSTER_LABEL, ROSTER_STATUSES, type RosterStatus } from "@/lib/types";
 import { fmtDate, today, storeAccent } from "@/lib/fmt";
 import { Bulletin } from "@/components/Bulletin";
 import { ActivityCard, type Activity } from "@/components/ActivityCard";
+import { PlaybookCard } from "@/components/Playbook";
 import { StatusTag, RosterBar, TodoList, VisitList, WinList, Sparkline } from "@/components/ui";
 import {
   updateInitiative, deleteInitiative, setRosterStatus, addPeopleToInitiative, removeFromInitiative,
@@ -45,6 +46,11 @@ export default async function InitiativePage({ params, searchParams }: { params:
     const key = `activity:${loc || st.slug}`;
     const b = notes.find((n) => n.key === key)?.body; if (!b) return null;
     try { return { store: st, data: JSON.parse(b) as Activity }; } catch { return null; }
+  })();
+  const playbook = await (async () => {
+    const st = stores.find((s) => init.store_ids.includes(s.id)); if (!st) return null;
+    const notes = await getGroupNotes(); const b = notes.find((n) => n.key === `playbook:${st.slug}`)?.body || null;
+    return b ? { slug: st.slug, body: b } : null;
   })();
   const initVisits = visitsAll.filter((v) => v.initiative_ids.includes(id) && v.date <= today());
   const visits = initVisits.slice(0, 8);
@@ -110,6 +116,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
           {init.goal_text && <div className="sub">{init.goal_text}</div>}
         </div>
       </div>
+      {playbook && <div style={{ marginBottom: 12 }}><PlaybookCard storeSlug={playbook.slug} body={playbook.body} editor={editor} /></div>}
 
       <div className="grid main-side">
         <div className="stack">

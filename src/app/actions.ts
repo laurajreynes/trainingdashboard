@@ -521,8 +521,9 @@ export async function deleteExample(fd: FormData) {
 export async function saveGroupNote(fd: FormData) {
   await requireEditor();
   const key = must(fd, "key");
-  if (!["mission", "vision", "values", "notes", "gm_skip", "carwars"].includes(key) && !key.startsWith("targets:") && !key.startsWith("cwsetup:") && !key.startsWith("stage:") && !key.startsWith("focus:") && !key.startsWith("activity:") && !key.startsWith("collection:") && key !== "marketing") throw new Error("Unknown section");
-  ok(await db().from("group_notes").upsert({ key, body: s(fd, "body"), updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  if (!["mission", "vision", "values", "notes", "gm_skip", "carwars"].includes(key) && !key.startsWith("targets:") && !key.startsWith("cwsetup:") && !key.startsWith("stage:") && !key.startsWith("focus:") && !key.startsWith("activity:") && !key.startsWith("collection:") && !key.startsWith("playbook:") && key !== "marketing") throw new Error("Unknown section");
+  const body = s(fd, "compose") === "playbook" ? [s(fd, "pb_url"), s(fd, "pb_title"), s(fd, "pb_status"), s(fd, "pb_note")].join(" | ") : s(fd, "body");
+  ok(await db().from("group_notes").upsert({ key, body, updated_at: new Date().toISOString() }, { onConflict: "key" }));
   if (key.startsWith("cwsetup:")) await syncCarwarsRoster(s(fd, "body"));
   refresh();
 }
