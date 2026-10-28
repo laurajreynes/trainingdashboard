@@ -64,7 +64,7 @@ export default async function People({ searchParams }: { searchParams: Promise<{
                       <div className="frow">
                         <input type="text" name="name" placeholder="Name" required />
                         <select name="role">{ROLES.map((r) => <option key={r}>{r}</option>)}</select>
-                        {s.locations.length > 0 && <select name="location"><option value="">Main store</option>{s.locations.map((l) => <option key={l}>{l}</option>)}</select>}
+                        {!s.is_bdc && <select name="location"><option value="">{s.locations.length ? "Main store" : "Sales"}</option>{s.locations.map((l) => <option key={l}>{l}</option>)}<option value="Service">Service</option></select>}
                       </div>
                       <button className="btn sm">Add</button>
                     </form>
@@ -76,7 +76,7 @@ export default async function People({ searchParams }: { searchParams: Promise<{
                       <div className="frow wide"><textarea name="names" placeholder={"One name per line"} required /></div>
                       <div className="frow">
                         <select name="role">{ROLES.map((r) => <option key={r}>{r}</option>)}</select>
-                        {s.locations.length > 0 && <select name="location"><option value="">Main store</option>{s.locations.map((l) => <option key={l}>{l}</option>)}</select>}
+                        {!s.is_bdc && <select name="location"><option value="">{s.locations.length ? "Main store" : "Sales"}</option>{s.locations.map((l) => <option key={l}>{l}</option>)}<option value="Service">Service</option></select>}
                       </div>
                       <button className="btn sm">Import</button>
                     </form>
