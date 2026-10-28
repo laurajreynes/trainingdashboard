@@ -305,6 +305,20 @@ export async function addGoalEntry(fd: FormData) {
   }));
   refresh();
 }
+/** Several goals logged for one date in one go (the service page's daily activity line). Fields: date, v_<goalId>. */
+export async function addGoalEntries(fd: FormData) {
+  await requireEditor();
+  const date = must(fd, "date");
+  const rowsIn: { goal_id: string; date: string; value: number; note: string }[] = [];
+  for (const [k, v] of fd.entries()) {
+    if (!k.startsWith("v_") || typeof v !== "string" || !v.trim()) continue;
+    const value = Number(v.replace(/,/g, ""));
+    if (!Number.isFinite(value)) continue;
+    rowsIn.push({ goal_id: k.slice(2), date, value, note: "Logged from the service page" });
+  }
+  if (rowsIn.length) ok(await db().from("goal_entries").insert(rowsIn));
+  refresh();
+}
 export async function setGoalTarget(fd: FormData) {
   await requireEditor();
   ok(await db().from("goals").update({ target: num(fd, "target") }).eq("id", must(fd, "id")));

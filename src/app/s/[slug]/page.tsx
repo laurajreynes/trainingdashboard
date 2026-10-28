@@ -35,10 +35,13 @@ import { Model } from "@/components/Model";
 import { splitTime } from "@/components/WeekCalendar";
 import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin } from "@/app/actions";
 import { StoreGoals } from "@/components/StoreGoals";
+import { SideToggle } from "@/components/SideToggle";
+import { ServiceSide } from "./ServiceSide";
+import { isServiceInit, isServicePerson, isServiceVisit } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
 
-export default async function StorePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ phase?: string; posted?: string; code?: string }> }) {
+export default async function StorePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ phase?: string; posted?: string; code?: string; side?: string }> }) {
   const { slug } = await params;
   const sp = await searchParams;
   const [store, stores, editor, poster] = await Promise.all([getStoreBySlug(slug), getStores(), isEditor(), canPost()]);
@@ -48,7 +51,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   const [initiatives, roster, visits, todos, wins, people, bookmarksAll, commitments, goals] = await Promise.all([
     getInitiatives(), getAllRoster(), getVisits({ storeIds: ids, limit: 200 }), getTodos({ storeIds: ids }),
-    getWins({ storeIds: ids, limit: 6 }), getPeople(ids), getBookmarks(ids), getCommitments(ids), getGoals({ storeIds: ids }),
+    getWins({ storeIds: ids, limit: 60 }), getPeople(ids), getBookmarks(ids), getCommitments(ids), getGoals({ storeIds: ids }),
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
@@ -66,16 +69,17 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const ownIds = new Set(people.filter((p) => p.store_id === store.id).map((p) => p.id));   // this store's people, not the shared BDC's
   const exAll = await getExamples({ limit: 400 });
   const exHere = exAll.filter((e) => e.store_id === store.id || e.person_ids.some((pid) => ownIds.has(pid))).slice(0, 8);
-  const storeInits = initiatives.filter((i) => i.store_ids.some((sid) => ids.includes(sid)) && i.status !== "done" && !/carwars/i.test(i.name));   // this store plus the shared BDC: the BDC is part of the dealership
+  const storeInits = initiatives.filter((i) => i.store_ids.some((sid) => ids.includes(sid)) && i.status !== "done" && !/carwars/i.test(i.name) && !isServiceInit(i));   // this store plus the shared BDC: the BDC is part of the dealership
   const activityInit = storeInits.find((i) => /text|lead response|calls over|phone|reasons/i.test(i.name) && i.store_ids.includes(store.id)) || null;
-  const peopleHere = people.filter((p) => p.active);
+  const peopleHere = people.filter((p) => p.active && !isServicePerson(p));   // the service team lives behind the Service toggle
   const peopleIds = new Set(peopleHere.map((p) => p.id));
 
-  const plannedHere = visits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
-  const todayHere = visits.filter((v) => v.date === today()).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
+  const salesVisits = visits.filter((v) => !isServiceVisit(v));
+  const plannedHere = salesVisits.filter((v) => v.date > today()).sort((a, b) => a.date.localeCompare(b.date));
+  const todayHere = salesVisits.filter((v) => v.date === today()).sort((a, b) => splitTime(a.focus).minutes - splitTime(b.focus).minutes);
   // This store's sessions plus the shared BDC's, today first, then the next few
   const upcomingHere = [...todayHere, ...plannedHere.sort((a, b) => a.date.localeCompare(b.date) || splitTime(a.focus).minutes - splitTime(b.focus).minutes)].slice(0, 6);
-  const loggedHere = visits.filter((v) => v.date <= today());
+  const loggedHere = salesVisits.filter((v) => v.date <= today());
   const last = loggedHere[0];
   const next = loggedHere.filter((v) => v.next_visit_date && v.next_visit_date >= today())
     .sort((a, b) => a.next_visit_date!.localeCompare(b.next_visit_date!))[0];
@@ -115,6 +119,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const servesStores = store.is_bdc ? stores.filter((s) => store.shows_under.includes(s.slug)) : [];
 
   // Store results from the PR import
+  const serviceIds = new Set(people.filter((p) => isServicePerson(p)).map((p) => p.id));
+  const serviceInitIds = new Set(initiatives.filter((i) => isServiceInit(i)).map((i) => i.id));
+  const salesWins = wins.filter((w) => !(w.person_id && serviceIds.has(w.person_id)) && !(w.initiative_id && serviceInitIds.has(w.initiative_id))).slice(0, 6);
+  const side: "sales" | "service" = sp.side === "service" ? "service" : "sales";
+  const hasService = !store.is_bdc && (serviceIds.size > 0 || initiatives.some((i) => isServiceInit(i) && i.store_ids.includes(store.id)) || visits.some((v) => v.store_id === store.id && isServiceVisit(v)));
+  const showToggle = !store.is_bdc && (hasService || editor);
   const mi = monthPhase(sp.phase);
   const lateMonth = mi.day > 10;   // after the 10th last month's reports are old news: they move to the bottom
   const reflecting = mi.phase === "reflect";
@@ -166,8 +176,16 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <PeoplePopup rows={peopleHere.map((p) => { const rs = roster.filter((r) => r.person_id === p.id && storeInits.some((i) => i.id === r.initiative_id)); const last = visits.filter((v) => v.date <= today() && v.people_ids.includes(p.id)).map((v) => v.date).sort().pop() || null; return { id: p.id, name: p.name, role: p.role, last, lastLabel: last ? fmtDate(last, { weekday: true }) : null, trained: rs.filter((r) => r.status === "trained" || r.status === "solid").length, total: rs.length, group: p.location || store.short_name }; })} groups={[store.short_name, ...[...store.locations].sort()]} label={`${peopleHere.length} people`} title={`${store.short_name}: who is here`} />
           </div>
         </div>
-        {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
+        <div className="headright">
+          {showToggle && <SideToggle slug={store.slug} side={side} />}
+          {editor && <Link href={`/visit/new?store=${store.slug}`} className="btn gold">Log a visit</Link>}
+        </div>
       </div>
+
+      {side === "service" ? (
+        <ServiceSide store={store} stores={stores} editor={editor} initiatives={initiatives} roster={roster} visits={visits} wins={wins}
+          people={people} groupNotes={groupNotes} carwars={carwars} stages={stages} areas={areas} bookmarks={bookmarksAll} />
+      ) : (<>
 
       <div data-keep><section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
@@ -362,12 +380,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <div className="stack">
           <section className="card">
             <div className="cardhead"><h2>Wins and examples</h2><Link className="more" href={`/examples?store=${store.slug}`}>Examples library</Link></div>
-            <WinList wins={wins.slice(0, 3)} editor={editor} people={people} />
-            {wins.length > 3 && <details className="quiet accordion" style={{ marginTop: 4 }}><summary className="small">{wins.length - 3} more wins</summary><WinList wins={wins.slice(3)} editor={editor} people={people} /></details>}
-            {exHere.some((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)) && (
-              <details className="quiet accordion" style={{ marginTop: 6 }}><summary className="small">Examples ({exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).length})</summary>
+            <WinList wins={salesWins.slice(0, 3)} editor={editor} people={people} />
+            {salesWins.length > 3 && <details className="quiet accordion" style={{ marginTop: 4 }}><summary className="small">{salesWins.length - 3} more wins</summary><WinList wins={salesWins.slice(3)} editor={editor} people={people} /></details>}
+            {exHere.some((e) => !salesWins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)) && (
+              <details className="quiet accordion" style={{ marginTop: 6 }}><summary className="small">Examples ({exHere.filter((e) => !salesWins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).length})</summary>
               <ul className="list" style={{ marginTop: 6 }}>
-                {exHere.filter((e) => !wins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).slice(0, 8).map((e) => {
+                {exHere.filter((e) => !salesWins.some((w) => w.person_id && e.person_ids.includes(w.person_id) && w.date === e.taken_on)).slice(0, 8).map((e) => {
                   const who = e.person_ids.map((pid) => people.find((p) => p.id === pid)?.name).filter(Boolean).join(", ");
                   return (
                     <li key={e.id}>
@@ -448,6 +466,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </form>
         </details>
       )}
+      </>)}
     </div>
   );
 }

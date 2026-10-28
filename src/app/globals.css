@@ -938,3 +938,21 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .pbtag.pb-draft { background: var(--panel-2); color: var(--ink-dim); }
 .playbook.pb-review { border-left: 4px solid #e8b413; }
 .playbook.pb-approved, .playbook.pb-shipped { border-left: 4px solid var(--good); }
+
+/* Sales / Service toggle at the top right of a store page */
+.headright { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+.sidetoggle { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); }
+.sidetoggle a { padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-dim); text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; }
+.sidetoggle a:hover { color: var(--ink); text-decoration: none; }
+.sidetoggle a.on { background: var(--panel); color: var(--accent, var(--forest)); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+@media (max-width: 640px) { .headright { width: 100%; justify-content: space-between; } .pagehead .headright .btn { width: auto; } }
+
+/* Service: advisor activity tiles */
+.svctiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.svctile { padding: 12px 14px; border-radius: 12px; background: var(--panel-2); }
+.svctile .svcnum { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--forest); }
+.svctile .svclabel { font-size: 13px; font-weight: 600; margin-top: 4px; }
+.svctile.yes { background: var(--sun-soft); }
+.svctile.yes .svcnum { color: #8a6400; }
+.svclog { align-items: flex-end; gap: 8px; }
+.svclog label { display: flex; flex-direction: column; gap: 2px; }
