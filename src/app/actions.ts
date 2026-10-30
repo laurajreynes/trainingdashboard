@@ -197,6 +197,7 @@ export async function addVisit(fd: FormData) {
 export async function updateVisit(fd: FormData) {
   await requireEditor();
   ok(await db().from("visits").update({
+    ...(s(fd, "store_id") ? { store_id: s(fd, "store_id") } : {}),
     date: s(fd, "date") || new Date().toISOString().slice(0, 10),
     focus: s(fd, "focus"),
     summary: s(fd, "summary"),
