@@ -15,7 +15,7 @@ import { ReportsCard } from "@/components/ReportsCard";
 import { Model } from "@/components/Model";
 import { getTargets, sellingDays, track, targetKey } from "@/lib/tracking";
 import { HBars, Stacked, ReachBars } from "@/components/charts";
-import { storeAccent, addDays, navOrder, monthsBack, weeksBack, gmSkips, projectToMonthEnd } from "@/lib/fmt";
+import { storeAccent, addDays, navOrder, monthsBack, weeksBack, gmSkips, projectToMonthEnd, parseAway } from "@/lib/fmt";
 import { getBookmarks, getStages, getAreas, getBulletin } from "@/lib/data";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
@@ -32,6 +32,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
   const gnotes = await getGroupNotes();
   const gmSkip = gmSkips(gnotes);
+  const away = parseAway(gnotes);
+  const awayBody = gnotes.find((n) => n.key === "away")?.body || null;
   const bulletin = await getBulletin();
   const reports = bookmarksAll.filter((b) => !b.initiative_id && b.kind === "report");
   const { stores, initiatives, roster, visits: visitsAll, todos, wins, people } = snap;
@@ -137,7 +139,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {editor && <Link href="/visit/new" className="btn gold">Log a visit</Link>}
       </div>
 
-      <div data-keep><WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} /></div>
+      <div data-keep><WeekCalendar visits={visitsAll} todos={todos} stores={stores} editor={editor} gmSkip={gmSkip} away={away} awayBody={awayBody} /></div>
 
 
       <section style={{ marginBottom: 18 }} data-keep="root">

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Store, Visit, Todo } from "@/lib/types";
-import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting, nowMinutes } from "@/lib/fmt";
+import { today, addDays, weeksBack, fmtDate, storeAccent, nextGmMeeting, nowMinutes, awayOn, type Away } from "@/lib/fmt";
+import { saveGroupNote } from "@/app/actions";
 
-type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean; gmSkip?: string[] };
+type Props = { visits: Visit[]; todos: Todo[]; stores: Store[]; editor?: boolean; gmSkip?: string[]; away?: Away[]; awayBody?: string | null };
 
 /** "11am Toyota training" → time "11am", rest "Toyota training". */
 export function splitTime(focus: string | null): { time: string | null; text: string; minutes: number } {
@@ -20,7 +21,7 @@ export function splitTime(focus: string | null): { time: string | null; text: st
 }
 
 /** Monday to Friday of this week. Today gets the wide column. */
-export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Props) {
+export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [], away = [], awayBody = null }: Props) {
   const t = today();
   const monday = weeksBack(1)[0];
   const days = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
@@ -41,12 +42,14 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
           const sessions = visits.filter((v) => v.date === d).sort((a, b) => order(a) - order(b));
           const dues = todos.filter((x) => !x.done && x.due === d);
           const isToday = d === t;
+          const out = awayOn(away, d);
           return (
-            <div key={d} className={`day${isToday ? " today" : ""}${d < t ? " past" : ""}`}>
+            <div key={d} className={`day${isToday ? " today" : ""}${d < t ? " past" : ""}${out ? " away" : ""}`}>
               <div className="dayhead">
                 <span className="dow">{isToday ? "Today" : fmtDate(d, { weekday: true }).split(",")[0]}</span>
                 <span className="dnum">{fmtDate(d)}</span>
               </div>
+              {out && <div className="sess awayblock"><span className="who">Out</span>{out.label && <span className="what">{out.label}</span>}</div>}
               {(() => {
                 // Sessions and the 1pm HR/GM meeting in time order
                 const items: { key: string; minutes: number; node: React.ReactNode }[] = sessions.map((v) => {
@@ -69,19 +72,29 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [] }: Pro
                     </Link>
                   ) };
                 });
-                if (d === gm) items.push({ key: "gm", minutes: 13 * 60, node: <Link key="gm" href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link> });
+                if (d === gm && !out) items.push({ key: "gm", minutes: 13 * 60, node: <Link key="gm" href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link> });
                 return items.sort((a, b) => a.minutes - b.minutes).map((i) => i.node);
               })()}
               {dues.map((x) => {
                 const s = store(x.store_id);
                 return <Link key={x.id} href={s ? `/s/${s.slug}` : "/todos"} className="sess due" style={{ ["--accent" as string]: storeAccent(s) }} title={x.text}><span className="what">{x.text}</span></Link>;
               })}
-              {isToday && !sessions.length && !dues.length && d !== gm && <p className="empty">Nothing on the calendar</p>}
+              {isToday && !out && !sessions.length && !dues.length && d !== gm && <p className="empty">Nothing on the calendar</p>}
             </div>
           );
         })}
       </div>
       {todayIdx < 0 && <p className="faint small" style={{ marginTop: 8 }}>Weekend. Back Monday.</p>}
+      {editor && (
+        <details className="quiet" style={{ marginTop: 8 }}>
+          <summary className="small">Days out</summary>
+          <form action={saveGroupNote} style={{ marginTop: 6 }}>
+            <input type="hidden" name="key" value="away" />
+            <textarea name="body" rows={3} defaultValue={awayBody || ""} placeholder={"2026-11-04 to 2026-11-06 | Chicago"} />
+            <button className="btn sm ghost" style={{ marginTop: 4 }}>Save</button>
+          </form>
+        </details>
+      )}
     </section>
   );
 }

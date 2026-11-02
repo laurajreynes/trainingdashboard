@@ -128,6 +128,20 @@ export function gmSkips(notes: { key: string; body: string | null }[]): string[]
   return (notes.find((n) => n.key === "gm_skip")?.body || "").split(/\s+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x));
 }
 
+/**
+ * Days the trainer is out (travel, PTO), from the "away" group note, one range per line:
+ *   2026-11-04 to 2026-11-06 | Chicago
+ * A single date works too. The label is optional.
+ */
+export type Away = { from: string; to: string; label: string };
+export function parseAway(notes: { key: string; body: string | null }[]): Away[] {
+  return (notes.find((n) => n.key === "away")?.body || "").split("\n").map((l) => {
+    const m = l.match(/(\d{4}-\d{2}-\d{2})(?:\s*(?:to|-|through)\s*(\d{4}-\d{2}-\d{2}))?\s*(?:\|\s*(.*))?$/i);
+    return m ? { from: m[1], to: m[2] || m[1], label: (m[3] || "").trim() } : null;
+  }).filter((x): x is Away => !!x);
+}
+export const awayOn = (away: Away[], d: string) => away.find((a) => d >= a.from && d <= a.to) || null;
+
 /** Days in a YYYY-MM month. */
 export function daysInMonth(ym: string): number {
   const [y, m] = ym.split("-").map(Number);
