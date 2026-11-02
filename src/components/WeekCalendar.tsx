@@ -49,7 +49,7 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [], away 
                 <span className="dow">{isToday ? "Today" : fmtDate(d, { weekday: true }).split(",")[0]}</span>
                 <span className="dnum">{fmtDate(d)}</span>
               </div>
-              {out && <div className="sess awayblock"><span className="who">Out</span>{out.label && <span className="what">{out.label}</span>}</div>}
+              {out && <div className="sess awayblock"><span className="who">Out{out.label ? ` · ${out.label}` : ""}</span></div>}
               {(() => {
                 // Sessions and the 1pm HR/GM meeting in time order
                 const items: { key: string; minutes: number; node: React.ReactNode }[] = sessions.map((v) => {
