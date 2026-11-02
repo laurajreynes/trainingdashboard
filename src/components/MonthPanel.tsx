@@ -7,6 +7,7 @@ import {
 import { monthPhase, paceGoal, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
 import { Forest } from "./Forest";
+import { isServiceInit } from "@/lib/service";
 import { saveMonthPlan, togglePlaybook, addPlaybookItem, deletePlaybookItem } from "@/app/actions";
 
 type Props = {
@@ -41,7 +42,16 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   const initIdsHere = new Set(initiatives.filter((i) => !scoped || i.store_ids.some((x) => ids.includes(x))).map((i) => i.id));
   const allGoals = scoped ? [...goals, ...(await getGoals()).filter((g) => g.initiative_id && initIdsHere.has(g.initiative_id) && !goals.some((x) => x.id === g.id))] : goals;
   const entries = await getGoalEntries(allGoals.map((g) => g.id));
-  const paces = allGoals.map((g) => paceGoal(g, entries, mi));
+  // Service activity goals (TLE calls, conversations, yeses) are logged a day at a time, so they add up instead of
+  // reading the last entry, and they sit apart from the sales rates
+  const svcInitIds = new Set(initiatives.filter((i) => isServiceInit(i)).map((i) => i.id));
+  const isSvc = (g: { initiative_id: string | null }) => Boolean(g.initiative_id && svcInitIds.has(g.initiative_id));
+  const paces = allGoals.filter((g) => !isSvc(g)).map((g) => paceGoal(g, entries, mi));
+  const svcTotals = allGoals.filter((g) => isSvc(g) && g.kind === "count").map((g) => {
+    const sum = (a: string, b: string) => entries.filter((e) => e.goal_id === g.id && e.date >= a && e.date <= b).reduce((t, e) => t + Number(e.value), 0);
+    const init = initiatives.find((i) => i.id === g.initiative_id);
+    return { id: g.id, name: g.name, where: init ? init.name.split(":")[0] : "", prev: sum(mi.prevStart, mi.prevEnd), now: sum(mi.monthStart, mi.today) };
+  });
   // Where each goal lives, so three "Phone up appointment set rate" lines read differently
   const whereOf = (g: { store_id: string | null; initiative_id: string | null }) =>
     g.store_id ? allStores.find((x) => x.id === g.store_id)?.short_name || "" :
@@ -126,6 +136,14 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
           <div>
             <h4 className="minihead">{prevName} opportunities</h4>
             <GoalFinals paces={paces} />
+            {svcTotals.some((x) => x.prev > 0) && (
+              <>
+                <h4 className="minihead" style={{ marginTop: 14 }}>{svcTotals[0].where || "Service"} · {prevName}</h4>
+                <ul className="list" style={{ marginTop: 6 }}>
+                  {svcTotals.map((x) => <li key={x.id} className="small"><div className="grow">{x.name}</div><strong>{x.prev}</strong></li>)}
+                </ul>
+              </>
+            )}
             {prevNotes.length > 0 && (
               <details className="quiet">
                 <summary>Trainer notes from {prevName} ({prevNotes.length})</summary>
