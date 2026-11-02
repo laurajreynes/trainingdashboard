@@ -10,13 +10,16 @@ import { Meter } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
 
+const SHOW_LAST_MONTH_DAYS = 3;
+
 type Row = { key: string; name: string; storeId: string; location: string | null; slug: string; color: string };
 
 /** The weekend report, live: month to date, where it's tracking, and the target, by store, new and used. */
 export default async function TrackingPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const sp = await searchParams;
   const mi = monthPhase();
-  const month = /^\d{4}-\d{2}$/.test(sp.month || "") ? sp.month! : mi.month;
+  // The first few days of a month open on last month, while the final numbers are still the ones people want to see
+  const month = /^\d{4}-\d{2}$/.test(sp.month || "") ? sp.month! : mi.day <= SHOW_LAST_MONTH_DAYS ? mi.prevMonth : mi.month;
   const [editor, stores] = await Promise.all([isEditor(), getStores()]);
   const prevMonth = monthsBack(2)[0] === month ? monthsBack(3)[0] : mi.prevMonth;
   const lastYear = `${Number(month.slice(0, 4)) - 1}${month.slice(4)}`;
@@ -54,9 +57,9 @@ export default async function TrackingPage({ searchParams }: { searchParams: Pro
           <div><div className="v">{Math.max(0, days.total - done)}</div><div className="l">remaining</div></div>
         </div>
       </div>
-      <div className="small faint" style={{ marginBottom: 12 }}>
-        {[monthsBack(3)[1], mi.month].filter((m, i, a) => a.indexOf(m) === i).map((m) => <Link key={m} href={`/tracking?month=${m}`} style={{ marginRight: 12, fontWeight: m === month ? 700 : 400 }}>{monthName(m)}</Link>)}
-      </div>
+      <nav className="sidetoggle" aria-label="Month" style={{ marginBottom: 14 }}>
+        {[mi.prevMonth, mi.month].map((m) => <Link key={m} href={`/tracking?month=${m}`} className={m === month ? "on" : ""} aria-current={m === month ? "page" : undefined}>{monthName(m)}</Link>)}
+      </nav>
 
       <div className="trackgrid">
         {rows.map((r) => {
