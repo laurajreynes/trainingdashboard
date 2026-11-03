@@ -1,14 +1,18 @@
 import { saveGroupNote } from "@/app/actions";
+import { monthPhase } from "@/lib/month";
 
 /** The short "What I'm focused on" block at the top of a store page: the same words the GM got in the email. */
 export function StoreFocus({ storeId, body, editor }: { storeId: string; body: string | null; editor: boolean }) {
   if (!body && !editor) return null;
+  // A "Month end: ..." line only shows during the last stretch of the month, then drops off on its own
+  const closing = monthPhase().phase === "close";
+  const lines = (body || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean).filter((l) => closing || !/^month[- ]end\b/i.test(l));
   return (
     <section className="card focusblock">
       <div className="cardhead"><h2>What I&apos;m focused on</h2></div>
-      {body ? (
+      {lines.length ? (
         <ul className="focuslist">
-          {body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
+          {lines.map((l, i) => <li key={i}>{l}</li>)}
         </ul>
       ) : <p className="empty">Nothing written yet</p>}
       {editor && (

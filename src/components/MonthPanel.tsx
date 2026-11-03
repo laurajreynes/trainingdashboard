@@ -46,7 +46,10 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   // reading the last entry, and they sit apart from the sales rates
   const svcInitIds = new Set(initiatives.filter((i) => isServiceInit(i)).map((i) => i.id));
   const isSvc = (g: { initiative_id: string | null }) => Boolean(g.initiative_id && svcInitIds.has(g.initiative_id));
-  const paces = allGoals.filter((g) => !isSvc(g)).map((g) => paceGoal(g, entries, mi));
+  // Keep the list to the few numbers that matter: on the home page the group-wide goals, on a store page its own
+  const salesGoals = allGoals.filter((g) => !isSvc(g));
+  const groupWide = salesGoals.filter((g) => !g.store_id && !g.initiative_id);
+  const paces = (!scoped && groupWide.length ? groupWide : salesGoals).slice(0, 5).map((g) => paceGoal(g, entries, mi));
   const svcTotals = allGoals.filter((g) => isSvc(g) && g.kind === "count").map((g) => {
     const sum = (a: string, b: string) => entries.filter((e) => e.goal_id === g.id && e.date >= a && e.date <= b).reduce((t, e) => t + Number(e.value), 0);
     const init = initiatives.find((i) => i.id === g.initiative_id);
