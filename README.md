@@ -32,6 +32,6 @@ Days 1 to 3: Reflect and set. Days 4 to 20: Track. Day 21 on: Close strong. Date
 
 ## Phones tab
 
-`/phones` shows inbound request and set rates and outbound live conversation and appointment set rates by team, month to date, from Car Wars. Gallatin Subaru is its own Car Wars account. Chevrolet, Toyota, Belgrade, Danhof and the Ressler BDC share one, so their lines add up each person's CRISP counts by the Car Wars group they are in (Manage Groups in Car Wars is the roster).
+`/phones` shows inbound request and set rates, outbound call volume, live conversation and appointment set rates by team, month to date, plus outbound calls a selling day by week. Everything comes from Car Wars Staff Activity, one row per person, added up by the Car Wars group each person is in (Manage Groups in Car Wars is the roster). Gallatin Subaru is its own Car Wars account; Chevrolet, Toyota, Belgrade, Danhof and the Ressler BDC share one.
 
-To refresh: in a signed-in Car Wars tab, run `phonesPull("YYYY-MM")` from `scripts/phones_pull.js` once on each account and POST each result to `/api/phones` as `{ month, account, data }` with the hub passcode in `x-hub-key` (or as `key` in the body). The page's Updated chip comes from the pull time. Starting numbers live in `src/lib/phones-seed.ts`.
+To refresh: in a tab signed in to Car Wars, run `phonesPull({ month, hub, key })` from `scripts/phones_pull.js`. It reads both accounts and posts each to `/api/phones` with the hub passcode. A daily scheduled task does this through the browser pane on Laura's computer and carries its own copy of the function, so change both together. The page's Updated chip comes from the pull time. Starting numbers live in `src/lib/phones-seed.ts`.

@@ -961,10 +961,14 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .svclog label { display: flex; flex-direction: column; gap: 2px; }
 
 /* ---------- phones ---------- */
+.phhd { align-items: center; }
+.phdates { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ink); }
 .phones { padding: 6px 0 4px; overflow: hidden; }
-.phrow { display: grid; grid-template-columns: minmax(150px, 1.5fr) repeat(4, minmax(0, 1fr)); gap: 0 10px; align-items: center; padding: 10px 18px; }
+.phrow { display: grid; grid-template-columns: minmax(150px, 1.5fr) repeat(5, minmax(0, 1fr)); gap: 0 10px; align-items: center; padding: 10px 18px; }
 .phgroups { padding-bottom: 0; font-size: 12px; font-weight: 600; color: var(--ink-dim); }
-.phgroups .phspan { grid-column: span 2; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+.phgroups .phspan { padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+.phgroups .phspan.two { grid-column: span 2; }
+.phgroups .phspan.three { grid-column: span 3; }
 .phhead { padding-top: 6px; padding-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--line); }
 .phgoal { font-weight: 500; color: var(--ink-faint); white-space: nowrap; }
 .phteamrow { border-bottom: 1px solid var(--line); }
@@ -994,16 +998,22 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .phfoot a { color: var(--brand); font-weight: 600; }
 .phpeople .empty { padding: 8px 18px 8px 36px; }
 .phsum { margin-top: 14px; }
+.phtrend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 28px; }
+.phchart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.phchart-head .phteam { font-size: 14px; }
+@media (max-width: 900px) { .phtrend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) {
-  .phrow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 8px; padding: 10px 12px; }
+  .phdates { font-size: 18px; }
+  .phrow { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 6px; padding: 10px 12px; }
   .phrow .phteam { grid-column: 1 / -1; }
   .phgroups .phteam, .phhead .phteam { display: none; }
-  .phhead { font-size: 12px; align-items: start; }
+  .phhead { font-size: 11.5px; align-items: start; }
   .phgoal { display: block; }
-  .phpct { font-size: 18px; }
-  .phof { font-size: 11px; }
+  .phpct { font-size: 17px; padding: 2px 6px; margin-left: -6px; }
+  .phof { font-size: 10.5px; }
   .phrow.person .phteam { padding-left: 0; }
   .phstat.sm { flex-direction: column; gap: 0; }
   .phfoot { padding: 10px 12px 0; }
   .phpeople .empty { padding: 8px 12px; }
+  .phtrend { grid-template-columns: 1fr; gap: 18px; }
 }
