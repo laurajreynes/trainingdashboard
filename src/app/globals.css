@@ -971,6 +971,13 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .phgroups .phspan.three { grid-column: span 3; }
 .phhead { padding-top: 6px; padding-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--line); }
 .phgoal { font-weight: 500; color: var(--ink-faint); white-space: nowrap; }
+.phsort { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4px; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; font: inherit; color: inherit; }
+.phsort:hover { background: var(--panel-2); }
+.phsort:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.phsort.on { color: var(--brand); }
+.pharrow { width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: 0; align-self: center; margin-left: 2px; }
+.phsort:hover .pharrow { opacity: 0.35; }
+.phsort.on .pharrow { opacity: 1; }
 .phteamrow { border-bottom: 1px solid var(--line); }
 .phteamrow:last-of-type { border-bottom: 0; }
 .phteamrow > summary { list-style: none; cursor: pointer; }
