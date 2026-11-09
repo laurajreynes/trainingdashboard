@@ -1020,3 +1020,6 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 /* store page: initiatives run full width on top; reports and resources sit under the month panel */
 .topband.solo { margin-bottom: 18px; }
 .topband.solo .initstack { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.topband.solo .initstack { align-items: start; }
+.topband.solo .initgroup { display: grid; gap: 10px; align-content: start; }
+.grid.topfold > .stack > div > .card + .card { margin-top: 12px; }
