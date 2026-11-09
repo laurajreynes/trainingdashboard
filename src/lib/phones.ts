@@ -28,6 +28,8 @@ const TZ = "America/Denver";
 const DAY_DONE_HOUR = 19;
 
 export type TeamDef = { key: string; name: string; account: string; group?: string; href: string; color: string };
+/** The day each Car Wars account went live. Calls before it were set-up and testing, so trends and per-day rates start here. */
+export const LIVE: Record<string, string> = { subaru: "2026-10-16", cct: "2026-11-02" };
 export const TEAMS: TeamDef[] = [
   { key: "subaru", name: "Gallatin Subaru", account: "subaru", href: "/s/subaru", color: "var(--store-subaru)" },
   { key: "bdc", name: "Ressler BDC", account: "cct", group: "BDC (default)", href: "/s/sales-bdc", color: "var(--store-sales-bdc)" },
@@ -112,13 +114,14 @@ function outboundMembers(t: TeamDef, acct: PhoneAccount): PhoneAgent[] {
 /** Outbound calls by day for one team, across every stored month. */
 function teamDaily(t: TeamDef, months: Record<string, PhoneMonth>): Map<string, number> {
   const out = new Map<string, number>();
+  const live = LIVE[t.account] || "";
   for (const m of Object.values(months)) {
     const acct = m.accounts[t.account];
     if (!acct?.days) continue;
     const names = new Set(outboundMembers(t, acct).map((a) => a.n));
     const full = lastFullDay(acct);
     for (const day of acct.days) {
-      if (day.d > full) continue;
+      if (day.d > full || day.d < live) continue;
       let n = 0;
       for (const [name, v] of Object.entries(day.a)) if (names.has(name)) n += v[0];
       out.set(day.d, (out.get(day.d) || 0) + n);
@@ -149,13 +152,14 @@ export function buildView(months: Record<string, PhoneMonth>, month: string): Ph
       const inbound = t.group ? sum(people) : sum(acct.agents);
       const outbound = sum(members);
       const memberNames = new Set(members.map((p) => p.n));
-      // Selling days run from the team's first call ever on Car Wars (its launch), not its first call this month
-      const firstDay = [...teamDaily(t, months).entries()].filter(([, n]) => n > 0).map(([d]) => d).sort()[0];
-      const selling = firstDay && monthDays.length && full >= firstDay && full >= acct.from ? workDays(firstDay < acct.from ? acct.from : firstDay, full) : 0;
+      // Selling days run from the day the account went live on Car Wars, never earlier
+      const live = LIVE[t.account] || acct.from;
+      const from = live > acct.from ? live : acct.from;
+      const selling = monthDays.length && full >= from ? workDays(from, full) : 0;
       const perDayBy: Record<string, number> = {};
       let fullCalls = 0;
       if (selling) {
-        for (const d of monthDays) for (const [n, v] of Object.entries(d.a)) {
+        for (const d of monthDays) if (d.d >= from) for (const [n, v] of Object.entries(d.a)) {
           if (memberNames.has(n)) fullCalls += v[0];
           perDayBy[n] = (perDayBy[n] || 0) + v[0];
         }
@@ -173,30 +177,23 @@ export function buildView(months: Record<string, PhoneMonth>, month: string): Ph
   rows.sort((a, b) => TEAMS.indexOf(a.team) - TEAMS.indexOf(b.team));
   accounts.sort((a, b) => TEAMS.findIndex((t) => t.account === a.key) - TEAMS.findIndex((t) => t.account === b.key));
 
-  // Weekly trend: the last few Monday-to-Saturday weeks up to the newest whole day anywhere
-  const dailies = TEAMS.map((t) => ({ team: t, daily: teamDaily(t, months) }));
-  const newest = dailies.flatMap((x) => [...x.daily.keys()]).sort().pop();
+  // Weekly trend, Monday to Saturday, per team: only weeks the team was live for the whole week, newest few
   const trend: PhoneView["trend"] = [];
-  if (newest) {
-    const lastWeek = mondayOf(newest);
-    const starts = Array.from({ length: TREND_WEEKS }, (_, i) => addDays(lastWeek, -7 * (TREND_WEEKS - 1 - i)));
-    for (const { team, daily } of dailies) {
-      const live = [...daily.entries()].filter(([, n]) => n > 0).map(([d]) => d).sort();
-      const first = live[0], last = [...daily.keys()].sort().pop();
-      const weeks = starts.map((start): TrendWeek => {
-        const end = addDays(start, 6);
-        if (!first || !last || end < first || start > last) return { start, total: 0, days: 0, avg: null, partial: false };
-        const a = start < first ? first : start, b = end > last ? last : end;
-        let total = 0;
-        for (let d = a; d <= b; d = addDays(d, 1)) total += daily.get(d) || 0;
-        const days = workDays(a, b);
-        return { start, total, days, avg: days ? total / days : null, partial: b < addDays(start, 5) && last <= end };
-      });
-      trend.push({ team, weeks });
+  for (const team of TEAMS) {
+    const daily = teamDaily(team, months);
+    const last = [...daily.keys()].sort().pop();
+    const live = LIVE[team.account];
+    if (!last || !live) { trend.push({ team, weeks: [] }); continue; }
+    const firstWeek = dow(live) === 1 ? live : addDays(mondayOf(live), 7);
+    const weeks: TrendWeek[] = [];
+    for (let start = firstWeek; start <= last; start = addDays(start, 7)) {
+      const end = addDays(start, 5), b = end > last ? last : end;
+      let total = 0;
+      for (let d = start; d <= b; d = addDays(d, 1)) total += daily.get(d) || 0;
+      const days = workDays(start, b);
+      weeks.push({ start, total, days, avg: days ? total / days : null, partial: b < end });
     }
-    // Drop the leading weeks from before anyone was on Car Wars
-    const lead = starts.findIndex((_, i) => trend.some((t) => t.weeks[i].avg !== null));
-    if (lead > 0) for (const t of trend) t.weeks = t.weeks.slice(lead);
+    trend.push({ team, weeks: weeks.slice(-TREND_WEEKS) });
   }
 
   const all = Object.values(m.accounts);

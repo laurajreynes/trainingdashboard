@@ -54,7 +54,7 @@ export default async function PhonesPage({ searchParams }: { searchParams: Promi
           <div className="cardhead">
             <h2>Outbound calls a day, by week</h2>
           </div>
-          <p className="small muted" style={{ margin: "-4px 0 14px" }}>From Car Wars. Each bar is one week: the team&rsquo;s outbound calls added up, divided by the days it was open (Monday to Saturday). The dark bar is the latest week.</p>
+          <p className="small muted" style={{ margin: "-4px 0 14px" }}>From Car Wars. Each bar is one week: the team&rsquo;s outbound calls added up, divided by the days it was open (Monday to Saturday). Starts with each store&rsquo;s first full week live on Car Wars.</p>
           <div className="phtrend">
             {charts.map(({ team, weeks }) => {
               const shown = weeks.filter((w) => w.avg !== null);
@@ -69,7 +69,7 @@ export default async function PhonesPage({ searchParams }: { searchParams: Promi
                   <Columns
                     height={96}
                     points={weeks.map((w) => ({
-                      label: fmtDate(w.start),
+                      label: w.partial ? `${fmtDate(w.start)} so far` : fmtDate(w.start),
                       value: w.avg === null ? 0 : w.avg >= 10 ? Math.round(w.avg) : Math.round(w.avg * 10) / 10,
                       hint: w.avg === null ? `Week of ${fmtDate(w.start)}: nothing yet` : `Week of ${fmtDate(w.start)}: ${w.total.toLocaleString()} calls over ${w.days} day${w.days === 1 ? "" : "s"}${w.partial ? ", week in progress" : ""}`,
                     }))}
