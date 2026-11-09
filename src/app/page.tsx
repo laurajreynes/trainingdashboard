@@ -41,7 +41,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   const carwarsDates = gnotes.find((n) => n.key === "carwars")?.body || null;
   const visits = visitsAll.filter((v) => v.date <= today());        // logged
   const planned = visitsAll.filter((v) => v.date > today());        // scheduled sessions
-  const owed = visits.filter((v) => v.date < today() && !v.summary).slice(0, 12);   // happened, no recap yet
+  // Happened, no recap yet. Only the last week asks; older ones drop off quietly.
+  const owed = visits.filter((v) => v.date < today() && v.date >= addDays(today(), -7) && !v.summary).slice(0, 12);
   const primary = stores.filter((s) => !s.is_bdc);
   const active = initiatives.filter((i) => (i.status === "active" || i.status === "planning") && !/carwars/i.test(i.name)).sort(byStore(stores));
   const open = todos.filter((t) => !t.done);
