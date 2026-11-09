@@ -45,9 +45,13 @@ export async function buildHubContext(): Promise<string> {
     out.push("\n# PHONES (Car Wars, by team; inbound request goal 80%, set goal 45%, no outbound goals yet)");
     out.push("request = asked for the appointment out of inbound sales calls; set = firm appointments out of requests; live = live conversations out of outbound calls; appt = appointments set out of live conversations. Small counts swing a lot.");
     for (const k of phoneKeys) {
-      const v = buildView(phoneMonths[k]);
-      for (const r of v.rows) out.push(`- ${k} thru ${v.to} ${r.team.name}: request ${r.ir}/${r.io}, set ${r.fi}/${r.ir}, outbound live ${r.ol}/${r.oc}, appt set ${r.os}/${r.ol}`);
-      for (const a of v.accounts) if (a.unclaimed.io) out.push(`- ${k} ${a.name} account: ${a.unclaimed.io} of ${a.total.io} inbound sales calls not matched to a person yet`);
+      const v = buildView(phoneMonths, k);
+      for (const r of v.rows) out.push(`- ${k} thru ${v.to} ${r.team.name}: request ${r.ir}/${r.io}, set ${r.fi}/${r.ir}, outbound calls ${r.oc}${r.perDay !== null ? ` (${Math.round(r.perDay)} a selling day)` : ""}, live ${r.ol}/${r.oc}, appt set ${r.os}/${r.ol}`);
+      for (const a of v.accounts) if (a.crisp?.uio) out.push(`- ${k} ${a.name} account: ${a.crisp.uio} of ${a.crisp.io} inbound sales calls not matched to a person`);
+      if (k === phoneKeys[phoneKeys.length - 1]) for (const t of v.trend) {
+        const w = t.weeks.filter((x) => x.avg !== null).map((x) => `wk of ${x.start} ${Math.round(x.avg!)}${x.partial ? " (in progress)" : ""}`);
+        if (w.length) out.push(`- ${t.team.name} outbound calls a selling day by week: ${w.join(", ")}`);
+      }
     }
   }
 
