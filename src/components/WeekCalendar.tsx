@@ -20,8 +20,8 @@ export function splitTime(focus: string | null): { time: string | null; text: st
   return { time: `${m[1]}${m[2] ? ":" + m[2] : ""}${m[3].toLowerCase()}`, text: m[4], minutes: h * 60 + Number(m[2] || 0) };
 }
 
-/** Monday to Friday of this week. Today gets the wide column. */
-export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [], away = [], awayBody = null }: Props) {
+/** Monday to Friday of this week. Today gets the wide column. Only scheduled sessions show here; to-dos live on the To-dos page and store pages. */
+export function WeekCalendar({ visits, stores, editor, gmSkip = [], away = [], awayBody = null }: Props) {
   const t = today();
   const monday = weeksBack(1)[0];
   const days = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
@@ -40,7 +40,6 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [], away 
           // An untimed session (a launch day, say) is the day, so it sorts first; timed ones follow in order
           const order = (v: Visit) => { const m = splitTime(v.focus).minutes; return m === 9999 ? 0 : m; };
           const sessions = visits.filter((v) => v.date === d).sort((a, b) => order(a) - order(b));
-          const dues = todos.filter((x) => !x.done && x.due === d);
           const isToday = d === t;
           const out = awayOn(away, d);
           return (
@@ -75,11 +74,7 @@ export function WeekCalendar({ visits, todos, stores, editor, gmSkip = [], away 
                 if (d === gm && !out) items.push({ key: "gm", minutes: 13 * 60, node: <Link key="gm" href="/group" className="sess gm"><span className="when">1pm</span><span className="who">HR/GM meeting</span></Link> });
                 return items.sort((a, b) => a.minutes - b.minutes).map((i) => i.node);
               })()}
-              {dues.map((x) => {
-                const s = store(x.store_id);
-                return <Link key={x.id} href={s ? `/s/${s.slug}` : "/todos"} className="sess due" style={{ ["--accent" as string]: storeAccent(s) }} title={x.text}><span className="what">{x.text}</span></Link>;
-              })}
-              {isToday && !out && !sessions.length && !dues.length && d !== gm && <p className="empty">Nothing on the calendar</p>}
+              {isToday && !out && !sessions.length && d !== gm && <p className="empty">Nothing on the calendar</p>}
             </div>
           );
         })}
