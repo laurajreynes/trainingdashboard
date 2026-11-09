@@ -24,6 +24,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
         <StoreNav stores={primary} />
         <nav className="utilnav">
           <Link href="/tracking">Tracking</Link>
+          <Link href="/phones">Phones</Link>
           <Link href="/group">Group</Link>
           <Link href="/initiatives">Initiatives</Link>
           <Link href="/marketing">Marketing</Link>

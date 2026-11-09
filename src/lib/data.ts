@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "./supabase";
 import { STAGES } from "./types";
+import { mergeMonths, type PhoneMonth } from "./phones";
 import type {
   Store, Person, Initiative, InitiativePerson, Visit, Todo, Bookmark,
   Resource, Goal, GoalEntry, Win, Commitment, ChatMessage, MonthPlan, PlaybookItem, PlaybookCheck, StorePost, Example, ExampleView, GroupNote, Meeting, StoreMetric,
@@ -187,6 +188,14 @@ export async function getBulletin(): Promise<BulletinView[]> {
 }
 export async function getGroupNotes(): Promise<GroupNote[]> {
   return rows<GroupNote>(await db().from("group_notes").select("*"));
+}
+
+/** Phones tab months: stored Car Wars pulls over the starting numbers. A failed read still shows the starting numbers. */
+export async function getPhoneMonths(): Promise<Record<string, PhoneMonth>> {
+  try {
+    const r = await db().from("group_notes").select("key, body").like("key", "phones:%");
+    return mergeMonths(r.error ? [] : ((r.data || []) as { key: string; body: string | null }[]));
+  } catch { return mergeMonths([]); }
 }
 
 export async function getMeetings(limit = 24): Promise<Meeting[]> {

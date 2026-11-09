@@ -1,5 +1,6 @@
 import "server-only";
-import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples, getMetrics, getGroupNotes, getMeetings } from "./data";
+import { getHubSnapshot, getMonthPlans, getStorePosts, getExamples, getMetrics, getGroupNotes, getMeetings, getPhoneMonths } from "./data";
+import { buildView } from "./phones";
 import { ROSTER_LABEL, INITIATIVE_STATUS_LABEL, COMMITMENT_LABEL } from "./types";
 import { today, addDays, monthsBack, nextGmMeeting, gmSkips, projectToMonthEnd } from "./fmt";
 import { monthPhase, paceGoal } from "./month";
@@ -37,6 +38,18 @@ export async function buildHubContext(): Promise<string> {
   if (metrics.length) for (const m of metrics) {
     out.push(`- ${m.period} ${storeName(m.store_id)}${m.location ? "/" + m.location : ""} thru ${m.as_of}: sold ${m.sold} (pacing ${projectToMonthEnd(m.sold, m.as_of)})${m.new_sold != null ? `, new ${m.new_sold}` : ""}${m.used_sold != null ? `, used ${m.used_sold}` : ""}${m.appts_due != null ? `, appts due ${m.appts_due} shown ${m.appts_shown ?? "?"} sold ${m.appts_sold ?? "?"}` : ""}${m.phone_ups != null ? `, phone ups ${m.phone_ups}` : ""}${m.web_ups != null ? `, web ups ${m.web_ups}` : ""}${m.lot_ups != null ? `, lot ups ${m.lot_ups}` : ""}${m.write_ups != null ? `, write ups ${m.write_ups}` : ""}${m.outbound_calls != null ? `, outbound calls ${m.outbound_calls}` : ""}`);
   } else out.push("none imported yet");
+
+  const phoneMonths = await getPhoneMonths();
+  const phoneKeys = Object.keys(phoneMonths).sort().slice(-2);
+  if (phoneKeys.length) {
+    out.push("\n# PHONES (Car Wars, by team; inbound request goal 80%, set goal 45%, no outbound goals yet)");
+    out.push("request = asked for the appointment out of inbound sales calls; set = firm appointments out of requests; live = live conversations out of outbound calls; appt = appointments set out of live conversations. Small counts swing a lot.");
+    for (const k of phoneKeys) {
+      const v = buildView(phoneMonths[k]);
+      for (const r of v.rows) out.push(`- ${k} thru ${v.to} ${r.team.name}: request ${r.ir}/${r.io}, set ${r.fi}/${r.ir}, outbound live ${r.ol}/${r.oc}, appt set ${r.os}/${r.ol}`);
+      for (const a of v.accounts) if (a.unclaimed.io) out.push(`- ${k} ${a.name} account: ${a.unclaimed.io} of ${a.total.io} inbound sales calls not matched to a person yet`);
+    }
+  }
 
   out.push("\n# STORES");
   for (const s of snap.stores) {
