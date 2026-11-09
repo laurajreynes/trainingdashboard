@@ -959,3 +959,51 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
 .svctile.yes .svcnum { color: #8a6400; }
 .svclog { align-items: flex-end; gap: 8px; }
 .svclog label { display: flex; flex-direction: column; gap: 2px; }
+
+/* ---------- phones ---------- */
+.phones { padding: 6px 0 4px; overflow: hidden; }
+.phrow { display: grid; grid-template-columns: minmax(150px, 1.5fr) repeat(4, minmax(0, 1fr)); gap: 0 10px; align-items: center; padding: 10px 18px; }
+.phgroups { padding-bottom: 0; font-size: 12px; font-weight: 600; color: var(--ink-dim); }
+.phgroups .phspan { grid-column: span 2; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+.phhead { padding-top: 6px; padding-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--line); }
+.phgoal { font-weight: 500; color: var(--ink-faint); white-space: nowrap; }
+.phteamrow { border-bottom: 1px solid var(--line); }
+.phteamrow:last-of-type { border-bottom: 0; }
+.phteamrow > summary { list-style: none; cursor: pointer; }
+.phteamrow > summary::-webkit-details-marker { display: none; }
+.phteamrow > summary:hover { background: var(--panel-2); }
+.phteamrow[open] > summary { background: var(--panel-2); }
+.phteam { font-weight: 700; font-size: 15px; color: var(--ink); display: flex; align-items: center; gap: 8px; min-width: 0; }
+.phteamrow > summary .phteam::after { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--ink-faint); border-bottom: 2px solid var(--ink-faint); transform: rotate(-45deg); margin-left: 2px; flex: none; transition: transform 0.15s; }
+.phteamrow[open] > summary .phteam::after { transform: rotate(45deg); }
+.phdot { width: 10px; height: 10px; border-radius: 3px; background: var(--accent, var(--brand)); flex: none; }
+.phstat { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.phpct { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.1; padding: 2px 8px; margin-left: -8px; border-radius: 8px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.phpct.good { background: var(--good-soft); color: var(--good); }
+.phpct.warn { background: var(--warn-soft); color: var(--warn); }
+.phpct.bad { background: var(--bad-soft); color: var(--bad); }
+.phpct.none { color: var(--ink-faint); font-weight: 500; }
+.phof { font-size: 12px; color: var(--ink-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.phpeople { padding: 4px 0 10px; background: var(--panel-2); }
+.phrow.person { padding-top: 6px; padding-bottom: 6px; border-top: 1px solid var(--line); }
+.phrow.person .phteam { font-weight: 500; font-size: 13.5px; padding-left: 18px; }
+.phstat.sm .phpct { font-size: 14px; font-weight: 600; padding: 0; margin: 0; }
+.phstat.sm { flex-direction: row; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.phrow.person .phpct.none { font-size: 14px; padding: 0; margin: 0; }
+.phfoot { display: flex; gap: 12px; align-items: center; padding: 10px 18px 0; border-top: 1px solid var(--line); }
+.phfoot a { color: var(--brand); font-weight: 600; }
+.phpeople .empty { padding: 8px 18px 8px 36px; }
+.phsum { margin-top: 14px; }
+@media (max-width: 720px) {
+  .phrow { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 8px; padding: 10px 12px; }
+  .phrow .phteam { grid-column: 1 / -1; }
+  .phgroups .phteam, .phhead .phteam { display: none; }
+  .phhead { font-size: 12px; align-items: start; }
+  .phgoal { display: block; }
+  .phpct { font-size: 18px; }
+  .phof { font-size: 11px; }
+  .phrow.person .phteam { padding-left: 0; }
+  .phstat.sm { flex-direction: column; gap: 0; }
+  .phfoot { padding: 10px 12px 0; }
+  .phpeople .empty { padding: 8px 12px; }
+}

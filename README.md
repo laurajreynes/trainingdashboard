@@ -29,3 +29,9 @@ Training initiatives, store visits, staff progress, goals, to-dos, store notes, 
 ## Month rhythm
 
 Days 1 to 3: Reflect and set. Days 4 to 20: Track. Day 21 on: Close strong. Dates run in America/Denver. `?phase=reflect|track|close` previews any mode.
+
+## Phones tab
+
+`/phones` shows inbound request and set rates and outbound live conversation and appointment set rates by team, month to date, from Car Wars. Gallatin Subaru is its own Car Wars account. Chevrolet, Toyota, Belgrade, Danhof and the Ressler BDC share one, so their lines add up each person's CRISP counts by the Car Wars group they are in (Manage Groups in Car Wars is the roster).
+
+To refresh: in a signed-in Car Wars tab, run `phonesPull("YYYY-MM")` from `scripts/phones_pull.js` once on each account and POST each result to `/api/phones` as `{ month, account, data }` with the hub passcode in `x-hub-key` (or as `key` in the body). The page's Updated chip comes from the pull time. Starting numbers live in `src/lib/phones-seed.ts`.
