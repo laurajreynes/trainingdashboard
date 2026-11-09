@@ -126,7 +126,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const hasService = !store.is_bdc && (serviceIds.size > 0 || initiatives.some((i) => isServiceInit(i) && i.store_ids.includes(store.id)) || visits.some((v) => v.store_id === store.id && isServiceVisit(v)));
   const showToggle = !store.is_bdc && (hasService || editor);
   const mi = monthPhase(sp.phase);
-  const lateMonth = mi.day > 10;   // after the 10th last month's reports are old news: they move to the bottom
   const reflecting = mi.phase === "reflect";
   const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
   const lastYearPeriod = `${Number(curMonth.slice(0, 4)) - 1}${curMonth.slice(4)}`;
@@ -224,7 +223,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
       <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
 
-      <div className="flow topband two">
+      <div className="topband solo">
       <section className="card">
         <div className="cardhead"><h2>Initiatives here</h2>{editor && <Link className="more" href="/initiatives">Manage</Link>}</div>
         {storeInits.length ? (
@@ -246,47 +245,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           </div>
         ) : <p className="empty">No initiatives assigned to this store yet</p>}
       </section>
-        <div className="stack">
-      {!lateMonth && (
-      <div>
-        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report" && !(store.is_bdc && !b.store_id && /productivity|by salesperson/i.test(b.title)))} stores={stores} editor={editor} compact>
-          {editor && (
-            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
-              <summary style={{ padding: "4px 0" }}>Add</summary>
-              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <div className="frow">
-                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
-                  <input type="url" name="url" placeholder="https://" required />
-                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
-                  <button className="btn sm">Add</button>
-                </div>
-              </form>
-              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
-              <FileUploader storeId={store.id} />
-            </details>
-          )}
-        </ReportsCard>
-      </div>
-      )}
-      {(resources.length > 0 || fileResources.length > 0 || bookmarks.some((b) => b.kind !== "report")) && (
-        <section className="card">
-          <div className="cardhead"><h2>Resources</h2></div>
-          <div className="grid-chips rsrc">
-            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
-              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
-                <a className="chipr tool" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span><span className="t">{b.title}</span></a>
-                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
-              </span>
-            ))}
-            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="t">{b.title}</span></a>)}
-            {resources.map((r) => r.url
-              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}>{r.kind !== "doc" && <span className="k">{r.kind.replace("_", " ")}</span>}<span className="t">{r.title}</span></a>
-              : <TextResource key={r.id} kind={r.kind.replace("_", " ")} title={r.title} body={r.body} initName={r.initName} />)}
-          </div>
-        </section>
-      )}
-        </div>
       </div>
 
 
@@ -307,6 +265,48 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
 
       <div data-keep><MonthPanel store={store} family={family} allStores={stores} editor={editor} phaseOverride={sp.phase} basePath={`/s/${store.slug}`} /></div>
+
+      <div className="grid topfold topband" data-keep style={{ marginTop: 18, alignItems: "start" }}>
+        <div className="stack">
+      <div>
+        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report" && !(store.is_bdc && !b.store_id && /productivity|by salesperson/i.test(b.title)))} stores={stores} editor={editor} compact>
+          {editor && (
+            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
+              <summary style={{ padding: "4px 0" }}>Add</summary>
+              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
+                <input type="hidden" name="store_id" value={store.id} />
+                <div className="frow">
+                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
+                  <input type="url" name="url" placeholder="https://" required />
+                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
+                  <button className="btn sm">Add</button>
+                </div>
+              </form>
+              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
+              <FileUploader storeId={store.id} />
+            </details>
+          )}
+        </ReportsCard>
+      </div>
+        </div>
+      {(resources.length > 0 || fileResources.length > 0 || bookmarks.some((b) => b.kind !== "report")) && (
+        <section className="card">
+          <div className="cardhead"><h2>Resources</h2></div>
+          <div className="grid-chips rsrc">
+            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
+              <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
+                <a className="chipr tool" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span><span className="t">{b.title}</span></a>
+                {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
+              </span>
+            ))}
+            {fileResources.map((b) => <a key={b.id} className="chipr" href={b.url} target="_blank" rel="noreferrer" title={b.initName}><span className="t">{b.title}</span></a>)}
+            {resources.map((r) => r.url
+              ? <a key={r.id} className="chipr" href={r.url} target="_blank" rel="noreferrer" title={r.initName}>{r.kind !== "doc" && <span className="k">{r.kind.replace("_", " ")}</span>}<span className="t">{r.title}</span></a>
+              : <TextResource key={r.id} kind={r.kind.replace("_", " ")} title={r.title} body={r.body} initName={r.initName} />)}
+          </div>
+        </section>
+      )}
+      </div>
 
       <div className="grid cols-3" style={{ marginTop: 18, marginBottom: 20, alignItems: "start" }}>
           {!store.is_bdc && (
@@ -354,28 +354,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <div className="cardhead"><h2>Visits</h2><Link className="more" href={`/s/${store.slug}/visits`}>All visits</Link></div>
             <VisitList visits={loggedHere.slice(0, 6)} stores={stores} people={people} showStore={family.length > 1} />
           </section>
-          {lateMonth && (
-      <div>
-        <ReportsCard reports={bookmarks.filter((b) => b.kind === "report" && !(store.is_bdc && !b.store_id && /productivity|by salesperson/i.test(b.title)))} stores={stores} editor={editor} compact>
-          {editor && (
-            <details className="adder" style={{ padding: "0 10px", borderRadius: 8 }}>
-              <summary style={{ padding: "4px 0" }}>Add</summary>
-              <form action={addBookmark} className="body" style={{ paddingTop: 6 }}>
-                <input type="hidden" name="store_id" value={store.id} />
-                <div className="frow">
-                  <input type="text" name="title" placeholder="Title (Appointment board)" required />
-                  <input type="url" name="url" placeholder="https://" required />
-                  <select name="kind"><option value="report">Report</option><option value="tool">Tool</option><option value="doc">Doc</option></select>
-                  <button className="btn sm">Add</button>
-                </div>
-              </form>
-              <div className="faint small" style={{ margin: "2px 0 6px" }}>Or upload a PDF or spreadsheet:</div>
-              <FileUploader storeId={store.id} />
-            </details>
-          )}
-        </ReportsCard>
-      </div>
-          )}
         </div>
         <div className="stack">
           <section className="card">

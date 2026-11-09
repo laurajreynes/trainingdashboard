@@ -1017,3 +1017,6 @@ button.chipr { font: inherit; cursor: pointer; text-align: left; }
   .phpeople .empty { padding: 8px 12px; }
   .phtrend { grid-template-columns: 1fr; gap: 18px; }
 }
+/* store page: initiatives run full width on top; reports and resources sit under the month panel */
+.topband.solo { margin-bottom: 18px; }
+.topband.solo .initstack { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
