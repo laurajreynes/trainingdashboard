@@ -78,7 +78,8 @@ export type Bookmark = {
   initiative_id: string | null;
   title: string;
   url: string;
-  kind: "report" | "tool" | "doc";
+  kind: "report" | "tool" | "doc" | "archive";
+  created_at?: string;
   sort_order: number;
 };
 

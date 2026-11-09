@@ -1,6 +1,7 @@
 import type { Bookmark, Store } from "@/lib/types";
 import { storeAccent, today } from "@/lib/fmt";
-import { deleteBookmark } from "@/app/actions";
+import Link from "next/link";
+import { deleteBookmark, archiveBookmark } from "@/app/actions";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -32,7 +33,10 @@ export function ReportsCard({ reports, stores, children, editor, compact }: { re
   const older = hasCurrent ? rest.filter((b) => !namesMonth(b.title, mi)) : [];
   const group = shown.filter((b) => !b.store_id);
   const byStore = shown.filter((b) => b.store_id);
-  const del = (b: Bookmark) => editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>;
+  const del = (b: Bookmark) => editor && <>
+    <form action={archiveBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Move to archive">↓</button></form>
+    <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>
+  </>;
   const shopLinks = shops.map((b) => {
     const s = stores.find((x) => x.id === b.store_id);
     return <span key={b.id} className="rwrap"><a className="rlink" href={b.url} target="_blank" rel="noreferrer" style={{ color: storeAccent(s) }}>{parseTitle(b.title).short.replace(/^Competitive Mystery Shop,?\s*/i, "")}</a>{del(b)}</span>;
@@ -74,6 +78,7 @@ export function ReportsCard({ reports, stores, children, editor, compact }: { re
           {!compact && shopsCol}
         </div>
       </div>
+      {!compact && <p className="small" style={{ marginTop: 8, marginBottom: 0 }}><Link href="/reports/archive" className="faint">Report archive</Link></p>}
       {older.length > 0 && (
         <p className="older small">
           <span className="faint">Last month:</span>{" "}

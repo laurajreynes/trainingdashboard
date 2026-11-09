@@ -256,6 +256,12 @@ export async function addBookmark(fd: FormData) {
   }));
   refresh();
 }
+/** Move a report into the archive (or back out with to=report). */
+export async function archiveBookmark(fd: FormData) {
+  await requireEditor();
+  ok(await db().from("bookmarks").update({ kind: s(fd, "to") || "archive" }).eq("id", must(fd, "id")));
+  refresh();
+}
 export async function deleteBookmark(fd: FormData) {
   await requireEditor();
   ok(await db().from("bookmarks").delete().eq("id", must(fd, "id")));
