@@ -152,8 +152,9 @@ export function buildView(months: Record<string, PhoneMonth>, month: string): Ph
       const inbound = t.group ? sum(people) : sum(acct.agents);
       const outbound = sum(members);
       const memberNames = new Set(members.map((p) => p.n));
-      const firstDay = monthDays.find((d) => Object.entries(d.a).some(([n, v]) => memberNames.has(n) && v[0] > 0))?.d;
-      const selling = firstDay && full >= firstDay ? workDays(firstDay < acct.from ? acct.from : firstDay, full) : 0;
+      // Selling days run from the team's first call ever on Car Wars (its launch), not its first call this month
+      const firstDay = [...teamDaily(t, months).entries()].filter(([, n]) => n > 0).map(([d]) => d).sort()[0];
+      const selling = firstDay && monthDays.length && full >= firstDay && full >= acct.from ? workDays(firstDay < acct.from ? acct.from : firstDay, full) : 0;
       const perDayBy: Record<string, number> = {};
       let fullCalls = 0;
       if (selling) {

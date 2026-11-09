@@ -154,7 +154,7 @@ export default async function PhonesPage({ searchParams }: { searchParams: Promi
             <p key={a.key}>
               <strong>{a.name}</strong>{a.teams > 1 ? ` (one Car Wars account for ${a.teams} teams)` : ""}:{" "}
               {a.crisp
-                ? `Car Wars shows the account at ${rate(a.crisp.ir, a.crisp.io) ?? "–"}% request (${a.crisp.ir} of ${a.crisp.io}) and ${rate(a.crisp.fi, a.crisp.ir) ?? "–"}% set as of ${updatedLabel(a.crisp.at)}. ${a.crisp.uio} of those ${a.crisp.io} sales calls weren't matched to a person, so they aren't on a line.`
+                ? `Car Wars shows the account at ${rate(a.crisp.ir, a.crisp.io) ?? "–"}% request (${a.crisp.ir} of ${a.crisp.io}) and ${rate(a.crisp.fi, a.crisp.ir) ?? "–"}% set as of ${updatedLabel(a.crisp.at)}. ${a.crisp.uio} of those ${a.crisp.io} sales calls ${a.crisp.uio === 1 ? "wasn't" : "weren't"} matched to a person, so ${a.crisp.uio === 1 ? "it isn't" : "they aren't"} on a line.`
                 : `${a.claimed.io} inbound sales calls matched to a person.`}
               {a.teams > 1 && a.other.io > 0 ? ` ${a.other.io} more sit on shared or manager logins.` : ""}
             </p>
