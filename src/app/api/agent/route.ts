@@ -8,7 +8,7 @@ import { db } from "@/lib/supabase";
  *
  *   visits      { from, to }                       sessions between two dates (YYYY-MM-DD), with store slug
  *   addVisit    { store, date, focus }             store = slug (chevrolet, toyota, subaru, sales-bdc, livingston)
- *   updateVisit { id, date?, focus?, store? }
+ *   updateVisit { id, date?, focus?, store?, summary?, private_notes? }
  *   deleteVisit { id }
  *   getNote     { key }   setNote { key, body }    group notes, e.g. cwsetup:sales-bdc, away, gm_skip
  *   people      { q? }                             people whose name contains q
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   switch (b.op) {
     case "visits": {
       if (!b.from || !b.to || !DAY.test(b.from) || !DAY.test(b.to)) return fail("from and to required");
-      const r = await db().from("visits").select("id,date,focus,store_id,stores(slug)").gte("date", b.from).lte("date", b.to).order("date");
+      const r = await db().from("visits").select("id,date,focus,summary,private_notes,store_id,stores(slug)").gte("date", b.from).lte("date", b.to).order("date");
       if (r.error) return fail(r.error.message, 500);
       return NextResponse.json({ ok: true, data: r.data });
     }
@@ -56,6 +56,8 @@ export async function POST(req: Request) {
       const patch: Record<string, string | null> = {};
       if (b.date) { if (!DAY.test(b.date)) return fail("bad date"); patch.date = b.date; }
       if (b.focus !== undefined) patch.focus = b.focus || null;
+      if (b.summary !== undefined) patch.summary = b.summary || null;
+      if (b.private_notes !== undefined) patch.private_notes = b.private_notes || null;
       if (b.store) { const sid = await storeId(b.store); if (!sid) return fail("unknown store"); patch.store_id = sid; }
       const r = await db().from("visits").update(patch).eq("id", b.id);
       if (r.error) return fail(r.error.message, 500);
