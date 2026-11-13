@@ -28,20 +28,21 @@ Leave out private opinions about a person's attitude or ability. Those stay in h
 No em dashes, no semicolons, no filler words like "furthermore". Do not add a heading or sign-off.
 If nothing in the notes is shareable, reply with an empty message.`;
 
+let lastErr = "";
 async function recap(note: string, oidc: string | null): Promise<string | null> {
-  const key = process.env.AI_GATEWAY_API_KEY || oidc;
-  if (!key) return null;
+  const key = process.env.AI_GATEWAY_API_KEY || oidc || process.env.VERCEL_OIDC_TOKEN;
+  if (!key) { lastErr = "no key or oidc token"; return null; }
   try {
     const r = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({ model: MODEL, max_tokens: 400, messages: [{ role: "system", content: PROMPT }, { role: "user", content: note }] }),
     });
-    if (!r.ok) return null;
+    if (!r.ok) { lastErr = `gateway ${r.status}: ${(await r.text()).slice(0, 200)}`; return null; }
     const j = await r.json();
     const t = String(j?.choices?.[0]?.message?.content ?? "").replace(/—/g, ", ").trim();
     return t;
-  } catch { return null; }
+  } catch (e) { lastErr = String(e).slice(0, 200); return null; }
 }
 
 async function run(req: Request) {
@@ -76,7 +77,7 @@ async function run(req: Request) {
     const patch: Record<string, string> = { private_notes: note };
     if (sum !== null) patch.summary = sum;
     await db().from("visits").update(patch).eq("id", v.id);
-    out.push({ date, title, did: sum === null ? "notes saved, recap failed" : "synced" });
+    out.push({ date, title, did: sum === null ? `notes saved, recap failed (${lastErr})` : "synced" });
   }
   revalidatePath("/", "layout");
   return NextResponse.json({ ok: true, results: out });
