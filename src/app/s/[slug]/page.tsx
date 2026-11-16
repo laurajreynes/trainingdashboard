@@ -169,6 +169,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const locStack = (l: string) => stackFor(metricRows.filter((x) => x.location === l));
   const soldByMonth = monthsBack(6).map((m) => ({ label: monthName(m).slice(0, 3), value: metricRows.filter((x) => x.period === m).reduce((a, x) => a + x.sold, 0), hint: monthName(m) }));
   const touched = new Set(loggedHere.filter((v) => v.date >= mi.monthStart).flatMap((v) => v.people_ids));
+  for (const r of roster) if (r.trained_on && r.trained_on >= mi.monthStart && (r.status === "trained" || r.status === "solid")) touched.add(r.person_id);   // trained this month counts as worked with
   const isMgr = (role: string) => /manager|^gm$|general manager/i.test(role);
   const reachGroups = (store.locations.length ? [null, ...store.locations] : [null]).map((l) => ({
     label: l || (store.locations.length ? "Main" : store.short_name), color: storeAccent(store),
