@@ -231,7 +231,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       {(() => {
               // Main store first, then each location's own initiatives under a small heading
               const locOf = (i: Initiative) => store.locations.find((l) => new RegExp(`^${l}\\b`, "i").test(i.name)) || "";
-              const groups = ["", ...[...store.locations].sort()].map((l) => ({ l, items: storeInits.filter((i) => locOf(i) === l) })).filter((g) => g.items.length);
+              const groups = ["", ...[...store.locations].sort()].map((l) => ({ l, items: storeInits.filter((i) => locOf(i) === l).reverse() }))   // newest first.filter((g) => g.items.length);
               return groups.map((g) => (
                 <div key={g.l || "main"} className="initgroup">
                   {g.l && <div className="eyebrow" style={{ margin: "6px 0 2px" }}>{g.l}</div>}
