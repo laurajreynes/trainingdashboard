@@ -804,6 +804,19 @@ export async function setInitiativeArea(fd: FormData) {
   ok(await db().from("group_notes").upsert({ key: `area:${id}`, body: s(fd, "area") || "", updated_at: new Date().toISOString() }, { onConflict: "key" }));
   refresh();
 }
+export async function setInitiativeStalled(fd: FormData) {
+  await requireEditor();
+  const id = must(fd, "initiative_id");
+  ok(await db().from("group_notes").upsert({ key: `stalled:${id}`, body: s(fd, "stalled") === "1" ? "1" : "", updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
+/** A store's CarWars launch is done: the card says so and moves to the bottom of the store page. */
+export async function setCarWarsDone(fd: FormData) {
+  await requireEditor();
+  const slug = must(fd, "slug");
+  ok(await db().from("group_notes").upsert({ key: `cwdone:${slug}`, body: s(fd, "done") === "1" ? "1" : "", updated_at: new Date().toISOString() }, { onConflict: "key" }));
+  refresh();
+}
 export async function setInitiativeStage(fd: FormData) {
   await requireEditor();
   const id = must(fd, "initiative_id");

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Store } from "@/lib/types";
+import { splitStage } from "@/lib/types";
 import {
   getGoals, getGoalEntries, getAllRoster, getVisits, getWins, getCommitments, getPeople,
   getMonthPlans, getPlaybook, getPlaybookChecks, getInitiatives, getTodos, getBookmarks,
+  getStages,
 } from "@/lib/data";
 import { monthPhase, paceGoal, type Phase, type GoalPace } from "@/lib/month";
 import { fmtDate, monthName, daysFromToday, storeAccent } from "@/lib/fmt";
@@ -92,6 +94,8 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
     return { s, days: last ? -daysFromToday(last.date) : null };
   }).filter((x) => x.days === null || x.days >= 10) : [];
 
+  const stagesAll = await getStages();
+  const stalled = initiatives.filter((i) => i.status !== "done" && (!scoped || i.store_ids.some((x) => ids.includes(x))) && splitStage(stagesAll[i.id]).stalled);
   const overdue = editor ? todos.filter((t) => t.due && t.due < mi.today) : [];   // my to-dos are mine, not the store's
   const reports = bookmarks.filter((b) => !b.initiative_id);
   const prevNotes = visits.filter((v) => v.private_notes && inRange(v.date, mi.prevStart, mi.prevEnd));
@@ -189,11 +193,12 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
             <h4 className="minihead">Needs attention</h4>
             <ul className="list">
               {slipping.map((c) => <li key={c.id}><span className={`tag ${c.status === "dropped" ? "bad" : "warn"}`}>{c.status}</span><div className="grow small"><strong>{c.owner}</strong> · {c.text}</div></li>)}
+              {stalled.map((i) => <li key={i.id}><span className="tag warn">stalled</span><div className="grow small"><Link href={`/i/${i.id}`}>{i.name}</Link></div></li>)}
               {stale.map(({ s, days }) => <li key={s.id}><span className="tag">visit</span><div className="grow small"><Link href={`/s/${s.slug}`}>{s.short_name}</Link> {days === null ? "hasn't had a visit logged" : `last visit ${days} days ago`}</div></li>)}
               {needsPush.length > 0 && <li><span className="tag warn">coach</span><div className="grow small">{needsPush.slice(0, 6).map((p, i) => <span key={p.id}>{i ? ", " : ""}<Link href={`/p/${p.id}`}>{p.name}</Link></span>)}{needsPush.length > 6 ? ` +${needsPush.length - 6}` : ""} marked follow up</div></li>}
               {overdue.slice(0, 5).map((t) => <li key={t.id}><span className="tag bad">overdue</span><div className="grow small">{t.text}<div className="meta">{!scoped || family.length > 1 ? `${storeLabel(t.store_id) || "General"} · ` : ""}due {fmtDate(t.due!)}</div></div></li>)}
               {overdue.length > 5 && <li className="small faint"><Link href="/todos">{overdue.length - 5} more overdue</Link></li>}
-              {!slipping.length && !stale.length && !needsPush.length && !overdue.length && <li className="empty">Nothing flagged. Either it&apos;s going well or nothing&apos;s been checked.</li>}
+              {!slipping.length && !stalled.length && !stale.length && !needsPush.length && !overdue.length && <li className="empty">Nothing flagged. Either it&apos;s going well or nothing&apos;s been checked.</li>}
             </ul>
           </div>
         </div>

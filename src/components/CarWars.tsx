@@ -54,12 +54,14 @@ function Track({ stops, t }: { stops: Stop[]; t: string }) {
   );
 }
 
-export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor, withBdc, setup }: {
+export function CarWarsBanner({ init, roster, stores, store, location, peopleIds, launches, editor, withBdc, setup, done }: {
   init: Initiative; roster: InitiativePerson[]; stores: Store[]; store?: Store; location?: string; peopleIds?: Set<string>; launches: string | null; editor?: boolean;
   /** Store pages whose leads start in the Ressler BDC: show the BDC launch next to the store's own sales launch. */
   withBdc?: boolean;
   /** Per-person setup progress for this store (the cwsetup:<slug> group note). */
   setup?: string | null;
+  /** This store is fully launched: say so. */
+  done?: boolean;
 }) {
   const t = today();
   const all = parseLaunches(launches);
@@ -89,7 +91,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
     <section id="carwars" className="card carwars" style={{ ["--accent" as string]: store ? storeAccent(store) : "var(--sun)" }}>
       <div className="carwars-head">
         <div>
-          <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}</h2>
+          <h2 className="carwars-h">CarWars launch{location ? ` · ${location}` : store ? ` · ${store.short_name}` : ""}{done && <span className="donetag">Complete</span>}</h2>
         </div>
         <div className="carwars-right small">
           {editor && <Link href={`/i/${init.id}`}>open</Link>}

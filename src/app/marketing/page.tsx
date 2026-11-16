@@ -5,7 +5,7 @@ import { isEditor } from "@/lib/auth";
 import { storeAccent, fmtDate, today } from "@/lib/fmt";
 import { Bulletin } from "@/components/Bulletin";
 import { CarWarsBanner } from "@/components/CarWars";
-import { AREA_DEFAULT } from "@/lib/types";
+import { AREA_DEFAULT, splitStage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +85,7 @@ export default async function MarketingPage() {
                         <div className="grow small">
                           <div><strong>{i.name}</strong></div>
                           {i.goal_text && <div className="muted">{i.goal_text}</div>}
-                          <div className="faint">{stages[i.id] || "Planning"} · {areas[i.id] || AREA_DEFAULT} · {c.t} of {c.n} trained</div>
+                          <div className="faint">{splitStage(stages[i.id]).stage || "Planning"}{splitStage(stages[i.id]).stalled ? " (stalled)" : ""} · {areas[i.id] || AREA_DEFAULT} · {c.t} of {c.n} trained</div>
                         </div>
                       </li>
                     );

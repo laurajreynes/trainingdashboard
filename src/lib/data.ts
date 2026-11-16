@@ -255,5 +255,8 @@ export async function getStages(): Promise<Record<string, string>> {
     const floor = c.n > 0 && c.t >= c.n ? "Coaching execution" : c.t > 0 ? "Rolling out" : null;
     if (floor && idx(out[id] || "Planning") < idx(floor)) out[id] = floor;
   }
+  // Stalled: trained but not happening yet. Rides along on the stage as "<stage>|stalled".
+  const st = await db().from("group_notes").select("key, body").like("key", "stalled:%");
+  for (const row of (st.data || []) as { key: string; body: string | null }[]) if (row.body === "1") { const id = row.key.slice(8); out[id] = (out[id] || "Coaching execution") + "|stalled"; }
   return out;
 }

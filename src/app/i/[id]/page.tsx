@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { STAGES, AREAS, AREA_DEFAULT } from "@/lib/types";
+import { STAGES, AREAS, AREA_DEFAULT, splitStage } from "@/lib/types";
 import { getStages, getAreas } from "@/lib/data";
-import { setInitiativeStage, setInitiativeArea } from "@/app/actions";
+import { setInitiativeStage, setInitiativeArea, setInitiativeStalled } from "@/app/actions";
 import { FileUploader } from "@/components/FileUploader";
 import { Desc } from "@/components/Desc";
 import { notFound } from "next/navigation";
@@ -29,7 +29,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
   const { id } = await params;
   const sp = await searchParams;
   const [init, stores, editor, stages, areas, bulletin] = await Promise.all([getInitiative(id), getStores(), isEditor(), getStages(), getAreas(), getBulletin()]);
-  const stage = stages[id] || "";
+  const { stage, stalled } = splitStage(stages[id]);
   const area = areas[id] || AREA_DEFAULT;
   if (!init) notFound();
   const [people, roster, resources, goals, visitsAll, todos, wins, bookmarksAll] = await Promise.all([
@@ -93,7 +93,7 @@ export default async function InitiativePage({ params, searchParams }: { params:
       <div className="pagehead">
         <div>
           <div className="eyebrow"><Link href="/initiatives">Initiatives</Link>{initStores.length ? ` · ${initStores.map((s) => s.short_name).join(", ")}` : ""}</div>
-          <h1>{init.name} {stage ? <span className="tag stage">{stage}</span> : <StatusTag status={init.status} />}</h1>
+          <h1>{init.name} {stage ? <span className="tag stage">{stage}</span> : <StatusTag status={init.status} />}{stalled && <> <span className="tag warn">Stalled</span></>}</h1>
           {editor && (
             <form action={setInitiativeStage} className="inline" style={{ marginTop: 6 }}>
               <input type="hidden" name="initiative_id" value={id} />
@@ -102,6 +102,13 @@ export default async function InitiativePage({ params, searchParams }: { params:
                 {STAGES.map((st) => <option key={st} value={st}>{st}</option>)}
               </select>
               <button className="btn sm ghost">Set</button>
+            </form>
+          )}
+          {editor && (
+            <form action={setInitiativeStalled} className="inline" style={{ marginTop: 6 }}>
+              <input type="hidden" name="initiative_id" value={id} />
+              <input type="hidden" name="stalled" value={stalled ? "" : "1"} />
+              <button className="btn sm ghost">{stalled ? "Clear stalled" : "Mark stalled"}</button>
             </form>
           )}
           {editor && (

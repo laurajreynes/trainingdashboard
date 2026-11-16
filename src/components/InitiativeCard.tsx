@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { STAGES, ROSTER_LABEL, AREA_DEFAULT, stageShade, shortInitName } from "@/lib/types";
+import { STAGES, ROSTER_LABEL, AREA_DEFAULT, stageShade, shortInitName, splitStage } from "@/lib/types";
 import type { Initiative, InitiativePerson, Store } from "@/lib/types";
 import { Desc } from "@/components/Desc";
 
@@ -15,13 +15,15 @@ function counts(roster: InitiativePerson[]) {
   return c;
 }
 
-function Steps({ stage }: { stage: string }) {
+function Steps({ stage: raw }: { stage: string }) {
+  const { stage, stalled } = splitStage(raw);
   const idx = Math.max(0, (STAGES as readonly string[]).indexOf(stage));
   const c = stageShade(stage);
   return (
     <span className="stagesteps" title={`Stage: ${stage}`} style={{ ["--stage" as string]: c }}>
       <span className="stagesteps-bar">{STAGES.map((s, i) => <i key={s} className={i <= idx ? "on" : ""} />)}</span>
       <span className="stagesteps-label">{stage}</span>
+      {stalled && <span className="stalledtag">Stalled</span>}
     </span>
   );
 }
@@ -57,7 +59,7 @@ export function InitiativeCard({ init, roster, stores, stage, area, hideStore }:
   const areaLabel = area || AREA_DEFAULT;
   return (
     <>
-      <button type="button" className="initcard initbtn" onClick={() => setOpen(true)} style={{ ["--stage" as string]: stageShade(stage) }} title={init.name}>
+      <button type="button" className="initcard initbtn" onClick={() => setOpen(true)} style={{ ["--stage" as string]: stageShade(splitStage(stage).stage) }} title={init.name}>
         <div className="initcard-top">
           <h3>{shortInitName(init.name)}</h3>
           {stage ? <Steps stage={stage} /> : null}

@@ -33,7 +33,7 @@ import { FileUploader } from "@/components/FileUploader";
 import { ReportsCard } from "@/components/ReportsCard";
 import { Model } from "@/components/Model";
 import { splitTime } from "@/components/WeekCalendar";
-import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin } from "@/app/actions";
+import { addStorePost, updateStore, addBookmark, deleteBookmark, addTodo, addWin, setCarWarsDone } from "@/app/actions";
 import { StoreGoals } from "@/components/StoreGoals";
 import { SideToggle } from "@/components/SideToggle";
 import { ServiceSide } from "./ServiceSide";
@@ -55,7 +55,12 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   ]);
   const entries = await getGoalEntries(goals.map((g) => g.id));
   const [stages, areas] = await Promise.all([getStages(), getAreas()]);
-  const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));   // this store and group-wide; the shared BDC keeps its own
+  const bookmarks = bookmarksAll.filter((b) => !b.initiative_id && (b.store_id === store.id || b.store_id === null));
+  // Archived reports: only last month's sits in Resources; older ones live on the archive page
+  const lastMonth = addDays(today().slice(0, 8) + "01", -1).slice(0, 7);
+  const MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const monthOfBm = (t: string, created: string) => { const y = t.match(/\b(20\d\d)\b/)?.[1] || created.slice(0, 4); const i = MON.findIndex((m) => new RegExp(`\\b${m}`, "i").test(t)); return i >= 0 ? `${y}-${String(i + 1).padStart(2, "0")}` : created.slice(0, 7); };
+  const resBookmarks = bookmarks.filter((b) => b.kind !== "report" && (b.kind !== "archive" || monthOfBm(b.title, b.created_at || "") === lastMonth));   // this store and group-wide; the shared BDC keeps its own
   const posts = await getStorePosts({ storeIds: ids, limit: 30 });
   const bulletin = await getBulletin();
   const board = await getBoard(store.slug);
@@ -63,6 +68,19 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const groupNotes = await getGroupNotes();
   const carwarsDates = groupNotes.find((n) => n.key === "carwars")?.body || null;
   const carwarsSetup = groupNotes.find((n) => n.key === `cwsetup:${store.slug}`)?.body || null;
+  const carwarsDone = groupNotes.find((n) => n.key === `cwdone:${store.slug}`)?.body === "1";
+  const carwarsBlock = () => carwars ? (
+    <>
+      <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} done={carwarsDone} />
+      {editor && (
+        <form action={setCarWarsDone} className="inline" style={{ marginTop: 6 }}>
+          <input type="hidden" name="slug" value={store.slug} />
+          <input type="hidden" name="done" value={carwarsDone ? "" : "1"} />
+          <button className="btn sm ghost">{carwarsDone ? "Reopen the CarWars launch" : "Mark CarWars launch complete"}</button>
+        </form>
+      )}
+    </>
+  ) : null;
   const focusText = groupNotes.find((n) => n.key === `focus:${store.id}`)?.body || null;
   const playbook = groupNotes.find((n) => n.key === `playbook:${store.slug}`)?.body || null;
   const activity = (() => { try { const b = groupNotes.find((n) => n.key === `activity:${store.slug}`)?.body; return b ? (JSON.parse(b) as Activity) : null; } catch { return null; } })();
@@ -220,7 +238,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         )}
       </section></div>
       <div data-keep style={{ marginTop: 12 }}><PlaybookCard storeSlug={store.slug} body={playbook} editor={editor} /></div>
-      <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} peopleIds={peopleIds} launches={carwarsDates} withBdc={!store.is_bdc && /toyota|chevrolet/i.test(store.short_name)} setup={carwarsSetup} editor={editor} />}</div>
+      {!carwarsDone && <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwarsBlock()}</div>}
       <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
 
       <div className="topband solo">
@@ -289,11 +307,11 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         </ReportsCard>
       </div>
         </div>
-      {(resources.length > 0 || fileResources.length > 0 || bookmarks.some((b) => b.kind !== "report")) && (
+      {(resources.length > 0 || fileResources.length > 0 || resBookmarks.length > 0) && (
         <section className="card">
           <div className="cardhead"><h2>Resources</h2></div>
           <div className="grid-chips rsrc">
-            {bookmarks.filter((b) => b.kind !== "report").map((b) => (
+            {resBookmarks.map((b) => (
               <span key={b.id} style={{ display: "inline-flex", alignItems: "center" }}>
                 <a className="chipr tool" href={b.url} target="_blank" rel="noreferrer"><span className="k">{b.kind}</span><span className="t">{b.title}</span></a>
                 {editor && <form action={deleteBookmark}><input type="hidden" name="id" value={b.id} /><button className="iconbtn" title="Remove">×</button></form>}
@@ -432,6 +450,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
         </div>
       </div>
+      {carwarsDone && carwars && <div style={{ marginTop: 18 }}>{carwarsBlock()}</div>}
       {editor && (
         <details className="quiet" style={{ marginTop: 18 }}>
           <summary>Store name</summary>

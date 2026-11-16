@@ -272,6 +272,11 @@ export function shortInitName(name: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 export type Stage = (typeof STAGES)[number];
+/** A stage can carry a "stalled" flag ("Coaching execution|stalled"): split it back out. */
+export function splitStage(s?: string | null): { stage: string; stalled: boolean } {
+  const stalled = !!s && s.endsWith("|stalled");
+  return { stage: stalled ? s!.slice(0, -"|stalled".length) : s || "", stalled };
+}
 
 /** Which step of the model an initiative is pushing on, from its name and area. */
 export function stepFor(name: string, area?: string | null): string | null {
