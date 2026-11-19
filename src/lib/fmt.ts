@@ -148,9 +148,26 @@ export function daysInMonth(ym: string): number {
   return new Date(Date.UTC(y, m, 0)).getUTCDate();
 }
 
-/** Project a month-to-date count to month end from the as-of date. */
+const HOLIDAYS: Record<string, string[]> = {
+  "2026": ["2026-01-01", "2026-05-25", "2026-07-04", "2026-09-07", "2026-11-26", "2026-12-25"],
+  "2027": ["2027-01-01", "2027-05-31", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-25"],
+};
+
+/** The month's selling days: Monday to Saturday, minus the big holidays. */
+export function sellingDates(month: string): string[] {
+  const [y, m] = month.split("-").map(Number);
+  const hol = new Set(HOLIDAYS[String(y)] || []);
+  const dates: string[] = [];
+  for (let d = 1; d <= daysInMonth(month); d++) {
+    const iso = `${month}-${String(d).padStart(2, "0")}`;
+    if (new Date(Date.UTC(y, m - 1, d)).getUTCDay() !== 0 && !hol.has(iso)) dates.push(iso);
+  }
+  return dates;
+}
+
+/** Project a month-to-date count to month end from the as-of date, by selling days (the same math as Tracking and the sales board). */
 export function projectToMonthEnd(value: number, asOf: string): number {
-  const day = Number(asOf.slice(8, 10));
-  const dim = daysInMonth(asOf.slice(0, 7));
-  return day ? Math.round((value / day) * dim) : value;
+  const dates = sellingDates(asOf.slice(0, 7));
+  const done = dates.filter((d) => d <= asOf).length;
+  return done ? Math.round((value / done) * dates.length) : value;
 }

@@ -153,8 +153,10 @@ export default async function StorePage({ params, searchParams }: { params: Prom
     getTargets(curMonth),
   ]);
   const lyTotal = lyRows.reduce((a, m) => a + m.sold, 0);
-  const tgt = targets[store.id];
-  const goalTotal = tgt && (tgt.new || tgt.used) ? (tgt.new || 0) + (tgt.used || 0) : null;
+  // The store's sold count includes its locations (Belgrade, Danhof), so the goal adds their targets too
+  const goalTotal = [store.id, ...(store.locations || []).map((l: string) => `${store.id}|${l}`)]
+    .map((k) => targets[k]).filter((t) => t && (t.new || t.used))
+    .reduce<number | null>((a, t) => (a || 0) + (t!.new || 0) + (t!.used || 0), null);
   const thisMonthRows = metricRows.filter((m) => m.period === curMonth);
   const soldMtd = thisMonthRows.reduce((a, m) => a + m.sold, 0);
   const soldAsOf = thisMonthRows.map((m) => m.as_of).sort().pop();
