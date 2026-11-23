@@ -53,11 +53,11 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   const groupWide = salesGoals.filter((g) => !g.store_id && !g.initiative_id);
   // The store goals are the ones that get logged (from each Performance Report), so they drive this list.
   // Home page: one line per measure, averaged across the stores that logged it. Store page: its own goals first.
-  const storeGoals = salesGoals.filter((g) => g.store_id && !g.initiative_id);
+  const ORDER = ["phone appt set", "internet appt set", "phone appt show", "internet appt show", "internet response time"];   // sold % lags mid-month, so it sits last
+  const rank = (n: string) => { const i = ORDER.indexOf(n.toLowerCase()); return i < 0 ? 99 : i; };
+  const storeGoals = salesGoals.filter((g) => g.store_id && !g.initiative_id).sort((a, b) => rank(a.name) - rank(b.name));
   const latestIn = (gid: string, a: string, b: string) => entries.filter((e) => e.goal_id === gid && e.date >= a && e.date <= b).sort((x, y) => x.date.localeCompare(y.date)).pop();
   const groupPaces = () => {
-    const ORDER = ["phone appt set", "internet appt set", "phone appt show", "internet appt show", "internet response time"];   // sold % lags mid-month, so it sits last
-    const rank = (n: string) => { const i = ORDER.indexOf(n.toLowerCase()); return i < 0 ? 99 : i; };
     const names = [...new Set(storeGoals.map((g) => g.name))].sort((a, b) => rank(a) - rank(b));
     return names.map((name) => {
       const gs = storeGoals.filter((g) => g.name === name);
