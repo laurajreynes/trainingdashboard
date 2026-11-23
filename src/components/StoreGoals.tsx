@@ -4,14 +4,15 @@ import { addGoal, addGoalEntry, deleteGoal } from "@/app/actions";
 import { today } from "@/lib/fmt";
 
 /** Store goals in one place: the current rates up top, the trend for each below, logging and adding for the editor. */
-export function StoreGoals({ store, goals, entries, editor }: { store: Store; goals: Goal[]; entries: GoalEntry[]; editor: boolean }) {
+export function StoreGoals({ store, goals, entries, editor }: { store: Store | null; goals: Goal[]; entries: GoalEntry[]; editor: boolean }) {
+  const label = store ? "Store" : "Group";   // store null = group-wide goals (the Group Phone and Internet Performance totals)
   if (!goals.length && !editor) return null;
   const bare = !goals.length;   // editor with nothing yet: just the adder, no empty card
   const rates = goals.filter((g) => g.kind === "rate");
   const latest = (g: Goal) => entries.filter((e) => e.goal_id === g.id).sort((a, b) => a.date.localeCompare(b.date)).pop();
   return (
     <section className={bare ? "" : "card"}>
-      {!bare && <div className="cardhead"><h2>Store goals</h2></div>}
+      {!bare && <div className="cardhead"><h2>{label} goals</h2></div>}
       {rates.length > 0 && (
         <ul className="list" style={{ marginBottom: 10 }}>
           {rates.map((g) => { const last = latest(g); return (
@@ -42,9 +43,9 @@ export function StoreGoals({ store, goals, entries, editor }: { store: Store; go
       ) : null}
       {editor && (
         <details className="adder" style={{ marginTop: 12 }}>
-          <summary>Store goal</summary>
+          <summary>{label} goal</summary>
           <form action={addGoal} className="body">
-            <input type="hidden" name="store_id" value={store.id} />
+            <input type="hidden" name="store_id" value={store?.id || ""} />
             <div className="frow">
               <input type="text" name="name" placeholder="Appointment set rate" required />
               <input type="number" step="any" name="target" placeholder="Target" />

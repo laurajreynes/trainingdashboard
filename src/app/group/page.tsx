@@ -1,6 +1,7 @@
+import { StoreGoals } from "@/components/StoreGoals";
 import Link from "next/link";
 import { isEditor } from "@/lib/auth";
-import { getGroupNotes, getMeetings, getMonthPlans, getStores } from "@/lib/data";
+import { getGroupNotes, getMeetings, getMonthPlans, getStores, getGoals, getGoalEntries } from "@/lib/data";
 import { fmtDate, relDay, nextGmMeeting, gmSkips, today, monthName, storeAccent } from "@/lib/fmt";
 import { monthPhase } from "@/lib/month";
 import { saveGroupNote, addMeeting, updateMeeting, deleteMeeting, saveMonthPlan } from "@/app/actions";
@@ -28,7 +29,9 @@ function Lines({ text }: { text: string }) {
 
 export default async function GroupPage() {
   const mi = monthPhase();
-  const [editor, notes, meetings, plans, stores] = await Promise.all([isEditor(), getGroupNotes(), getMeetings(36), getMonthPlans([mi.month]), getStores()]);
+  const [editor, notes, meetings, plans, stores, allGoals] = await Promise.all([isEditor(), getGroupNotes(), getMeetings(36), getMonthPlans([mi.month]), getStores(), getGoals()]);
+  const groupGoals = allGoals.filter((g) => !g.store_id && !g.initiative_id);   // logged from the group totals on each Performance Report
+  const groupEntries = await getGoalEntries(groupGoals.map((g) => g.id));
   const body = (k: string) => notes.find((n) => n.key === k)?.body || "";
   const next = nextGmMeeting(gmSkips(notes));
   const nextMeeting = meetings.find((m) => m.date === next);
@@ -47,6 +50,7 @@ export default async function GroupPage() {
 
       <div className="grid main-side">
         <div className="stack">
+          <StoreGoals store={null} goals={groupGoals} entries={groupEntries} editor={editor} />
           <section className="card">
             <div className="cardhead"><h2>{monthName(mi.month)} focus by store</h2></div>
             <ul className="list focuslist">
