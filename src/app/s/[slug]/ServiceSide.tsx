@@ -43,6 +43,11 @@ export async function ServiceSide({ store, stores, editor, initiatives, roster, 
 
   return (
     <>
+      {carwars && (
+        <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>
+          <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location="Service" peopleIds={svcIds} launches={groupNotes.find((n) => n.key === "carwars")?.body || null} setup={setup} editor={editor} />
+        </div>
+      )}
       <div data-keep><section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcoming.length ? (
@@ -159,11 +164,6 @@ export async function ServiceSide({ store, stores, editor, initiatives, roster, 
         </div>
       </div>
 
-      {carwars && (
-        <div data-keep style={{ marginTop: 18 }}>
-          <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location="Service" peopleIds={svcIds} launches={groupNotes.find((n) => n.key === "carwars")?.body || null} setup={setup} editor={editor} />
-        </div>
-      )}
     </>
   );
 }
