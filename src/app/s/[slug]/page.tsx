@@ -141,8 +141,8 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const serviceInitIds = new Set(initiatives.filter((i) => isServiceInit(i)).map((i) => i.id));
   const salesWins = wins.filter((w) => !(w.person_id && serviceIds.has(w.person_id)) && !(w.initiative_id && serviceInitIds.has(w.initiative_id))).slice(0, 6);
   const side: "sales" | "service" = sp.side === "service" ? "service" : "sales";
-  const hasService = !store.is_bdc && (serviceIds.size > 0 || initiatives.some((i) => isServiceInit(i) && i.store_ids.includes(store.id)) || visits.some((v) => v.store_id === store.id && isServiceVisit(v)));
-  const showToggle = !store.is_bdc && (hasService || editor);
+  const hasService = (serviceIds.size > 0 || initiatives.some((i) => isServiceInit(i) && i.store_ids.includes(store.id)) || visits.some((v) => v.store_id === store.id && isServiceVisit(v)));
+  const showToggle = hasService || editor;   // the Ressler BDC has a service side too (service BDC)
   const mi = monthPhase(sp.phase);
   const reflecting = mi.phase === "reflect";
   const curMonth = reflecting ? mi.prevMonth : mi.month;   // first days of the month: look at last month's results
