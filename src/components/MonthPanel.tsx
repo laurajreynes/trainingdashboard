@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Store } from "@/lib/types";
+import type { Store, Goal, GoalEntry } from "@/lib/types";
 import { splitStage } from "@/lib/types";
 import {
   getGoals, getGoalEntries, getAllRoster, getVisits, getWins, getCommitments, getPeople,
@@ -51,7 +51,31 @@ export async function MonthPanel({ store, family, allStores, editor, phaseOverri
   // Keep the list to the few numbers that matter: on the home page the group-wide goals, on a store page its own
   const salesGoals = allGoals.filter((g) => !isSvc(g));
   const groupWide = salesGoals.filter((g) => !g.store_id && !g.initiative_id);
-  const paces = (!scoped && groupWide.length ? groupWide : salesGoals).slice(0, 5).map((g) => paceGoal(g, entries, mi));
+  // The store goals are the ones that get logged (from each Performance Report), so they drive this list.
+  // Home page: one line per measure, averaged across the stores that logged it. Store page: its own goals first.
+  const storeGoals = salesGoals.filter((g) => g.store_id && !g.initiative_id);
+  const latestIn = (gid: string, a: string, b: string) => entries.filter((e) => e.goal_id === gid && e.date >= a && e.date <= b).sort((x, y) => x.date.localeCompare(y.date)).pop();
+  const groupPaces = () => {
+    const ORDER = ["phone appt set", "internet appt set", "phone appt show", "internet appt show", "internet response time"];   // sold % lags mid-month, so it sits last
+    const rank = (n: string) => { const i = ORDER.indexOf(n.toLowerCase()); return i < 0 ? 99 : i; };
+    const names = [...new Set(storeGoals.map((g) => g.name))].sort((a, b) => rank(a) - rank(b));
+    return names.map((name) => {
+      const gs = storeGoals.filter((g) => g.name === name);
+      const avg = (a: string, b: string) => {
+        const hits = gs.map((g) => latestIn(g.id, a, b)).filter(Boolean) as GoalEntry[];
+        if (!hits.length) return null;
+        return { value: Math.round((hits.reduce((t, e) => t + Number(e.value), 0) / hits.length) * 10) / 10, date: hits.map((e) => e.date).sort().pop()!, n: hits.length };
+      };
+      const cur = avg(mi.monthStart, mi.monthEnd), prev = avg(mi.prevStart, mi.prevEnd);
+      const goal: Goal = { ...gs[0], id: `group:${name}`, store_id: null, name: `${name} (avg of ${cur?.n || gs.length} stores)` };
+      const synth: GoalEntry[] = [cur, prev].filter(Boolean).map((x, k) => ({ id: `${goal.id}:${k}`, goal_id: goal.id, date: x!.date, value: x!.value, note: null }));
+      return paceGoal(goal, synth, mi);
+    }).filter((p) => p.current !== null || p.lastMonth !== null);
+  };
+  const paces = (!scoped
+    ? (groupWide.length ? groupWide.map((g) => paceGoal(g, entries, mi)) : groupPaces())
+    : [...storeGoals, ...salesGoals.filter((g) => !storeGoals.includes(g))].map((g) => paceGoal(g, entries, mi)).filter((p, k, all) => p.current !== null || all.filter((q) => q.current !== null).length < 5)
+  ).slice(0, 5);
   const svcTotals = allGoals.filter((g) => isSvc(g) && g.kind === "count").map((g) => {
     const sum = (a: string, b: string) => entries.filter((e) => e.goal_id === g.id && e.date >= a && e.date <= b).reduce((t, e) => t + Number(e.value), 0);
     const init = initiatives.find((i) => i.id === g.initiative_id);
