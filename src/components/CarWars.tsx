@@ -70,7 +70,7 @@ export function CarWarsBanner({ init, roster, stores, store, location, peopleIds
     : store ? all.filter((m) => forStore(m, store) || (withBdc && isBdc(m)))
     : all;
   // On a store page, name the two launches so both dates read clearly.
-  const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? "BDC launch" : /service/i.test(`${m.store} ${m.label}`) ? "Service launch" : "Sales launch") : m.label;
+  const label = (m: Milestone) => store && withBdc && /launch/i.test(m.label) ? (isBdc(m) ? (/service/i.test(m.store) ? "Service BDC launch" : "BDC launch") : /service/i.test(`${m.store} ${m.label}`) ? "Service launch" : "Sales launch") : m.label;
   // "Subaru | Note: awaiting phone programming" lines read as a note under the track, not a stop
   const notes = mine.filter((m) => /^note$/i.test(m.label)).map((m) => m.when);
   const stops0 = mine.filter((m) => !/^note$/i.test(m.label));
