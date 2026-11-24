@@ -241,7 +241,6 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         )}
       </section></div>
       <div data-keep style={{ marginTop: 12 }}><PlaybookCard storeSlug={store.slug} body={playbook} editor={editor} /></div>
-      {!carwarsDone && <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>{carwarsBlock()}</div>}
       <div data-keep><StoreFocus storeId={store.id} body={focusText} editor={editor} /></div>
 
       <div className="topband solo">
@@ -453,7 +452,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
         </div>
       </div>
-      {carwarsDone && carwars && <div style={{ marginTop: 18 }}>{carwarsBlock()}</div>}
+      {carwars && <div style={{ marginTop: 18 }}>{carwarsBlock()}</div>}   {/* CarWars launch sits at the bottom of store pages */}
       {editor && (
         <details className="quiet" style={{ marginTop: 18 }}>
           <summary>Store name</summary>

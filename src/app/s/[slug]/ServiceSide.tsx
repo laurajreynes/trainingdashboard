@@ -39,15 +39,13 @@ export async function ServiceSide({ store, stores, editor, initiatives, roster, 
   const resources = svcInits.flatMap((i, k) => resourceLists[k].map((r) => ({ ...r, initName: i.name })));
   const files = bookmarks.filter((b) => b.kind === "doc" && b.initiative_id && svcInits.some((i) => i.id === b.initiative_id));
   const svcWins = wins.filter((w) => (w.initiative_id && svcInits.some((i) => i.id === w.initiative_id)) || (w.person_id && svcIds.has(w.person_id)));
+  // The service BDC is mid-launch: its CarWars card sits right under the next visit. Other service sides keep it at the bottom.
+  const cwCard = carwars ? <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location="Service" peopleIds={svcIds} launches={groupNotes.find((n) => n.key === "carwars")?.body || null} setup={setup} editor={editor} /> : null;
+  const cwTop = !!store.is_bdc;
   const trim = (t: string) => t.replace(new RegExp(`^${store.short_name}\\s+service\\s*[:,-]?\\s*`, "i"), "").replace(/,?\s*until .*$/i, "") || "Service";
 
   return (
     <>
-      {carwars && (
-        <div data-keep style={{ marginTop: 12, marginBottom: 12 }}>
-          <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location="Service" peopleIds={svcIds} launches={groupNotes.find((n) => n.key === "carwars")?.body || null} setup={setup} editor={editor} />
-        </div>
-      )}
       <div data-keep><section className="card nextstrip">
         <div className="cardhead"><h2>Next training visit</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcoming.length ? (
@@ -66,6 +64,7 @@ export async function ServiceSide({ store, stores, editor, initiatives, roster, 
           </div>
         ) : <p className="empty">Nothing scheduled</p>}
       </section></div>
+      {cwTop && cwCard && <div data-keep style={{ marginTop: 12 }}>{cwCard}</div>}
 
       <div data-keep style={{ marginTop: 12 }}><StoreFocus storeId={`${store.id}:service`} body={focus} editor={editor} /></div>
 
@@ -163,7 +162,7 @@ export async function ServiceSide({ store, stores, editor, initiatives, roster, 
           </section>
         </div>
       </div>
-
+      {!cwTop && cwCard && <div style={{ marginTop: 18 }}>{cwCard}</div>}
     </>
   );
 }

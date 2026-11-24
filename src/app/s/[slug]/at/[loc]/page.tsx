@@ -71,8 +71,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
 
 
       <StoreFocus storeId={`${store.id}:${location.toLowerCase()}`} body={focusText} editor={editor} />
-      <div className="grid cols-2" style={{ marginBottom: 18, alignItems: "start" }}>
-      {carwars && <CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} setup={groupNotes.find((n) => n.key === `cwsetup:${store.slug}-${location.toLowerCase()}`)?.body || null} editor={editor} />}
+      <div style={{ marginBottom: 18 }}>
       <section className="card nextstrip">
         <div className="cardhead"><h2>Next training</h2>{editor && <Link className="more" href={`/visit/new?store=${store.slug}&plan=1`}>Schedule</Link>}</div>
         {upcoming.length ? (
@@ -135,6 +134,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
           {hereVisits[0] && <p className="faint small" style={{ marginTop: 8 }}>Last: {fmtDate(hereVisits[0].date)}</p>}
         </section>
       </div>
+      {carwars && <div style={{ marginTop: 18 }}><CarWarsBanner init={carwars} roster={roster} stores={stores} store={store} location={location} peopleIds={ids} launches={carwarsDates} setup={groupNotes.find((n) => n.key === `cwsetup:${store.slug}-${location.toLowerCase()}`)?.body || null} editor={editor} /></div>}
     </div>
   );
 }
