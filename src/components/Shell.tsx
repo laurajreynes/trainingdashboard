@@ -7,6 +7,7 @@ import { logout } from "@/app/actions";
 import { navOrder } from "@/lib/fmt";
 import { StoreNav } from "./StoreNav";
 import { MobileNav } from "./MobileNav";
+import { Track } from "./Track";
 
 export async function Shell({ children }: { children: React.ReactNode }) {
   const ready = configured();
@@ -31,6 +32,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           <Link href="/people">People</Link>
           <Link href="/todos">To-dos</Link>
           <Link href="/examples">Examples</Link>
+          {editor && <Link href="/usage">Usage</Link>}
           {editor ? (
             <form action={logout}><button type="submit" className="pill" title="You can edit. Click to sign out.">Editing</button></form>
           ) : (
@@ -47,6 +49,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
         ) : children}
       </main>
       {ready && <MobileNav />}
+      {ready && <Track />}
     </>
   );
 }

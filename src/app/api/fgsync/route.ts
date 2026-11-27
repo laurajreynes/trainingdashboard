@@ -79,6 +79,25 @@ async function run(req: Request) {
     await db().from("visits").update(patch).eq("id", v.id);
     out.push({ date, title, did: sum === null ? `notes saved, recap failed (${lastErr})` : "synced" });
   }
+  // Check-ins: every "I'm here" tap in Field Guide (a done task titled "\u{1F4CD} <block title>") makes sure that
+  // day's visit exists on the dash, so a visit counts even when she wrote no note.
+  try {
+    const tr = await fetch(`${FG.replace("/api/state", "/api/tasks")}?x=${Date.now()}`, { cache: "no-store" });
+    const tasks = ((await tr.json())?.tasks ?? []) as { task: string; done: boolean; doneOn: string }[];
+    const seen = new Set<string>();
+    for (const t of tasks) {
+      if (!t.done || !t.doneOn || t.doneOn < since || !t.task.startsWith("\u{1F4CD}")) continue;
+      const title = t.task.replace(/^\S+\s*/, "");
+      const slug = STORES.find(([re]) => re.test(title))?.[1];
+      const store_id = slug ? sid(slug) : null;
+      if (!store_id || seen.has(`${store_id}|${t.doneOn}`)) continue;
+      seen.add(`${store_id}|${t.doneOn}`);
+      const found = await db().from("visits").select("id").eq("store_id", store_id).eq("date", t.doneOn).limit(1);
+      if (found.error || found.data?.length) continue;
+      const ins = await db().from("visits").insert({ store_id, date: t.doneOn, focus: title });
+      out.push({ date: t.doneOn, title, did: ins.error ? "check-in insert failed" : "check-in added as a visit" });
+    }
+  } catch { out.push({ date: "", title: "check-ins", did: "could not read Field Guide tasks" }); }
   revalidatePath("/", "layout");
   return NextResponse.json({ ok: true, results: out });
 }
